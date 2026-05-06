@@ -22,3 +22,16 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# --- Agregados para Spring Boot y Maven ---
+# Ignorar todas las carpetas de compilación de los 12 microservicios
+**/target/
+
+# Ignorar configuraciones de Editores (VS Code, IntelliJ)
+.idea/
+.vscode/
+*.iml
+
+# Ignorar archivos temporales del sistema
+.DS_Store
+Thumbs.db
