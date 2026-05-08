@@ -28,7 +28,7 @@ El sistema se divide en servicios independientes para garantizar escalabilidad y
 ## 🛠️ Tecnologías Utilizadas
 * **Lenguaje:** Java 
 * **Framework:** Spring Boot 3.x
-* **Base de Datos:** MySQL / Oracle SQL (Micro-bases de datos independientes)
+* **Base de Datos:** MySQL (Micro-bases de datos independientes)
 * **Gestor de Dependencias:** Maven
 * **Control de Versiones:** Git & GitHub
 
