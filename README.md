@@ -26,7 +26,7 @@ El sistema se divide en servicios independientes para garantizar escalabilidad y
 * **Usuario Particular (Viajero)**: Autogestión de formularios y consulta de estados.
 
 ## 🛠️ Tecnologías Utilizadas
-* **Lenguaje:** Java 17
+* **Lenguaje:** Java 
 * **Framework:** Spring Boot 3.x
 * **Base de Datos:** MySQL / Oracle SQL (Micro-bases de datos independientes)
 * **Gestor de Dependencias:** Maven
