@@ -1,3 +1,5 @@
+// Configura qué rutas necesitan token y cuáles son públicas
+// Define las reglas de seguridad del Auth Service
 package com.example.AuthService.security;
 
 import lombok.RequiredArgsConstructor;
@@ -10,13 +12,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-// @EnableWebSecurity activa la configuración personalizada de Spring Security
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     // Inyectamos nuestro filtro JWT para agregarlo a la cadena de Spring Security
     private final JwtFilter jwtFilter;
 
+    // Spring ejecuta este método al iniciar para configurar la seguridad
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

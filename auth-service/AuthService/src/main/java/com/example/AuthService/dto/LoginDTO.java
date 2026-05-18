@@ -9,6 +9,7 @@ import lombok.Data;
 
 @Data
 public class LoginDTO {
+
     // @NotBlank valida que no sea null, vacío ni solo espacios
     // @Email verifica que tenga formato de email válido (contiene @ y dominio)
     @NotBlank(message = "El email es obligatorio")

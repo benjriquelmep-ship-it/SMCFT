@@ -1,4 +1,3 @@
-// security/JwtFilter.java
 // Se ejecuta en CADA petición HTTP que llega al servidor
 // Verifica si la petición trae un token JWT válido
 // Si es válido → registra al usuario en el contexto de seguridad
@@ -27,14 +26,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+    // Para registrar mensajes en la consola de IntelliJ
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
 
     // Para validar firma y expiración del token
     private final JwtUtil jwtUtil;
 
     // Para verificar si el token fue invalidado por logout
+    // Si está en la blacklist el usuario ya cerró sesión
+    // y no puede usar ese token aunque sea válido
     private final TokenBlacklistRepository tokenBlacklistRepository;
 
+    // Se ejecuta automáticamente en CADA petición antes de llegar al Controller
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -42,9 +45,10 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // Leer el header Authorization
-        // Formato esperado: Authorization: Bearer eyJhbGci...
         String authHeader = request.getHeader("Authorization");
 
+        // Verifica que el header no sea null y empiece con "Bearer "
+        // Si no cumple estas condiciones → no hay token → salta el if
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
 
             // Extraer solo el token quitando "Bearer " (7 caracteres)
@@ -59,9 +63,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
             // Solo autenticar si pasa AMBAS verificaciones
             if (firmaValida && noEnBlacklist) {
+
+                // Extrae el email del usuario desde el token
                 String email = jwtUtil.obtenerEmail(token);
+
+                // Extrae el rol del usuario desde el token
                 String rol   = jwtUtil.obtenerRol(token);
 
+                // Registra en la consola que el token es válido
                 log.info("Token válido para: {} con rol: {}", email, rol);
 
                 // Registrar al usuario en el contexto de seguridad de Spring
@@ -73,22 +82,32 @@ public class JwtFilter extends OncePerRequestFilter {
                                 // Spring Security requiere el prefijo "ROLE_"
                                 List.of(new SimpleGrantedAuthority("ROLE_" + rol))
                         );
+
+                // Guarda la autenticación en el SecurityContext
+                // Spring usa esto para verificar permisos en cada ruta
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
 
             } else {
+
+                // El token llegó pero falló alguna verificación
+                // Registra cuál de las dos verificaciones falló
                 if (!firmaValida) {
+
+                    // Token expirado o manipulado
                     log.warn("Token inválido en: {}",
                             request.getRequestURI());
                 }
                 if (!noEnBlacklist) {
+
+                    // El usuario ya hizo logout con ese token
                     log.warn("Token en blacklist en: {}",
                             request.getRequestURI());
                 }
             }
         }
 
-        // SIEMPRE llamar a doFilter para continuar la cadena
+        // Permite que la petición continúe hacia el Controller
         // Sin esto la petición queda bloqueada indefinidamente
         filterChain.doFilter(request, response);
     }
