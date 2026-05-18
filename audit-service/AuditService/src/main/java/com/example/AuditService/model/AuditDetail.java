@@ -1,7 +1,5 @@
-// model/AuditDetail.java
 // Representa cada acción registrada en una auditoría
 // Tiene una relación @ManyToOne con Audit
-// Cumple con IE 2.2.3 — relaciones entre entidades
 
 package com.example.AuditService.model;
 

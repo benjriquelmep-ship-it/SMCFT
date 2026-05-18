@@ -1,4 +1,4 @@
-// repository/AuditDetailRepository.java
+// Repository = la clase que habla directamente con la base de datos
 package com.example.AuditService.repository;
 
 import com.example.AuditService.model.AuditDetail;
@@ -11,55 +11,36 @@ import java.util.List;
 public interface AuditDetailRepository
         extends JpaRepository<AuditDetail, Long> {
 
-    // Todos los detalles de una auditoría
-    // Spring genera: SELECT * FROM audit_details WHERE audit_id = ?
+    // Devuelve todos los detalles que pertenecen a una auditoría
     List<AuditDetail> findByAuditId(Long auditId);
 
-    // Por resultado
-    // Spring genera: SELECT * FROM audit_details WHERE resultado = ?
+    // Devuelve todos los detalles con un resultado específico
     List<AuditDetail> findByResultado(String resultado);
 
-    // Detalles de una auditoría por resultado
-    // Spring genera: SELECT * FROM audit_details
-    //                WHERE audit_id = ? AND resultado = ?
+    // Devuelve los detalles de una auditoría filtrados por resultado
     List<AuditDetail> findByAuditIdAndResultado(
             Long auditId, String resultado);
 
-    // Por usuario que realizó la acción
-    // Spring genera: SELECT * FROM audit_details WHERE rut_usuario = ?
+    // Devuelve todas las acciones realizadas por un usuario específico
     List<AuditDetail> findByRutUsuario(String rutUsuario);
 
-    // Acciones sospechosas de un usuario
-    // Spring genera: SELECT * FROM audit_details
-    //                WHERE rut_usuario = ? AND resultado = 'SOSPECHOSO'
+    // Devuelve las acciones sospechosas de un usuario específico
     List<AuditDetail> findByRutUsuarioAndResultado(
             String rutUsuario, String resultado);
 
-    // BETWEEN
-    // Detalles en un rango de fechas
-    // Spring genera: SELECT * FROM audit_details
-    //                WHERE fecha_accion BETWEEN ? AND ?
+    // Devuelve los detalles registrados en un rango de fechas
     List<AuditDetail> findByFechaAccionBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por acción
-    // Spring genera: SELECT * FROM audit_details
-    //                WHERE LOWER(accion) LIKE LOWER('%texto%')
+    // Busca detalles cuya acción contenga el texto buscado
     List<AuditDetail> findByAccionContainingIgnoreCase(String accion);
 
-    // ORDENAMIENTO
     // Detalles de una auditoría del más reciente al más antiguo
-    // Spring genera: SELECT * FROM audit_details
-    //                WHERE audit_id = ? ORDER BY fecha_accion DESC
     List<AuditDetail> findByAuditIdOrderByFechaAccionDesc(Long auditId);
 
-    // TOP
     // Los últimos 10 detalles registrados
-    // Spring genera: SELECT * FROM audit_details ORDER BY id DESC LIMIT 10
     List<AuditDetail> findTop10ByOrderByIdDesc();
 
-    // COUNT
     // Contar acciones sospechosas de un usuario
     long countByRutUsuarioAndResultado(String rutUsuario, String resultado);
 }

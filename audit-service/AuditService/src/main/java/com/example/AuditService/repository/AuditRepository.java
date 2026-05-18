@@ -1,4 +1,3 @@
-// repository/AuditRepository.java
 package com.example.AuditService.repository;
 
 import com.example.AuditService.model.Audit;
@@ -10,73 +9,49 @@ import java.util.List;
 @Repository
 public interface AuditRepository extends JpaRepository<Audit, Long> {
 
-    // IGUALDAD BÁSICA
-    // Spring genera: SELECT * FROM audits WHERE rut_auditor = ?
+    // Devuelve todas las auditorías de un auditor específico
     List<Audit> findByRutAuditor(String rutAuditor);
 
-    // Spring genera: SELECT * FROM audits WHERE tipo_auditoria = ?
+    // Devuelve todas las auditorías de un tipo específico
     List<Audit> findByTipoAuditoria(String tipoAuditoria);
 
-    // Spring genera: SELECT * FROM audits WHERE entidad = ?
+    // Devuelve todas las auditorías de una entidad específica
     List<Audit> findByEntidad(String entidad);
 
-    // POR ESTADO
-    // Spring genera: SELECT * FROM audits WHERE estado = ?
+    // Devuelve todas las auditorías con un estado específico
     List<Audit> findByEstado(String estado);
 
-    // AND
-    // Auditorías de un auditor con estado específico
-    // Spring genera: SELECT * FROM audits
-    //                WHERE rut_auditor = ? AND estado = ?
+    // Devuelve auditorías de un auditor con un estado específico
     List<Audit> findByRutAuditorAndEstado(
             String rutAuditor, String estado);
 
-    // Auditorías de un tipo con estado específico
-    // Spring genera: SELECT * FROM audits
-    //                WHERE tipo_auditoria = ? AND estado = ?
+    // Devuelve auditorías de un tipo con un estado específico
     List<Audit> findByTipoAuditoriaAndEstado(
             String tipoAuditoria, String estado);
 
-    // Por entidad y ID del registro auditado
-    // Spring genera: SELECT * FROM audits
-    //                WHERE entidad = ? AND entidad_id = ?
+    // Devuelve auditorías de una entidad y un registro específico
     List<Audit> findByEntidadAndEntidadId(String entidad, Long entidadId);
 
-    // BETWEEN
-    // Auditorías en un rango de fechas
-    // Spring genera: SELECT * FROM audits
-    //                WHERE fecha_inicio BETWEEN ? AND ?
+    // Devuelve auditorías iniciadas en un rango de fechas
     List<Audit> findByFechaInicioBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por descripción
-    // Spring genera: SELECT * FROM audits
-    //                WHERE LOWER(descripcion) LIKE LOWER('%texto%')
+    // Busca auditorías cuya descripción contenga el texto buscado
     List<Audit> findByDescripcionContainingIgnoreCase(String texto);
 
-    // ORDENAMIENTO
     // Auditorías del más reciente al más antiguo
-    // Spring genera: SELECT * FROM audits
-    //                WHERE rut_auditor = ? ORDER BY fecha_inicio DESC
     List<Audit> findByRutAuditorOrderByFechaInicioDesc(String rutAuditor);
 
-    // Auditorías en proceso ordenadas
-    // Spring genera: SELECT * FROM audits
-    //                WHERE estado = ? ORDER BY fecha_inicio ASC
+    // Devuelve auditorías en proceso ordenadas por fecha
+    // de la más antigua a la más reciente
     List<Audit> findByEstadoOrderByFechaInicioAsc(String estado);
 
-    // TOP
     // Las últimas 10 auditorías
-    // Spring genera: SELECT * FROM audits ORDER BY id DESC LIMIT 10
     List<Audit> findTop10ByOrderByIdDesc();
 
-    // COUNT
-    // Contar auditorías por estado
-    // Spring genera: SELECT COUNT(*) FROM audits WHERE estado = ?
+    // Cuenta cuántas auditorías hay con un estado específico
     long countByEstado(String estado);
 
-    // Contar por tipo
-    // Spring genera: SELECT COUNT(*) FROM audits WHERE tipo_auditoria = ?
+    // Cuenta cuántas auditorías hay de un tipo específico
     long countByTipoAuditoria(String tipoAuditoria);
 }

@@ -1,4 +1,3 @@
-// model/Audit.java
 // Representa cada auditoría del sistema fronterizo
 // Tiene una relación @OneToMany con AuditDetail
 

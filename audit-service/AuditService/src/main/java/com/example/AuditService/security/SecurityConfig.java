@@ -1,3 +1,5 @@
+// Este archivo configura la seguridad del Audit Service
+// Define qué rutas necesitan token y cuáles son públicas
 package com.example.AuditService.security;
 
 import lombok.RequiredArgsConstructor;
@@ -15,13 +17,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // Filtro que verifica el token en cada petición
     private final JwtFilter jwtFilter;
 
+    // Spring ejecuta este método al iniciar para configurar la seguridad
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
             throws Exception {
         http
+                // Desactiva CSRF porque usamos tokens JWT
                 .csrf(csrf -> csrf.disable())
+
+                // Sin sesión en el servidor — cada petición trae su token
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
@@ -38,6 +45,8 @@ public class SecurityConfig {
                         // POST, PATCH, DELETE requieren token
                         .anyRequest().authenticated()
                 )
+
+                // Así el token se verifica primero en cada petición
                 .addFilterBefore(jwtFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
