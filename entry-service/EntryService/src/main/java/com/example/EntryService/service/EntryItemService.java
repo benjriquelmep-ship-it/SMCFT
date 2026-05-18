@@ -8,6 +8,7 @@ import com.example.EntryService.model.Entry;
 import com.example.EntryService.model.EntryItem;
 import com.example.EntryService.repository.EntryItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EntryItemService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(EntryItemService.class);
 
     private final EntryItemRepository itemRepository;
 

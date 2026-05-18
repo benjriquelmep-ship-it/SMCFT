@@ -5,6 +5,7 @@ import com.example.UserService.model.User;
 import com.example.UserService.model.UserRole;
 import com.example.UserService.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-
+@Slf4j
 public class UserRoleService {
-    private static final Logger log =
-            LoggerFactory.getLogger(UserRoleService.class);
 
     private final UserRoleRepository userRoleRepository;
 

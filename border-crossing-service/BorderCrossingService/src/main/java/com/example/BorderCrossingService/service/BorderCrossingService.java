@@ -9,6 +9,7 @@ import com.example.BorderCrossingService.dto.VehicleResponseDTO;
 import com.example.BorderCrossingService.model.BorderCrossing;
 import com.example.BorderCrossingService.repository.BorderCrossingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,10 +21,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BorderCrossingService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(BorderCrossingService.class);
 
     private final BorderCrossingRepository crossingRepository;
 

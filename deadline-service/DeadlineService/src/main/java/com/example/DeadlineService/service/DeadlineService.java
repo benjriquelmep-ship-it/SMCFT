@@ -6,6 +6,7 @@ import com.example.DeadlineService.dto.EntryResponseDTO;
 import com.example.DeadlineService.model.Deadline;
 import com.example.DeadlineService.repository.DeadlineRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeadlineService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(DeadlineService.class);
 
     private final DeadlineRepository deadlineRepository;
     private final WebClient webClient;
