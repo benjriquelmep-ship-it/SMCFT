@@ -1,16 +1,15 @@
 package com.example.AuthService.config;
 
 // Configura el cliente HTTP que Auth Service usa para hablar con User Service
-// WebClient es el cliente HTTP reactivo de Spring Boot
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
-// @Configuration indica que esta clase contiene beans de Spring
 @Configuration
 public class WebClientConfig {
+
     // Lee la URL del User Service desde application.properties
     // userservice.url=http://localhost:8082
     @Value("${userservice.url}")

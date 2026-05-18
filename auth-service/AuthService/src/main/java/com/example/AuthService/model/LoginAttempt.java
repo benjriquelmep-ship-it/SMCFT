@@ -3,7 +3,6 @@ package com.example.AuthService.model;
 // Registra cada intento de login en el sistema
 // Tiene una relación @ManyToOne con TokenBlacklist
 // Permite detectar ataques de fuerza bruta
-// Cumple con IE 2.2.3 — relaciones entre entidades
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginAttempt {
+
     // Clave primaria con auto incremento
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,8 +45,6 @@ public class LoginAttempt {
     // Los intentos fallidos nunca tendrán token asociado
     @ManyToOne
     @JoinColumn(name = "token_blacklist_id", nullable = true)
-    // @JsonBackReference es el lado inverso de @JsonManagedReference en TokenBlacklist
-    // Evita el ciclo infinito en la serialización JSON
     @com.fasterxml.jackson.annotation.JsonBackReference
     private TokenBlacklist tokenBlacklist;
 }
