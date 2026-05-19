@@ -35,3 +35,9 @@ replay_pid*
 # Ignorar archivos temporales del sistema
 .DS_Store
 Thumbs.db
+
+# --- CONTROL DE OBSERVABILIDAD Y LOGS (¡Clave!) ---
+# Ignorar la carpeta centralizada de logs para que no trabe los commits
+logs/
+**/logs/
+*.json

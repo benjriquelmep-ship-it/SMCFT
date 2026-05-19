@@ -6,6 +6,7 @@ import com.example.SanitaryService.model.Sanitary;
 import com.example.SanitaryService.model.SanitaryItem;
 import com.example.SanitaryService.repository.SanitaryItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SanitaryItemService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(SanitaryItemService.class);
 
     private final SanitaryItemRepository itemRepository;
     private final SanitaryService sanitaryService;

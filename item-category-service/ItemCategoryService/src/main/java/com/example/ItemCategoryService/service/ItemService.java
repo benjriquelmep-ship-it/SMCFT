@@ -8,6 +8,7 @@ import com.example.ItemCategoryService.model.Item;
 import com.example.ItemCategoryService.model.ItemCategory;
 import com.example.ItemCategoryService.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(ItemService.class);
 
     private final ItemRepository itemRepository;
 

@@ -7,6 +7,7 @@ import com.example.BorderCrossingService.dto.VehicleResponseDTO;
 import com.example.BorderCrossingService.model.BorderCrossing;
 import com.example.BorderCrossingService.repository.BorderCrossingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,11 +19,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BorderCrossingService {
 
+<<<<<<< HEAD
     // Para registrar mensajes en la consola de IntelliJ
     private static final Logger log =
             LoggerFactory.getLogger(BorderCrossingService.class);
+=======
+>>>>>>> 042337db361a22d3143d66d1ebbfca96e8954f65
 
     // Accede a la tabla border_crossings en la BD
     private final BorderCrossingRepository crossingRepository;

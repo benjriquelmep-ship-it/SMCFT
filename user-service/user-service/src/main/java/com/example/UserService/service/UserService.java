@@ -6,6 +6,7 @@ import com.example.UserService.dto.UserDTO;
 import com.example.UserService.model.User;
 import com.example.UserService.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor  // Lombok genera el constructor con los campos final (inyección de dependencias)
+@Slf4j
 public class UserService {
     // Logger SLF4J — obligatorio para la evaluación (IE 2.3.2)
     // getLogger asocia el logger a esta clase
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
 
     // Inyección por constructor — forma recomendada en Spring Boot moderno
     private final UserRepository userRepository;

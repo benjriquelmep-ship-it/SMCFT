@@ -6,6 +6,7 @@ import com.example.NotificationService.model.Notification;
 import com.example.NotificationService.model.NotificationRecipient;
 import com.example.NotificationService.repository.NotificationRecipientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,10 +15,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationRecipientService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(NotificationRecipientService.class);
 
     private final NotificationRecipientRepository recipientRepository;
     private final NotificationService notificationService;

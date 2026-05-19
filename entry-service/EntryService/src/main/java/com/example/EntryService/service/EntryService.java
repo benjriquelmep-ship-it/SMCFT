@@ -9,6 +9,7 @@ import com.example.EntryService.dto.VehicleResponseDTO;
 import com.example.EntryService.model.Entry;
 import com.example.EntryService.repository.EntryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EntryService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(EntryService.class);
 
     private final EntryRepository entryRepository;
 

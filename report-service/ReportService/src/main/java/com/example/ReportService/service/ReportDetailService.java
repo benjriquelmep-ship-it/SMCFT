@@ -6,6 +6,7 @@ import com.example.ReportService.model.Report;
 import com.example.ReportService.model.ReportDetail;
 import com.example.ReportService.repository.ReportDetailRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReportDetailService {
-
-    private static final Logger log =
-            LoggerFactory.getLogger(ReportDetailService.class);
 
     private final ReportDetailRepository detailRepository;
     private final ReportService reportService;

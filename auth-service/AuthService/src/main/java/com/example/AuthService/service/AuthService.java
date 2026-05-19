@@ -13,6 +13,7 @@ import com.example.AuthService.repository.LoginAttemptRepository;
 import com.example.AuthService.repository.TokenBlacklistRepository;
 import com.example.AuthService.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
-
-    // Para registrar mensajes en la consola de IntelliJ
-    private static final Logger log =
-            LoggerFactory.getLogger(AuthService.class);
 
     // Para generar y validar tokens JWT
     // Es el ÚNICO microservicio que genera tokens — los demás solo los verifican
