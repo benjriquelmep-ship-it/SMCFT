@@ -1,4 +1,5 @@
-// repository/BorderCrossingItemRepository.java
+// Accede a la tabla border_crossing_items en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 
 package com.example.BorderCrossingService.repository;
 
@@ -11,53 +12,36 @@ import java.util.List;
 public interface BorderCrossingItemRepository
         extends JpaRepository<BorderCrossingItem, Long> {
 
-    // IGUALDAD BÁSICA
-    // Todos los items de un cruce
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE border_crossing_id = ?
+    // Devuelve todos los items que pertenecen a un cruce específico
     List<BorderCrossingItem> findByBorderCrossingId(Long borderCrossingId);
 
-    // AND CON BOOLEANO
-    // Items aprobados de un cruce
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE border_crossing_id = ? AND aprobado = true
+    // Devuelve solo los items APROBADOS de un cruce específico
     List<BorderCrossingItem> findByBorderCrossingIdAndAprobadoTrue(
             Long borderCrossingId);
 
-    // Items no aprobados de un cruce
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE border_crossing_id = ? AND aprobado = false
+    // Devuelve solo los items NO APROBADOS de un cruce específico
     List<BorderCrossingItem> findByBorderCrossingIdAndAprobadoFalse(
             Long borderCrossingId);
 
-    // POR CATEGORÍA
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE categoria_id = ?
+    // Devuelve todos los items de una categoría específica
     List<BorderCrossingItem> findByCategoriaId(Long categoriaId);
 
-    // BOOLEANOS
-    // Spring genera: SELECT * FROM border_crossing_items WHERE aprobado = true
+    // Devuelve TODOS los items aprobados del sistema
     List<BorderCrossingItem> findByAprobadoTrue();
 
-    // Spring genera: SELECT * FROM border_crossing_items WHERE aprobado = false
+    // Devuelve TODOS los items no aprobados del sistema
     List<BorderCrossingItem> findByAprobadoFalse();
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por descripción del item
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE LOWER(descripcion) LIKE LOWER('%texto%')
+    // Busca items cuya descripción contenga el texto buscado
     List<BorderCrossingItem> findByDescripcionContainingIgnoreCase(
             String descripcion);
 
-    // ORDENAMIENTO
-    // Items de un cruce ordenados de mayor a menor valor en USD
-    // Spring genera: SELECT * FROM border_crossing_items
-    //                WHERE border_crossing_id = ? ORDER BY valor_usd DESC
+    // Devuelve los items de un cruce ordenados por valor en USD del más caro al más barato
+    // Útil para identificar los objetos más costosos de un cruce
     List<BorderCrossingItem> findByBorderCrossingIdOrderByValorUsdDesc(
             Long borderCrossingId);
 
-    // TOP
-    // Los últimos 10 items registrados en el sistema
-    // Spring genera: SELECT * FROM border_crossing_items ORDER BY id DESC LIMIT 10
+    // Devuelve los últimos 10 items registrados en el sistema
+    // Útil para monitorear en tiempo real los últimos objetos declarados
     List<BorderCrossingItem> findTop10ByOrderByIdDesc();
 }

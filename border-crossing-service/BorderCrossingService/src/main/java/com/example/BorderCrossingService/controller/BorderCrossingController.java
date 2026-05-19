@@ -1,5 +1,6 @@
-// controller/BorderCrossingController.java
-
+// Recibe las peticiones HTTP del Border Crossing Service
+// Llama al Service y retorna ResponseEntity con JSON
+// Nunca tiene lógica de negocio directamente
 package com.example.BorderCrossingService.controller;
 
 import com.example.BorderCrossingService.dto.BorderCrossingDTO;
@@ -14,34 +15,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-// @RestController indica que esta clase maneja peticiones HTTP y devuelve JSON
 @RestController
-// Todas las rutas empiezan con /api/v1/border-crossings
 @RequestMapping("/api/v1/border-crossings")
 @RequiredArgsConstructor
 public class BorderCrossingController {
 
+    // BorderCrossingService contiene toda la lógica de negocio
+    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final BorderCrossingService crossingService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // GET /api/v1/border-crossings
+    // GET /api/v1/border-crossings : Devuelve todos los cruces fronterizos del sistema
     @GetMapping
     public ResponseEntity<List<BorderCrossing>> obtenerTodos() {
         return ResponseEntity.ok(crossingService.obtenerTodos());
     }
 
-    // GET /api/v1/border-crossings/1
+    // GET /api/v1/border-crossings/1 : Devuelve un cruce específico por su id
     @GetMapping("/{id}")
     public ResponseEntity<BorderCrossing> obtenerPorId(
             @PathVariable Long id) {
         return ResponseEntity.ok(crossingService.obtenerPorId(id));
     }
 
-    // POST /api/v1/border-crossings
-    // @Valid activa las validaciones del BorderCrossingDTO
+    // POST /api/v1/border-crossings : Registra un nuevo cruce fronterizo
     @PostMapping
     public ResponseEntity<BorderCrossing> registrar(
             @Valid @RequestBody BorderCrossingDTO dto) {
@@ -49,8 +45,7 @@ public class BorderCrossingController {
                 .body(crossingService.registrar(dto));
     }
 
-    // PATCH /api/v1/border-crossings/1/autorizar
-    // El fiscalizador autoriza el cruce
+    // PATCH /api/v1/border-crossings/1/autorizar : El fiscalizador autoriza el cruce — cambia estado a AUTORIZADO
     @PatchMapping("/{id}/autorizar")
     public ResponseEntity<BorderCrossing> autorizar(
             @PathVariable Long id,
@@ -61,8 +56,8 @@ public class BorderCrossingController {
                         observaciones));
     }
 
-    // PATCH /api/v1/border-crossings/1/rechazar
-    // El fiscalizador rechaza el cruce
+    // PATCH /api/v1/border-crossings/1/rechazar : El fiscalizador rechaza el cruce — cambia estado a RECHAZADO
+    // Igual que autorizar pero con resultado negativo
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<BorderCrossing> rechazar(
             @PathVariable Long id,
@@ -73,18 +68,14 @@ public class BorderCrossingController {
                         observaciones));
     }
 
-    // DELETE /api/v1/border-crossings/1
+    // DELETE /api/v1/border-crossings/1 : Elimina un cruce por su id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         crossingService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
-
-    // GET /api/v1/border-crossings/patente/ABC123
+    // GET /api/v1/border-crossings/patente/ABC123 : Devuelve todos los cruces de un vehículo específico
     @GetMapping("/patente/{patente}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorPatente(
             @PathVariable String patente) {
@@ -92,7 +83,7 @@ public class BorderCrossingController {
                 crossingService.obtenerPorPatente(patente));
     }
 
-    // GET /api/v1/border-crossings/conductor/12345678-9
+    // GET /api/v1/border-crossings/conductor/12345678-9 : Devuelve todos los cruces realizados por un conductor específico
     @GetMapping("/conductor/{rut}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorConductor(
             @PathVariable String rut) {
@@ -100,7 +91,7 @@ public class BorderCrossingController {
                 crossingService.obtenerPorConductor(rut));
     }
 
-    // GET /api/v1/border-crossings/estado/PENDIENTE
+    // GET /api/v1/border-crossings/estado/PENDIENTE : Devuelve cruces por estado (PENDIENTE, AUTORIZADO, RECHAZADO)
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorEstado(
             @PathVariable String estado) {
@@ -108,7 +99,7 @@ public class BorderCrossingController {
                 crossingService.obtenerPorEstado(estado));
     }
 
-    // GET /api/v1/border-crossings/paso/Los Libertadores
+    // GET /api/v1/border-crossings/paso/Los Libertadores : Devuelve todos los cruces de un paso fronterizo específico
     @GetMapping("/paso/{pasoFronterizo}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorPaso(
             @PathVariable String pasoFronterizo) {
@@ -116,7 +107,7 @@ public class BorderCrossingController {
                 crossingService.obtenerPorPasoFronterizo(pasoFronterizo));
     }
 
-    // GET /api/v1/border-crossings/fiscalizador/12345678-9
+    // GET /api/v1/border-crossings/fiscalizador/12345678-9 : Devuelve todos los cruces que procesó un fiscalizador específico
     @GetMapping("/fiscalizador/{rut}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorFiscalizador(
             @PathVariable String rut) {
@@ -124,7 +115,8 @@ public class BorderCrossingController {
                 crossingService.obtenerPorFiscalizador(rut));
     }
 
-    // GET /api/v1/border-crossings/patente/ABC123/estado/AUTORIZADO
+    // GET /api/v1/border-crossings/patente/ABC123/estado/AUTORIZADO : Combina dos filtros: patente + estado
+    // Ej: todos los cruces AUTORIZADOS del vehículo ABC123
     @GetMapping("/patente/{patente}/estado/{estado}")
     public ResponseEntity<List<BorderCrossing>> obtenerPorPatenteYEstado(
             @PathVariable String patente,
@@ -133,7 +125,7 @@ public class BorderCrossingController {
                 crossingService.obtenerPorPatenteYEstado(patente, estado));
     }
 
-    // GET /api/v1/border-crossings/fechas?desde=...&hasta=...
+    // GET /api/v1/border-crossings/fechas?desde=...&hasta=... : Devuelve cruces registrados en un rango de fechas
     @GetMapping("/fechas")
     public ResponseEntity<List<BorderCrossing>> obtenerPorFechas(
             @RequestParam String desde,
@@ -145,7 +137,8 @@ public class BorderCrossingController {
                         fechaDesde, fechaHasta));
     }
 
-    // GET /api/v1/border-crossings/buscar?pais=argentina
+    // GET /api/v1/border-crossings/buscar?pais=argentina : Busca cruces cuyo país destino contenga el texto buscado
+    // No necesitas escribir el nombre exacto — busca si lo contiene
     @GetMapping("/buscar")
     public ResponseEntity<List<BorderCrossing>> buscarPorPais(
             @RequestParam String pais) {
@@ -153,7 +146,7 @@ public class BorderCrossingController {
                 crossingService.buscarPorPaisDestino(pais));
     }
 
-    // GET /api/v1/border-crossings/patente/ABC123/ordenados
+    // GET /api/v1/border-crossings/patente/ABC123/ordenados : Devuelve los cruces de un vehículo del más reciente al más antiguo
     @GetMapping("/patente/{patente}/ordenados")
     public ResponseEntity<List<BorderCrossing>> obtenerPorPatenteOrdenados(
             @PathVariable String patente) {
@@ -161,13 +154,13 @@ public class BorderCrossingController {
                 crossingService.obtenerPorPatenteOrdenados(patente));
     }
 
-    // GET /api/v1/border-crossings/ultimos
+    // GET /api/v1/border-crossings/ultimos : Devuelve los últimos 10 cruces registrados en el sistema
     @GetMapping("/ultimos")
     public ResponseEntity<List<BorderCrossing>> obtenerUltimosCruces() {
         return ResponseEntity.ok(crossingService.obtenerUltimosCruces());
     }
 
-    // GET /api/v1/border-crossings/estadisticas/estado/PENDIENTE
+    // GET /api/v1/border-crossings/estadisticas/estado/PENDIENTE : Cuenta cuántos cruces hay con ese estado
     @GetMapping("/estadisticas/estado/{estado}")
     public ResponseEntity<Map<String, Long>> contarPorEstado(
             @PathVariable String estado) {
@@ -175,7 +168,8 @@ public class BorderCrossingController {
         return ResponseEntity.ok(Map.of("total", total));
     }
 
-    // GET /api/v1/border-crossings/estadisticas/paso/Los Libertadores
+    // GET /api/v1/border-crossings/estadisticas/paso/Los Libertadores : Cuenta cuántos cruces se hicieron en un paso fronterizo específico
+    // Útil para saber qué paso tiene más actividad
     @GetMapping("/estadisticas/paso/{pasoFronterizo}")
     public ResponseEntity<Map<String, Long>> contarPorPaso(
             @PathVariable String pasoFronterizo) {

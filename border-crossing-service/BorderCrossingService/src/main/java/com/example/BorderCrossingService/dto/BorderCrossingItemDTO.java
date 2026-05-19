@@ -1,4 +1,3 @@
-// dto/BorderCrossingItemDTO.java
 // Lo que el cliente manda para agregar un item de equipaje al cruce
 
 package com.example.BorderCrossingService.dto;

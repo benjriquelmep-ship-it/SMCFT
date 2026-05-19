@@ -1,7 +1,5 @@
-// config/WebClientConfig.java
 // Configura los WebClients para comunicarse con otros microservicios
 // Border Crossing se comunica con Vehicle Service e Item Category Service
-
 package com.example.BorderCrossingService.config;
 
 import org.springframework.beans.factory.annotation.Value;

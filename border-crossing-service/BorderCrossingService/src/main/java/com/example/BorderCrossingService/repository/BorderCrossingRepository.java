@@ -1,6 +1,5 @@
-// repository/BorderCrossingRepository.java
-// Consultas derivadas del apunte integradas
-
+// Accede a la tabla border_crossings en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.BorderCrossingService.repository;
 
 import com.example.BorderCrossingService.model.BorderCrossing;
@@ -13,79 +12,51 @@ import java.util.List;
 public interface BorderCrossingRepository
         extends JpaRepository<BorderCrossing, Long> {
 
-    // IGUALDAD BÁSICA
-    // Todos los cruces de una patente
-    // Spring genera: SELECT * FROM border_crossings WHERE patente = ?
+    // Devuelve todos los cruces de un vehículo específico
     List<BorderCrossing> findByPatente(String patente);
 
-    // Todos los cruces de un conductor
-    // Spring genera: SELECT * FROM border_crossings WHERE rut_conductor = ?
+    // Devuelve todos los cruces realizados por un conductor específico
     List<BorderCrossing> findByRutConductor(String rutConductor);
 
-    // POR ESTADO
-    // Spring genera: SELECT * FROM border_crossings WHERE estado = ?
+    // Devuelve todos los cruces con un estado específico
     List<BorderCrossing> findByEstado(String estado);
 
-    // POR PASO FRONTERIZO
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE paso_fronterizo = ?
+    // Devuelve todos los cruces de un paso fronterizo específico
     List<BorderCrossing> findByPasoFronterizo(String pasoFronterizo);
 
-    // POR FISCALIZADOR
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE rut_fiscalizador = ?
+    // Devuelve todos los cruces que procesó un fiscalizador específico
     List<BorderCrossing> findByRutFiscalizador(String rutFiscalizador);
 
-    // AND
-    // Cruces de una patente con estado específico
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE patente = ? AND estado = ?
+    // Devuelve cruces de un vehículo con un estado específico
     List<BorderCrossing> findByPatenteAndEstado(
             String patente, String estado);
 
-    // Cruces de un conductor con estado específico
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE rut_conductor = ? AND estado = ?
+    // Devuelve cruces de un conductor con un estado específico
     List<BorderCrossing> findByRutConductorAndEstado(
             String rutConductor, String estado);
 
-    // BETWEEN
-    // Cruces en un rango de fechas — para reportes de flujo migratorio
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE fecha_cruce BETWEEN ? AND ?
+    // Devuelve cruces registrados en un rango de fechas
+    // Útil para reportes de flujo migratorio por período
     List<BorderCrossing> findByFechaCruceBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por país de destino
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE LOWER(pais_destino) LIKE LOWER('%texto%')
+    // Busca cruces cuyo país destino contenga el texto buscado
     List<BorderCrossing> findByPaisDestinoContainingIgnoreCase(String pais);
 
-    // ORDENAMIENTO
-    // Cruces de una patente del más reciente al más antiguo
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE patente = ? ORDER BY fecha_cruce DESC
+    // Devuelve cruces de un vehículo del más reciente al más antiguo
     List<BorderCrossing> findByPatenteOrderByFechaCruceDesc(String patente);
 
-    // Cruces pendientes ordenados por fecha más antigua primero
-    // Spring genera: SELECT * FROM border_crossings
-    //                WHERE estado = ? ORDER BY fecha_cruce ASC
+    // Devuelve cruces pendientes del más antiguo al más reciente
+    // Útil para procesar los cruces pendientes en orden de llegada
     List<BorderCrossing> findByEstadoOrderByFechaCruceAsc(String estado);
 
-    // TOP
-    // Los últimos 10 cruces registrados en el sistema
-    // Spring genera: SELECT * FROM border_crossings
-    //                ORDER BY fecha_cruce DESC LIMIT 10
+    // Devuelve los últimos 10 cruces registrados en el sistema
+    // Útil para monitorear en tiempo real la actividad fronteriza
     List<BorderCrossing> findTop10ByOrderByFechaCruceDesc();
 
-    // COUNT
-    // Contar cruces por estado — para estadísticas del sistema
-    // Spring genera: SELECT COUNT(*) FROM border_crossings WHERE estado = ?
+    // Cuenta cuántos cruces hay con un estado específico
     long countByEstado(String estado);
 
-    // Contar cruces por paso fronterizo
-    // Spring genera: SELECT COUNT(*) FROM border_crossings
-    //                WHERE paso_fronterizo = ?
+    // Cuenta cuántos cruces se hicieron en un paso fronterizo específico
     long countByPasoFronterizo(String pasoFronterizo);
 }

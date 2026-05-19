@@ -1,5 +1,6 @@
-// controller/BorderCrossingItemController.java
-
+// Recibe las peticiones HTTP para los items de cruces fronterizos
+// Llama al Service y retorna ResponseEntity con JSON
+// Nunca tiene lógica de negocio directamente
 package com.example.BorderCrossingService.controller;
 
 import com.example.BorderCrossingService.dto.BorderCrossingItemDTO;
@@ -13,31 +14,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-// Todas las rutas empiezan con /api/v1/border-crossings/items
 @RequestMapping("/api/v1/border-crossings/items")
 @RequiredArgsConstructor
 public class BorderCrossingItemController {
 
+    // BorderCrossingItemService contiene toda la lógica de negocio
+    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final BorderCrossingItemService itemService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // GET /api/v1/border-crossings/items
+    // GET /api/v1/border-crossings/items : Devuelve todos los items declarados en todos los cruces del sistema
     @GetMapping
     public ResponseEntity<List<BorderCrossingItem>> obtenerTodos() {
         return ResponseEntity.ok(itemService.obtenerTodos());
     }
 
-    // GET /api/v1/border-crossings/items/1
+    // GET /api/v1/border-crossings/items/1 : Devuelve un item específico por su id
     @GetMapping("/{id}")
     public ResponseEntity<BorderCrossingItem> obtenerPorId(
             @PathVariable Long id) {
         return ResponseEntity.ok(itemService.obtenerPorId(id));
     }
 
-    // POST /api/v1/border-crossings/items
+    // POST /api/v1/border-crossings/items : Agrega un nuevo item a un cruce existente
     @PostMapping
     public ResponseEntity<BorderCrossingItem> agregar(
             @Valid @RequestBody BorderCrossingItemDTO dto) {
@@ -45,32 +43,30 @@ public class BorderCrossingItemController {
                 .body(itemService.agregar(dto));
     }
 
-    // PATCH /api/v1/border-crossings/items/1/aprobar
+    // PATCH /api/v1/border-crossings/items/1/aprobar : Aprueba un item específico — cambia su estado a APROBADO
+    // Solo funciona si el item está PENDIENTE
     @PatchMapping("/{id}/aprobar")
     public ResponseEntity<BorderCrossingItem> aprobar(
             @PathVariable Long id) {
         return ResponseEntity.ok(itemService.aprobar(id));
     }
 
-    // PATCH /api/v1/border-crossings/items/1/rechazar
+    // PATCH /api/v1/border-crossings/items/1/rechazar : Rechaza un item específico — cambia su estado a RECHAZADO
+    // Solo funciona si el item está PENDIENTE
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<BorderCrossingItem> rechazar(
             @PathVariable Long id) {
         return ResponseEntity.ok(itemService.rechazar(id));
     }
 
-    // DELETE /api/v1/border-crossings/items/1
+    // DELETE /api/v1/border-crossings/items/1 : Elimina un item por su id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         itemService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
-
-    // GET /api/v1/border-crossings/items/cruce/1
+    // GET /api/v1/border-crossings/items/cruce/1 : Devuelve todos los items que pertenecen a un cruce específico
     @GetMapping("/cruce/{borderCrossingId}")
     public ResponseEntity<List<BorderCrossingItem>> obtenerPorCruce(
             @PathVariable Long borderCrossingId) {
@@ -78,7 +74,8 @@ public class BorderCrossingItemController {
                 itemService.obtenerPorCruce(borderCrossingId));
     }
 
-    // GET /api/v1/border-crossings/items/cruce/1/aprobados
+    // GET /api/v1/border-crossings/items/cruce/1/aprobados : Devuelve solo los items APROBADOS de un cruce específico
+    // Útil para ver qué objetos pasaron la revisión en ese cruce
     @GetMapping("/cruce/{borderCrossingId}/aprobados")
     public ResponseEntity<List<BorderCrossingItem>> obtenerAprobados(
             @PathVariable Long borderCrossingId) {
@@ -86,7 +83,9 @@ public class BorderCrossingItemController {
                 itemService.obtenerAprobadosPorCruce(borderCrossingId));
     }
 
-    // GET /api/v1/border-crossings/items/cruce/1/no-aprobados
+    // GET /api/v1/border-crossings/items/cruce/1/no-aprobados : Devuelve los items NO APROBADOS de un cruce específico
+    // Incluye items PENDIENTES y RECHAZADOS
+    // Útil para ver qué objetos tienen problemas en ese cruce
     @GetMapping("/cruce/{borderCrossingId}/no-aprobados")
     public ResponseEntity<List<BorderCrossingItem>> obtenerNoAprobados(
             @PathVariable Long borderCrossingId) {
@@ -94,7 +93,7 @@ public class BorderCrossingItemController {
                 itemService.obtenerNoAprobadosPorCruce(borderCrossingId));
     }
 
-    // GET /api/v1/border-crossings/items/categoria/1
+    // GET /api/v1/border-crossings/items/categoria/1 : Devuelve todos los items de una categoría específica
     @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<List<BorderCrossingItem>> obtenerPorCategoria(
             @PathVariable Long categoriaId) {
@@ -102,7 +101,8 @@ public class BorderCrossingItemController {
                 itemService.obtenerPorCategoria(categoriaId));
     }
 
-    // GET /api/v1/border-crossings/items/buscar?descripcion=laptop
+    // GET /api/v1/border-crossings/items/buscar?descripcion=laptop : Busca items cuya descripción contenga el texto buscado
+    // No necesitas escribir el nombre exacto — busca si lo contiene
     @GetMapping("/buscar")
     public ResponseEntity<List<BorderCrossingItem>> buscarPorDescripcion(
             @RequestParam String descripcion) {
@@ -110,7 +110,8 @@ public class BorderCrossingItemController {
                 itemService.buscarPorDescripcion(descripcion));
     }
 
-    // GET /api/v1/border-crossings/items/cruce/1/ordenados
+    // GET /api/v1/border-crossings/items/cruce/1/ordenados : Devuelve los items de un cruce ordenados por valor
+    // del más caro al más barato
     @GetMapping("/cruce/{borderCrossingId}/ordenados")
     public ResponseEntity<List<BorderCrossingItem>> obtenerOrdenados(
             @PathVariable Long borderCrossingId) {
@@ -119,7 +120,7 @@ public class BorderCrossingItemController {
                         borderCrossingId));
     }
 
-    // GET /api/v1/border-crossings/items/ultimos
+    // GET /api/v1/border-crossings/items/ultimos : Devuelve los últimos 10 items registrados en el sistema
     @GetMapping("/ultimos")
     public ResponseEntity<List<BorderCrossingItem>> obtenerUltimos() {
         return ResponseEntity.ok(itemService.obtenerUltimosItems());

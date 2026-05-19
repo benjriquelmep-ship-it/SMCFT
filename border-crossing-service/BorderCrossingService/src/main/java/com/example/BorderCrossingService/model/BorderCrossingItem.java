@@ -1,8 +1,5 @@
-// model/BorderCrossingItem.java
 // Representa cada item de equipaje declarado en un cruce
 // Tiene una relación @ManyToOne con BorderCrossing
-// Cumple con IE 2.2.3 — relaciones entre entidades
-
 package com.example.BorderCrossingService.model;
 
 import jakarta.persistence.*;

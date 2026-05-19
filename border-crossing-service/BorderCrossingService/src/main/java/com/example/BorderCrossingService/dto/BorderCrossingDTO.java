@@ -1,4 +1,3 @@
-// dto/BorderCrossingDTO.java
 // Lo que el cliente manda para registrar un nuevo cruce fronterizo
 
 package com.example.BorderCrossingService.dto;

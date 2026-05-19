@@ -1,4 +1,3 @@
-// model/BorderCrossing.java
 // Representa cada salida de vehículo del país
 // Tiene una relación @OneToMany con BorderCrossingItem
 
@@ -11,15 +10,10 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// @Entity le dice a JPA que esta clase representa una tabla en MySQL
 @Entity
-// @Table define el nombre exacto de la tabla
 @Table(name = "border_crossings")
-// Lombok genera getters, setters, toString, equals y hashCode
 @Data
-// JPA necesita constructor vacío para crear instancias al leer de la BD
 @NoArgsConstructor
-// Permite crear objetos con todos los valores en una línea
 @AllArgsConstructor
 public class BorderCrossing {
 
@@ -68,6 +62,7 @@ public class BorderCrossing {
     @OneToMany(mappedBy = "borderCrossing",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY)
+
     // @JsonManagedReference evita ciclo infinito en serialización JSON
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<BorderCrossingItem> items;
