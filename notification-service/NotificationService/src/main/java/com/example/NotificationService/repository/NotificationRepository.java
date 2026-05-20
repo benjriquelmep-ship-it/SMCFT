@@ -1,4 +1,5 @@
-// repository/NotificationRepository.java
+// Accede a la tabla notifications en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.NotificationService.repository;
 
 import com.example.NotificationService.model.Notification;
@@ -10,34 +11,32 @@ import java.util.List;
 public interface NotificationRepository
         extends JpaRepository<Notification, Long> {
 
-    // Spring genera: SELECT * FROM notifications WHERE tipo = ?
+    // Devuelve todas las notificaciones de un tipo específico
     List<Notification> findByTipo(String tipo);
 
-    // Spring genera: SELECT * FROM notifications WHERE estado = ?
+    // Devuelve todas las notificaciones con un estado específico
     List<Notification> findByEstado(String estado);
 
-    // Spring genera: SELECT * FROM notifications
-    //                WHERE deadline_alert_id = ?
+    // Devuelve notificaciones asociadas a una alerta de deadline específica
+    //     Útil para verificar si ya existe una notificación para esa alerta
     List<Notification> findByDeadlineAlertId(Long deadlineAlertId);
 
-    // Spring genera: SELECT * FROM notifications
-    //                WHERE tipo = ? AND estado = ?
+    // Devuelve notificaciones de un tipo con un estado específico
     List<Notification> findByTipoAndEstado(String tipo, String estado);
 
-    // Spring genera: SELECT * FROM notifications
-    //                WHERE estado = ? ORDER BY id DESC
+    // Devuelve notificaciones de un estado ordenadas del más reciente al más antiguo
     List<Notification> findByEstadoOrderByIdDesc(String estado);
 
-    // Spring genera: SELECT * FROM notifications
-    //                WHERE LOWER(titulo) LIKE LOWER('%texto%')
+    // Busca notificaciones cuyo título contenga el texto buscado
     List<Notification> findByTituloContainingIgnoreCase(String texto);
 
-    // Spring genera: SELECT * FROM notifications ORDER BY id DESC LIMIT 10
+    // Devuelve las últimas 10 notificaciones registradas en el sistema
+    // Útil para monitorear en tiempo real las últimas notificaciones generadas
     List<Notification> findTop10ByOrderByIdDesc();
 
-    // Spring genera: SELECT COUNT(*) FROM notifications WHERE estado = ?
+    // Cuenta cuántas notificaciones hay con un estado específico
     long countByEstado(String estado);
 
-    // Spring genera: SELECT COUNT(*) FROM notifications WHERE tipo = ?
+    // Cuenta cuántas notificaciones hay de un tipo específico
     long countByTipo(String tipo);
 }

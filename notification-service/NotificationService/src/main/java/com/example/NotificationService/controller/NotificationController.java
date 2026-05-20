@@ -1,4 +1,6 @@
-// controller/NotificationController.java
+// Recibe las peticiones HTTP del Notification Service
+// Llama al Service y retorna ResponseEntity con JSON
+// Nunca tiene lógica de negocio directamente
 package com.example.NotificationService.controller;
 
 import com.example.NotificationService.dto.NotificationDTO;
@@ -17,15 +19,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationController {
 
+    // NotificationService contiene toda la lógica de negocio
+    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final NotificationService notificationService;
 
     // GET /api/v1/notifications
+    // Devuelve todas las notificaciones del sistema
     @GetMapping
     public ResponseEntity<List<Notification>> obtenerTodas() {
         return ResponseEntity.ok(notificationService.obtenerTodas());
     }
 
     // GET /api/v1/notifications/1
+    // Devuelve una notificación específica por su id
+    // @PathVariable extrae el {id} de la URL
     @GetMapping("/{id}")
     public ResponseEntity<Notification> obtenerPorId(
             @PathVariable Long id) {
@@ -33,22 +40,31 @@ public class NotificationController {
     }
 
     // POST /api/v1/notifications
+    // Crea una notificación manual
     @PostMapping
     public ResponseEntity<Notification> crear(
             @Valid @RequestBody NotificationDTO dto) {
+        // HTTP 201 = se creó un nuevo recurso exitosamente
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(notificationService.crear(dto));
     }
 
     // POST /api/v1/notifications/generar-desde-alertas
+    // Genera notificaciones automáticamente desde las alertas pendientes
+    // del Deadline Service
+    // No necesita body — el Service consulta Deadline Service directamente
+    // y crea una notificación por cada alerta no enviada
     @PostMapping("/generar-desde-alertas")
     public ResponseEntity<List<Notification>> generarDesdeAlertas() {
+        // HTTP 201 = se crearon nuevos recursos exitosamente
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(notificationService
                         .generarDesdeAlertas());
     }
 
     // PATCH /api/v1/notifications/1/enviada
+    // Marca una notificación como enviada al destinatario
+    // Solo funciona si la notificación está PENDIENTE
     @PatchMapping("/{id}/enviada")
     public ResponseEntity<Notification> marcarComoEnviada(
             @PathVariable Long id) {
@@ -57,6 +73,8 @@ public class NotificationController {
     }
 
     // PATCH /api/v1/notifications/1/error
+    // Marca una notificación como ERROR — falló el envío
+    // Útil para registrar que hubo un problema al enviar
     @PatchMapping("/{id}/error")
     public ResponseEntity<Notification> marcarComoError(
             @PathVariable Long id) {
@@ -65,13 +83,17 @@ public class NotificationController {
     }
 
     // DELETE /api/v1/notifications/1
+    // Elimina una notificación por su id
+    // ResponseEntity<Void> = respuesta sin body → HTTP 204
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         notificationService.eliminar(id);
+        // HTTP 204 = operación exitosa sin contenido en la respuesta
         return ResponseEntity.noContent().build();
     }
 
     // GET /api/v1/notifications/tipo/ALERTA_DEADLINE
+    // Devuelve notificaciones por tipo
     @GetMapping("/tipo/{tipo}")
     public ResponseEntity<List<Notification>> obtenerPorTipo(
             @PathVariable String tipo) {
@@ -80,6 +102,7 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/estado/PENDIENTE
+    // Devuelve notificaciones por estado (PENDIENTE, ENVIADA, ERROR)
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<Notification>> obtenerPorEstado(
             @PathVariable String estado) {
@@ -88,6 +111,8 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/pendientes
+    // Devuelve todas las notificaciones que aún no fueron enviadas
+    // Atajo para /estado/PENDIENTE ordenadas del más reciente al más antiguo
     @GetMapping("/pendientes")
     public ResponseEntity<List<Notification>> obtenerPendientes() {
         return ResponseEntity.ok(
@@ -95,6 +120,8 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/enviadas
+    // Devuelve todas las notificaciones que ya fueron enviadas
+    // Historial de notificaciones procesadas
     @GetMapping("/enviadas")
     public ResponseEntity<List<Notification>> obtenerEnviadas() {
         return ResponseEntity.ok(
@@ -102,6 +129,8 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/buscar?titulo=alerta
+    // Busca notificaciones cuyo título contenga el texto buscado
+    // No necesitas escribir el título exacto — busca si lo contiene
     @GetMapping("/buscar")
     public ResponseEntity<List<Notification>> buscarPorTitulo(
             @RequestParam String titulo) {
@@ -110,6 +139,7 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/ultimas
+    // Devuelve las últimas 10 notificaciones registradas en el sistema
     @GetMapping("/ultimas")
     public ResponseEntity<List<Notification>> obtenerUltimas() {
         return ResponseEntity.ok(
@@ -117,6 +147,7 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/estadisticas/estado/PENDIENTE
+    // Cuenta cuántas notificaciones hay con ese estado
     @GetMapping("/estadisticas/estado/{estado}")
     public ResponseEntity<Map<String, Long>> contarPorEstado(
             @PathVariable String estado) {
@@ -125,6 +156,7 @@ public class NotificationController {
     }
 
     // GET /api/v1/notifications/estadisticas/tipo/ALERTA_URGENTE
+    // Cuenta cuántas notificaciones hay de ese tipo
     @GetMapping("/estadisticas/tipo/{tipo}")
     public ResponseEntity<Map<String, Long>> contarPorTipo(
             @PathVariable String tipo) {

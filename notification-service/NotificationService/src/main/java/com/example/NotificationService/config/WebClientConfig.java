@@ -1,4 +1,3 @@
-// config/WebClientConfig.java
 package com.example.NotificationService.config;
 
 import org.springframework.beans.factory.annotation.Value;

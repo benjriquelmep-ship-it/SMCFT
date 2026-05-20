@@ -1,4 +1,3 @@
-// model/Notification.java
 package com.example.NotificationService.model;
 
 import jakarta.persistence.*;
