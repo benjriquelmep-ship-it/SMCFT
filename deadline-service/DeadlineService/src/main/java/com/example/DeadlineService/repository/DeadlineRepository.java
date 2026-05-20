@@ -1,4 +1,5 @@
-// repository/DeadlineRepository.java
+// Accede a la tabla deadlines en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.DeadlineService.repository;
 
 import com.example.DeadlineService.model.Deadline;
@@ -11,54 +12,50 @@ import java.util.List;
 public interface DeadlineRepository
         extends JpaRepository<Deadline, Long> {
 
-    // Spring genera: SELECT * FROM deadlines WHERE patente = ?
+    // Devuelve todos los deadlines de un vehículo específico
     List<Deadline> findByPatente(String patente);
 
-    // Spring genera: SELECT * FROM deadlines WHERE rut_conductor = ?
+    // Devuelve todos los deadlines de un conductor específico
     List<Deadline> findByRutConductor(String rutConductor);
 
-    // Spring genera: SELECT * FROM deadlines WHERE estado = ?
+    // Devuelve deadlines por estado (ACTIVO, VENCIDO, CERRADO)
     List<Deadline> findByEstado(String estado);
 
-    // Spring genera: SELECT * FROM deadlines WHERE tipo = ?
+    // Devuelve deadlines por tipo de ingresos
     List<Deadline> findByTipo(String tipo);
 
-    // Spring genera: SELECT * FROM deadlines WHERE entry_id = ?
+    // Devuelve deadlines asociados a un ingreso específico de Entry Service
     List<Deadline> findByEntryId(Long entryId);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE patente = ? AND estado = ?
+    // Devuelve deadlines de un vehículo con un estado específico
     List<Deadline> findByPatenteAndEstado(String patente, String estado);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE rut_conductor = ? AND estado = ?
+    // Devuelve deadlines de un conductor con un estado específico
     List<Deadline> findByRutConductorAndEstado(
             String rutConductor, String estado);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE fecha_limite BETWEEN ? AND ?
+    // Devuelve deadlines cuya fecha límite está en un rango
     List<Deadline> findByFechaLimiteBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // Spring genera: SELECT * FROM deadlines WHERE fecha_limite < ?
+    // Devuelve deadlines cuya fecha límite ya pasó
     List<Deadline> findByFechaLimiteBefore(LocalDateTime fecha);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE fecha_limite < ? AND estado = ?
+    // Devuelve deadlines vencidos con un estado específico
+    // Útil para encontrar deadlines que vencieron pero siguen ACTIVOS y deben ser marcados como VENCIDOS
     List<Deadline> findByFechaLimiteBeforeAndEstado(
             LocalDateTime fecha, String estado);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE patente = ? ORDER BY fecha_limite ASC
+    // Devuelve deadlines de un vehículo ordenados del que vence antes
+    // Útil para ver cuándo vence próximamente el vehículo DEF456
     List<Deadline> findByPatenteOrderByFechaLimiteAsc(String patente);
 
-    // Spring genera: SELECT * FROM deadlines
-    //                WHERE estado = ? ORDER BY fecha_limite ASC
+    // Devuelve deadlines de un estado ordenados del que vence antes
     List<Deadline> findByEstadoOrderByFechaLimiteAsc(String estado);
 
-    // Spring genera: SELECT * FROM deadlines ORDER BY id DESC LIMIT 10
+    // Devuelve los últimos 10 deadlines registrados en el sistema
     List<Deadline> findTop10ByOrderByIdDesc();
 
-    // Spring genera: SELECT COUNT(*) FROM deadlines WHERE estado = ?
+    // Cuenta cuántos deadlines hay con un estado específico
     long countByEstado(String estado);
 }

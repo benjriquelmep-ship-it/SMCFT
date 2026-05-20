@@ -1,4 +1,3 @@
-// model/Deadline.java
 package com.example.DeadlineService.model;
 
 import jakarta.persistence.*;

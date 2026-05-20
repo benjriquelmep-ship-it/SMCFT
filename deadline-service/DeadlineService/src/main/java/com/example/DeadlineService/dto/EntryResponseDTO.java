@@ -1,4 +1,3 @@
-// dto/EntryResponseDTO.java
 package com.example.DeadlineService.dto;
 
 import lombok.Data;

@@ -1,4 +1,6 @@
-// security/JwtUtil.java
+// Utilidad JWT del Deadline Service
+// Solo VERIFICA y LEE tokens — NO los genera
+// Los tokens solo los genera el Auth Service cuando el usuario hace login
 package com.example.DeadlineService.security;
 
 import io.jsonwebtoken.Claims;
@@ -14,43 +16,74 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
+    // Para registrar mensajes en la consola de IntelliJ
     private static final Logger log =
             LoggerFactory.getLogger(JwtUtil.class);
 
+    // Lee la clave secreta desde application.properties
     @Value("${jwt.secret}")
     private String secret;
 
+    // Crea la llave de seguridad a partir del texto secret
+    // Se usa para verificar que el token no fue manipulado
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
+    // Extrae el email del usuario desde el token
     public String obtenerEmail(String token) {
         return obtenerClaims(token).getSubject();
     }
 
+    // Extrae el rol del usuario desde el token
     public String obtenerRol(String token) {
         return obtenerClaims(token).get("rol", String.class);
     }
 
+    // Verifica si el token es válido
+    // Devuelve true si el token es válido
+    // Devuelve false si el token expiró o fue manipulado
     public boolean esValido(String token) {
         try {
+
+            // Intenta leer el contenido del token
+            // Si el token fue manipulado → lanza excepción → va al catch
             Claims claims = obtenerClaims(token);
+
+            // Verifica que el token no haya expirado
             boolean noExpirado = claims.getExpiration().after(new Date());
+
+            // Registra en la consola que el token fue validado
             log.info("Token validado en Deadline Service para: {}",
                     claims.getSubject());
+
+            // Retorna true si no expiró, false si expiró
             return noExpirado;
+
         } catch (Exception e) {
+            // Si llega aquí es porque el token: fue manipulado o falsificado
             log.warn("Token inválido en Deadline Service: {}",
                     e.getMessage());
             return false;
         }
     }
 
+    // Método privado que lee y decodifica el contenido del token
+    // Es privado porque solo lo usan los otros métodos de esta clase
+    // Si el token fue modificado → lanza excepción automáticamente
     private Claims obtenerClaims(String token) {
         return Jwts.parserBuilder()
+                // Le indica la llave para verificar la firma del token
+                // Si la firma no coincide → lanza excepción
                 .setSigningKey(getSigningKey())
                 .build()
+
+                // Parsea el token y verifica su firma al mismo tiempo
+                // Si el token fue modificado → lanza excepción aquí
                 .parseClaimsJws(token)
+
+                // Extrae el body del token que contiene
+                // email, rol, fecha de expiración, etc.
                 .getBody();
     }
 }
