@@ -1,5 +1,5 @@
-// repository/ItemRepository.java
-
+// Accede a la tabla items en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.ItemCategoryService.repository;
 
 import com.example.ItemCategoryService.model.Item;
@@ -10,38 +10,30 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    // Todos los items de una categoría
-    // Spring genera: SELECT * FROM items WHERE categoria_id = ?
+    // Devuelve todos los items de una categoría específica
+    // Incluye activos e inactivos
     List<Item> findByCategoryId(Long categoryId);
 
-    // Items activos de una categoría
-    // Spring genera: SELECT * FROM items
-    //                WHERE categoria_id = ? AND activo = true
+    // Devuelve solo los items ACTIVOS de una categoría específica
     List<Item> findByCategoryIdAndActivoTrue(Long categoryId);
 
-    // BOOLEANOS
-    // Spring genera: SELECT * FROM items WHERE activo = true
+    // Devuelve TODOS los items activos del sistema
     List<Item> findByActivoTrue();
+
+    // Devuelve TODOS los items inactivos del sistema
     List<Item> findByActivoFalse();
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por nombre
-    // Spring genera: SELECT * FROM items
-    //                WHERE LOWER(nombre) LIKE LOWER('%texto%')
+    // Busca items cuyo nombre contenga el texto buscado
     List<Item> findByNombreContainingIgnoreCase(String texto);
 
-    // IGUALDAD CON UNIDAD
-    // Spring genera: SELECT * FROM items WHERE unidad = ?
+    // Devuelve todos los items que se miden en una unidad específica
     List<Item> findByUnidad(String unidad);
 
-    // ORDENAMIENTO
-    // Items de una categoría ordenados por nombre
-    // Spring genera: SELECT * FROM items
-    //                WHERE categoria_id = ? ORDER BY nombre ASC
+    // Devuelve los items de una categoría ordenados alfabéticamente
+    // Útil para mostrar una lista ordenada en el frontend
     List<Item> findByCategoryIdOrderByNombreAsc(Long categoryId);
 
-    // TOP
-    // Los últimos 10 items registrados
-    // Spring genera: SELECT * FROM items ORDER BY id DESC LIMIT 10
+    // Devuelve los últimos 10 items registrados en el sistema
+    // Útil para monitorear los últimos items creados en el sistema
     List<Item> findTop10ByOrderByIdDesc();
 }

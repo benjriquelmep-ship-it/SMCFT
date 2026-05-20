@@ -1,4 +1,3 @@
-// model/ItemCategory.java
 // Representa las categorías de equipaje del sistema fronterizo
 // Tiene una relación @OneToMany con Item
 // Border Crossing Service consulta este microservicio para validar
@@ -12,15 +11,10 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
-// @Entity le dice a JPA que esta clase representa una tabla en MySQL
 @Entity
-// @Table define el nombre exacto de la tabla
 @Table(name = "item_categories")
-// Lombok genera getters, setters, toString, equals y hashCode
 @Data
-// JPA necesita constructor vacío para crear instancias al leer de la BD
 @NoArgsConstructor
-// Permite crear objetos con todos los valores en una línea
 @AllArgsConstructor
 public class ItemCategory {
 
@@ -52,13 +46,9 @@ public class ItemCategory {
     private Boolean activo = true;
 
     // RELACIÓN @OneToMany — una categoría tiene muchos items específicos
-    // mappedBy = "category" → Item es el dueño de la relación
-    // cascade = ALL → guardar/eliminar categoría afecta sus items
-    // fetch = LAZY → los items se cargan solo cuando se necesitan
     @OneToMany(mappedBy = "category",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY)
-    // @JsonManagedReference evita ciclo infinito en serialización JSON
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<Item> items;
 }

@@ -1,3 +1,7 @@
+// Configura la seguridad del Item Category Service
+// Define qué rutas necesitan token y cuáles son públicas
+// GET es público para que Border Crossing Service
+// pueda consultar categorías sin token
 package com.example.ItemCategoryService.security;
 
 import lombok.RequiredArgsConstructor;
@@ -15,36 +19,69 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // Filtro que verifica el token en cada petición
+    // Se inyecta automáticamente por @RequiredArgsConstructor
     private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
             throws Exception {
         http
+                // Desactiva CSRF porque usamos tokens JWT
+                // Con JWT no necesitamos esta protección adicional
                 .csrf(csrf -> csrf.disable())
+
+                // Sin sesión en el servidor — cada petición trae su token
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // RUTAS PÚBLICAS
-                        // Border Crossing Service llama GET /api/v1/item-categories/{id}
-                        // sin token para validar categorías de equipaje
+                        // GET de categorías es público
+                        // Border Crossing Service llama a:
+                        // GET /api/v1/item-categories/1
+                        // para verificar que la categoría existe y está activa
+                        // antes de agregar un item a un cruce
+                        // Sin esta ruta pública Border Crossing Service
+                        // no podría validar categorías
+                        // El ** significa cualquier ruta después
+                        // Ej: /api/v1/item-categories   → público
+                        //     /api/v1/item-categories/1 → público
+                        //     /api/v1/item-categories/activas → público
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/item-categories/**").permitAll()
 
                         // GET de items también es público
-                        // para consultas de los demás microservicios
+                        // Otros microservicios pueden consultar items
+                        // disponibles sin necesitar token
+                        // Ej: /api/v1/items           → público
+                        //     /api/v1/items/1         → público
+                        //     /api/v1/items/activos   → público
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/items/**").permitAll()
 
-                        // RUTAS PROTEGIDAS — requieren token válido
-                        // POST, PUT, PATCH, DELETE requieren token
+                        // Cualquier otra petición que no sea GET
+                        // requiere que el usuario esté autenticado
+                        // Ej: POST /api/v1/item-categories → crear categoría
+                        //     PUT  /api/v1/item-categories/1 → actualizar
+                        //     PATCH /api/v1/item-categories/1/desactivar
+                        //     DELETE /api/v1/item-categories/1 → eliminar
+                        //     POST /api/v1/items → crear item
+                        //     PUT  /api/v1/items/1 → actualizar item
+                        //     PATCH /api/v1/items/1/desactivar
+                        //     DELETE /api/v1/items/1 → eliminar item
                         .anyRequest().authenticated()
                 )
+
+                // JwtFilter se ejecuta ANTES del filtro por defecto de Spring
+                // El orden es:
+                // 1. JwtFilter verifica el token
+                // 2. UsernamePasswordAuthenticationFilter (filtro de Spring)
                 .addFilterBefore(jwtFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
+        // Construye y retorna la configuración de seguridad
         return http.build();
     }
 }

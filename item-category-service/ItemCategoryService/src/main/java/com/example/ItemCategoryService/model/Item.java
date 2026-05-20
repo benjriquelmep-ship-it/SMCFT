@@ -1,7 +1,5 @@
-// model/Item.java
 // Representa cada item específico dentro de una categoría
 // Tiene una relación @ManyToOne con ItemCategory
-// Cumple con IE 2.2.3 — relaciones entre entidades
 
 package com.example.ItemCategoryService.model;
 
@@ -39,7 +37,6 @@ public class Item {
     private String descripcion;
 
     // Unidad de medida
-    // "unidad", "kg", "litro", "par", etc.
     @Column(nullable = false, length = 30)
     private String unidad;
 

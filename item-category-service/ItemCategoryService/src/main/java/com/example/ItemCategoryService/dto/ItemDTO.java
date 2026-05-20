@@ -1,4 +1,3 @@
-// dto/ItemDTO.java
 // Lo que el cliente manda para crear o actualizar un item
 
 package com.example.ItemCategoryService.dto;
