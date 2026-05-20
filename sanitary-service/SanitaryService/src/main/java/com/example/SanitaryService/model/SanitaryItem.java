@@ -1,6 +1,5 @@
 // Representa cada item revisado en una inspección sanitaria
 // Tiene una relación @ManyToOne con Sanitary
-// Cumple con IE 2.2.3 — relaciones entre entidades
 
 package com.example.SanitaryService.model;
 

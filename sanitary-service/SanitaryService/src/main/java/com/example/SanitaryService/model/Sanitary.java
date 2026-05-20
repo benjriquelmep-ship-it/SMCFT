@@ -51,9 +51,6 @@ public class Sanitary {
     private String observaciones;
 
     // RELACIÓN @OneToMany — una inspección tiene muchos items
-    // mappedBy = "sanitary" → SanitaryItem es el dueño
-    // cascade = ALL → guardar/eliminar inspección afecta sus items
-    // fetch = LAZY → los items se cargan solo cuando se necesitan
     @OneToMany(mappedBy = "sanitary",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY)

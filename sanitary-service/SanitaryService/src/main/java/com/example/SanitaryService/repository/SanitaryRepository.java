@@ -1,3 +1,5 @@
+// Accede a la tabla sanitary_inspections en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.SanitaryService.repository;
 
 import com.example.SanitaryService.model.Sanitary;
@@ -10,77 +12,52 @@ import java.util.List;
 public interface SanitaryRepository
         extends JpaRepository<Sanitary, Long> {
 
-    // IGUALDAD BÁSICA
-    // Spring genera: SELECT * FROM sanitary_inspections WHERE patente = ?
+    // Devuelve todas las inspecciones de un vehículo específico
     List<Sanitary> findByPatente(String patente);
 
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE rut_conductor = ?
+    // Devuelve todas las inspecciones de un conductor específico
     List<Sanitary> findByRutConductor(String rutConductor);
 
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE rut_inspector = ?
+    // Devuelve todas las inspecciones realizadas por un inspector específico
     List<Sanitary> findByRutInspector(String rutInspector);
 
-    // POR RESULTADO
-    // Spring genera: SELECT * FROM sanitary_inspections WHERE resultado = ?
+    // Devuelve inspecciones con un resultado específico
     List<Sanitary> findByResultado(String resultado);
 
-    // POR PASO FRONTERIZO
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE paso_fronterizo = ?
+    // Devuelve todas las inspecciones de un paso fronterizo específico
     List<Sanitary> findByPasoFronterizo(String pasoFronterizo);
 
-    // AND
-    // Inspecciones de una patente con resultado específico
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE patente = ? AND resultado = ?
+    // Devuelve inspecciones de un vehículo con un resultado específico
     List<Sanitary> findByPatenteAndResultado(
             String patente, String resultado);
 
-    // Inspecciones de un inspector con resultado específico
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE rut_inspector = ? AND resultado = ?
+    // Devuelve inspecciones de un inspector con un resultado específico
     List<Sanitary> findByRutInspectorAndResultado(
             String rutInspector, String resultado);
 
-    // BETWEEN
-    // Inspecciones en un rango de fechas
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE fecha_inspeccion BETWEEN ? AND ?
+    // Devuelve inspecciones registradas en un rango de fechas
     List<Sanitary> findByFechaInspeccionBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por paso fronterizo
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE LOWER(paso_fronterizo) LIKE LOWER('%texto%')
+    // Busca inspecciones cuyo paso fronterizo contenga el texto buscado
     List<Sanitary> findByPasoFronterizoContainingIgnoreCase(String paso);
 
-    // ORDENAMIENTO
-    // Inspecciones de una patente del más reciente al más antiguo
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE patente = ? ORDER BY fecha_inspeccion DESC
+    // Devuelve inspecciones de un vehículo del más reciente al más antiguo
+    // Útil para ver el historial de inspecciones de un vehículo
     List<Sanitary> findByPatenteOrderByFechaInspeccionDesc(String patente);
 
-    // Inspecciones pendientes ordenadas por fecha
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                WHERE resultado = ? ORDER BY fecha_inspeccion ASC
+    // Devuelve inspecciones con un resultado ordenadas por fecha
+    // Útil para procesar inspecciones PENDIENTES en orden de llegada
     List<Sanitary> findByResultadoOrderByFechaInspeccionAsc(
             String resultado);
 
-    // TOP
-    // Las últimas 10 inspecciones
-    // Spring genera: SELECT * FROM sanitary_inspections
-    //                ORDER BY id DESC LIMIT 10
+    // Devuelve las últimas 10 inspecciones registradas en el sistema
+    // Útil para monitorear en tiempo real la actividad del servicio sanitario
     List<Sanitary> findTop10ByOrderByIdDesc();
 
-    // COUNT
-    // Contar inspecciones por resultado
-    // Spring genera: SELECT COUNT(*) FROM sanitary_inspections
-    //                WHERE resultado = ?
+    // Cuenta cuántas inspecciones hay con un resultado específico
     long countByResultado(String resultado);
 
-    // Contar por paso fronterizo
+    // Cuenta cuántas inspecciones se hicieron en un paso fronterizo específico
     long countByPasoFronterizo(String pasoFronterizo);
 }

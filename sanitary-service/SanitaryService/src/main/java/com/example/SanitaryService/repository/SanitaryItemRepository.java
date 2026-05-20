@@ -1,3 +1,5 @@
+// Accede a la tabla sanitary_items en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.SanitaryService.repository;
 
 import com.example.SanitaryService.model.SanitaryItem;
@@ -9,43 +11,31 @@ import java.util.List;
 public interface SanitaryItemRepository
         extends JpaRepository<SanitaryItem, Long> {
 
-    // Todos los items de una inspección
-    // Spring genera: SELECT * FROM sanitary_items WHERE inspection_id = ?
+    // Devuelve todos los items que pertenecen a una inspección específica
     List<SanitaryItem> findBySanitaryId(Long sanitaryId);
 
-    // Items aprobados de una inspección
-    // Spring genera: SELECT * FROM sanitary_items
-    //                WHERE inspection_id = ? AND resultado_item = 'APROBADO'
+    // Devuelve items de una inspección con un resultado específico
     List<SanitaryItem> findBySanitaryIdAndResultadoItem(
             Long sanitaryId, String resultadoItem);
 
-    // POR RESULTADO
-    // Spring genera: SELECT * FROM sanitary_items WHERE resultado_item = ?
+    // Devuelve todos los items del sistema con un resultado específico
     List<SanitaryItem> findByResultadoItem(String resultadoItem);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por descripción
-    // Spring genera: SELECT * FROM sanitary_items
-    //                WHERE LOWER(descripcion) LIKE LOWER('%texto%')
+    // Busca items cuya descripción contenga el texto buscado
     List<SanitaryItem> findByDescripcionContainingIgnoreCase(
             String descripcion);
 
-    // ORDENAMIENTO
-    // Items de una inspección ordenados por descripción
-    // Spring genera: SELECT * FROM sanitary_items
-    //                WHERE inspection_id = ? ORDER BY descripcion ASC
+
+    // Devuelve los items de una inspección ordenados alfabéticamente
+    // Útil para mostrar los items en orden en el frontend
     List<SanitaryItem> findBySanitaryIdOrderByDescripcionAsc(
             Long sanitaryId);
 
-    // TOP
-    // Los últimos 10 items registrados
-    // Spring genera: SELECT * FROM sanitary_items ORDER BY id DESC LIMIT 10
+    // Devuelve los últimos 10 items registrados en el sistema
+    // Útil para monitorear en tiempo real los últimos objetos inspeccionados
     List<SanitaryItem> findTop10ByOrderByIdDesc();
 
-    // COUNT
-    // Contar items rechazados de una inspección
-    // Spring genera: SELECT COUNT(*) FROM sanitary_items
-    //                WHERE inspection_id = ? AND resultado_item = ?
+    // Cuenta cuántos items de una inspección tienen un resultado específico
     long countBySanitaryIdAndResultadoItem(
             Long sanitaryId, String resultadoItem);
 }
