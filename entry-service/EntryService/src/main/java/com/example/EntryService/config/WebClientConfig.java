@@ -1,7 +1,5 @@
-// config/WebClientConfig.java
 // Configura el WebClient para comunicarse con Vehicle Service
 // Entry Service actualiza el estado del vehículo al registrar un ingreso
-
 package com.example.EntryService.config;
 
 import org.springframework.beans.factory.annotation.Value;

@@ -1,5 +1,5 @@
-// repository/EntryItemRepository.java
-
+// Accede a la tabla entry_items en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.EntryService.repository;
 
 import com.example.EntryService.model.EntryItem;
@@ -11,40 +11,30 @@ import java.util.List;
 public interface EntryItemRepository
         extends JpaRepository<EntryItem, Long> {
 
-    // Todos los items de un ingreso
-    // Spring genera: SELECT * FROM entry_items WHERE entry_id = ?
+    // Devuelve todos los items que pertenecen a un ingreso específico
     List<EntryItem> findByEntryId(Long entryId);
 
-    // Items aprobados de un ingreso
-    // Spring genera: SELECT * FROM entry_items
-    //                WHERE entry_id = ? AND aprobado = true
+    // Devuelve solo los items APROBADOS de un ingreso específico
     List<EntryItem> findByEntryIdAndAprobadoTrue(Long entryId);
 
-    // Items no aprobados de un ingreso
-    // Spring genera: SELECT * FROM entry_items
-    //                WHERE entry_id = ? AND aprobado = false
+    // Devuelve solo los items NO APROBADOS de un ingreso específico
     List<EntryItem> findByEntryIdAndAprobadoFalse(Long entryId);
 
-    // BOOLEANOS
-    // Spring genera: SELECT * FROM entry_items WHERE aprobado = true
+    // Devuelve TODOS los items aprobados del sistema
     List<EntryItem> findByAprobadoTrue();
-    List<EntryItem> findByAprobadoFalse();
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por descripción
-    // Spring genera: SELECT * FROM entry_items
-    //                WHERE LOWER(descripcion) LIKE LOWER('%texto%')
+    // Devuelve TODOS los items no aprobados del sistema
+    List<EntryItem> findByAprobadoFalse();-
+
+    // Busca items cuya descripción contenga el texto buscado
     List<EntryItem> findByDescripcionContainingIgnoreCase(
             String descripcion);
 
-    // ORDENAMIENTO
-    // Items de un ingreso ordenados de mayor a menor valor
-    // Spring genera: SELECT * FROM entry_items
-    //                WHERE entry_id = ? ORDER BY valor_usd DESC
+    // Devuelve los items de un ingreso ordenados por valor en USD del más caro al más barato
+    // Útil para identificar los objetos más costosos de un ingreso
     List<EntryItem> findByEntryIdOrderByValorUsdDesc(Long entryId);
 
-    // TOP
-    // Los últimos 10 items registrados
-    // Spring genera: SELECT * FROM entry_items ORDER BY id DESC LIMIT 10
+    // Devuelve los últimos 10 items registrados en el sistema
+    // Útil para monitorear en tiempo real los últimos objetos declarados
     List<EntryItem> findTop10ByOrderByIdDesc();
 }

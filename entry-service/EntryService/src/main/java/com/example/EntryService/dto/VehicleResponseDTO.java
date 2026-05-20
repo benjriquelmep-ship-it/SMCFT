@@ -1,4 +1,3 @@
-// dto/VehicleResponseDTO.java
 // Representa la respuesta que llega desde Vehicle Service
 // cuando Entry Service verifica el estado del vehículo
 

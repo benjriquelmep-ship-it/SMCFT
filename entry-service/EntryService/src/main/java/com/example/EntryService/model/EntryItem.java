@@ -1,7 +1,5 @@
-// model/EntryItem.java
 // Representa cada item declarado en un ingreso al país
 // Tiene una relación @ManyToOne con Entry
-// Cumple con IE 2.2.3 — relaciones entre entidades
 
 package com.example.EntryService.model;
 

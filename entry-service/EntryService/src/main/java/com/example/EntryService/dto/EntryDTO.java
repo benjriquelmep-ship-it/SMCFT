@@ -1,4 +1,3 @@
-// dto/EntryDTO.java
 // Lo que el cliente manda para registrar un ingreso al país
 
 package com.example.EntryService.dto;

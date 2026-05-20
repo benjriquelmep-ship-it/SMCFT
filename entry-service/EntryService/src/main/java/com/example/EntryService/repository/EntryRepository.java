@@ -1,6 +1,5 @@
-// repository/EntryRepository.java
-// Consultas derivadas del apunte integradas
-
+// Accede a la tabla entries en la base de datos
+// Spring genera el SQL automáticamente leyendo el nombre de cada método
 package com.example.EntryService.repository;
 
 import com.example.EntryService.model.Entry;
@@ -12,78 +11,53 @@ import java.util.List;
 @Repository
 public interface EntryRepository extends JpaRepository<Entry, Long> {
 
-    // IGUALDAD BÁSICA
-    // Todos los ingresos de una patente
-    // Spring genera: SELECT * FROM entries WHERE patente = ?
+    // Devuelve todos los ingresos de un vehículo específico
     List<Entry> findByPatente(String patente);
 
-    // Todos los ingresos de un conductor
-    // Spring genera: SELECT * FROM entries WHERE rut_conductor = ?
+    // Devuelve todos los ingresos realizados por un conductor específico
     List<Entry> findByRutConductor(String rutConductor);
 
-    // POR ESTADO
-    // Spring genera: SELECT * FROM entries WHERE estado = ?
+    // Devuelve todos los ingresos con un estado específico
     List<Entry> findByEstado(String estado);
 
-    // POR TIPO DE INGRESO
-    // Spring genera: SELECT * FROM entries WHERE tipo_ingreso = ?
+    // Devuelve todos los ingresos de un tipo específico
     List<Entry> findByTipoIngreso(String tipoIngreso);
 
-    // POR PASO FRONTERIZO
-    // Spring genera: SELECT * FROM entries WHERE paso_fronterizo = ?
+    // Devuelve todos los ingresos de un paso fronterizo específico
     List<Entry> findByPasoFronterizo(String pasoFronterizo);
 
-    // POR FISCALIZADOR
-    // Spring genera: SELECT * FROM entries WHERE rut_fiscalizador = ?
+    // Devuelve todos los ingresos que procesó un fiscalizador específico
     List<Entry> findByRutFiscalizador(String rutFiscalizador);
 
-    // AND
-    // Ingresos de una patente con estado específico
-    // Spring genera: SELECT * FROM entries WHERE patente = ? AND estado = ?
+    // Devuelve ingresos de un vehículo con un estado específico
     List<Entry> findByPatenteAndEstado(String patente, String estado);
 
-    // Ingresos de un conductor con tipo específico
-    // Spring genera: SELECT * FROM entries
-    //                WHERE rut_conductor = ? AND tipo_ingreso = ?
+    // Devuelve ingresos de un conductor con un tipo específico
     List<Entry> findByRutConductorAndTipoIngreso(
             String rutConductor, String tipoIngreso);
 
-    // BETWEEN
-    // Ingresos en un rango de fechas
-    // Spring genera: SELECT * FROM entries
-    //                WHERE fecha_ingreso BETWEEN ? AND ?
+    // Devuelve ingresos registrados en un rango de fechas
     List<Entry> findByFechaIngresoBetween(
             LocalDateTime desde, LocalDateTime hasta);
 
-    // CONTAINING + IGNORE CASE
-    // Búsqueda parcial por país de origen
-    // Spring genera: SELECT * FROM entries
-    //                WHERE LOWER(pais_origen) LIKE LOWER('%texto%')
+    // Busca ingresos cuyo país de origen contenga el texto buscado
     List<Entry> findByPaisOrigenContainingIgnoreCase(String pais);
 
-    // ORDENAMIENTO
-    // Ingresos de una patente del más reciente al más antiguo
-    // Spring genera: SELECT * FROM entries
-    //                WHERE patente = ? ORDER BY fecha_ingreso DESC
+    // Devuelve ingresos de un vehículo del más reciente al más antiguo
+    // Útil para ver el historial de ingresos de un vehículo
     List<Entry> findByPatenteOrderByFechaIngresoDesc(String patente);
 
-    // Ingresos pendientes ordenados por fecha más antigua primero
-    // Spring genera: SELECT * FROM entries
-    //                WHERE estado = ? ORDER BY fecha_ingreso ASC
+    // Devuelve ingresos pendientes del más antiguo al más reciente
+    // Útil para procesar los ingresos pendientes en orden de llegada
     List<Entry> findByEstadoOrderByFechaIngresoAsc(String estado);
 
-    // TOP
-    // Los últimos 10 ingresos al sistema
-    // Spring genera: SELECT * FROM entries
-    //                ORDER BY fecha_ingreso DESC LIMIT 10
+    // Devuelve los últimos 10 ingresos registrados en el sistema
+    // Útil para monitorear en tiempo real la actividad fronteriza
     List<Entry> findTop10ByOrderByFechaIngresoDesc();
 
-    // COUNT
-    // Contar ingresos por estado
-    // Spring genera: SELECT COUNT(*) FROM entries WHERE estado = ?
+    // Cuenta cuántos ingresos hay con un estado específico
     long countByEstado(String estado);
 
-    // Contar ingresos por tipo
-    // Spring genera: SELECT COUNT(*) FROM entries WHERE tipo_ingreso = ?
+    // Cuenta cuántos ingresos hay de un tipo específico
     long countByTipoIngreso(String tipoIngreso);
 }

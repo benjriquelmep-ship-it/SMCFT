@@ -1,4 +1,3 @@
-// dto/EntryItemDTO.java
 // Lo que el cliente manda para agregar un item declarado al ingreso
 
 package com.example.EntryService.dto;
