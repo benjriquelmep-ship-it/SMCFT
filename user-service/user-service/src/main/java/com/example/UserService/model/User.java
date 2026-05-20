@@ -1,3 +1,4 @@
+// Entidad JPA que mapea la estructura de la tabla "users" en la base de datos
 package com.example.UserService.model;
 
 // Esta clase representa la tabla "users" en la base de datos
@@ -10,33 +11,40 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 
-@Entity                    // Le dice a JPA que esta clase es una tabla
-@Table(name = "users")     // Nombre exacto de la tabla en MySQL
-@Data                      // Lombok genera getters, setters, toString automáticamente
-@NoArgsConstructor         // Lombok genera constructor vacío
-@AllArgsConstructor        // Lombok genera constructor con todos los campos
+@Entity
+@Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class User {
 
+    // Clave primaria autoincremental de la tabla de usuarios
     @Id                                                    // Esta es la clave primaria
     @GeneratedValue(strategy = GenerationType.IDENTITY)   // Auto incremento en MySQL
     private Long id;
 
+    // RUN único del usuario (largo máximo 12 caracteres)
     @Column(nullable = false, unique = true, length = 12)
     private String rut;
 
+    // Nombre completo o razón social registrada en el sistema
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    // Dirección de correo electrónico única para el inicio de sesión
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    // Hash de la contraseña secreta encriptada
     @Column(nullable = false)
     private String password;
 
+    // Perfil de accesos principal asignado actualmente
     @Column(nullable = false, length = 50)
     private String rol; // "ADMINISTRADOR", "FISCALIZADOR", "VIAJERO"
 
+    // Indicador de vigencia lógica de la cuenta de usuario (soft delete)
     @Column(nullable = false)
     private Boolean activo = true;
 

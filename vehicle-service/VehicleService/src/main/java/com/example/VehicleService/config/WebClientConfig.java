@@ -1,6 +1,4 @@
-// config/WebClientConfig.java
-// Configura el WebClient para comunicarse con User Service
-
+// Configuración para la instanciación de WebClient orientado a la comunicación reactiva e interservicio
 package com.example.VehicleService.config;
 
 import org.springframework.beans.factory.annotation.Value;

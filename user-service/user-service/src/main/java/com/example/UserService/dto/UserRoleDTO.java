@@ -1,3 +1,4 @@
+// Objeto de transferencia de datos para validar la vinculación de perfiles a un usuario
 package com.example.UserService.dto;
 
 // Lo que el cliente manda para asignar un nuevo rol a un usuario
@@ -13,7 +14,7 @@ public class UserRoleDTO {
     @NotNull(message = "El ID del usuario es obligatorio")
     private Long userId;
 
-    // Nuevo rol a asignar al usuario
+    // Perfil o privilegio a registrar bajo las opciones del sistema
     @NotBlank(message = "El rol es obligatorio")
     @Pattern(
             regexp = "ADMINISTRADOR|FISCALIZADOR|VIAJERO",

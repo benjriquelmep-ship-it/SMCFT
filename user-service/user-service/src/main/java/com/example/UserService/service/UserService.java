@@ -1,3 +1,4 @@
+// Capa de servicio encargada de procesar las reglas de negocio y validaciones de usuarios principales
 package com.example.UserService.service;
 
 // Aquí va TODA la lógica de negocio, nunca en el Controller
@@ -13,19 +14,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor  // Lombok genera el constructor con los campos final (inyección de dependencias)
+@RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    // Logger SLF4J — obligatorio para la evaluación (IE 2.3.2)
-    // getLogger asocia el logger a esta clase
+
+
 
 
     // Inyección por constructor — forma recomendada en Spring Boot moderno
     private final UserRepository userRepository;
-
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
 
     // Retorna todos los usuarios sin filtro
     public List<User> obtenerTodos() {
@@ -138,9 +135,6 @@ public class UserService {
         log.info("Usuario {} desactivado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
     // Usuarios con activo = true
     public List<User> obtenerActivos() {
@@ -187,5 +181,3 @@ public class UserService {
         return userRepository.findTop5ByOrderByIdAsc();
     }
 }
-
-

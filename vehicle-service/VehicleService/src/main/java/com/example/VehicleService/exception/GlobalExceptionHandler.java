@@ -1,5 +1,4 @@
-// exception/GlobalExceptionHandler.java
-
+// Centraliza y captura los errores de toda la aplicación para responder con JSON limpio
 package com.example.VehicleService.exception;
 
 import org.slf4j.Logger;

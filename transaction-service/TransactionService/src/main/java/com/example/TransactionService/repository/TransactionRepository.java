@@ -1,3 +1,4 @@
+// Repositorio JPA para gestionar las consultas de la tabla "transactions"
 package com.example.TransactionService.repository;
 
 import com.example.TransactionService.model.Transaction;

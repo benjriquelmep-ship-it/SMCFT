@@ -1,3 +1,4 @@
+// Capa de servicio encargada de procesar las reglas de negocio del historial de perfiles de usuario
 package com.example.UserService.service;
 
 import com.example.UserService.dto.UserRoleDTO;
@@ -22,17 +23,13 @@ public class UserRoleService {
     // Inyectamos UserService para verificar que el usuario existe
     private final UserService userService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // Obtener todos los roles del sistema
+    // Devuelve el listado completo de asignaciones de roles globales en el sistema
     public List<UserRole> obtenerTodos() {
         log.info("Obteniendo todos los roles");
         return userRoleRepository.findAll();
     }
 
-    // Obtener rol por id
+    // Busca un registro de rol específico por su ID o lanza una excepción si no existe
     public UserRole obtenerPorId(Long id) {
         log.info("Buscando rol con id: {}", id);
         return userRoleRepository.findById(id)
@@ -75,7 +72,7 @@ public class UserRoleService {
         return guardado;
     }
 
-    // Eliminar un rol del historial
+    // Remueve físicamente una asignación de rol del historial por su identificador primario
     public void eliminar(Long id) {
         log.info("Eliminando rol con id: {}", id);
         if (!userRoleRepository.existsById(id)) {
@@ -86,9 +83,6 @@ public class UserRoleService {
         log.info("Rol {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
     // Historial completo de roles de un usuario
     // Ordenado del más reciente al más antiguo
@@ -123,4 +117,3 @@ public class UserRoleService {
         return userRoleRepository.findTop10ByOrderByAsignadoAtDesc();
     }
 }
-

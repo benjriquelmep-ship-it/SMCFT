@@ -1,3 +1,4 @@
+// Capa de servicio encargada de procesar las reglas de negocio de las transacciones principales
 package com.example.TransactionService.service;
 
 import com.example.TransactionService.dto.TransactionDTO;
@@ -28,11 +29,13 @@ public class TransactionService {
     // CRUD BÁSICO
     // -------------------------------------------------------
 
+    // Devuelve el listado completo de transacciones en la base de datos
     public List<Transaction> obtenerTodas() {
         log.info("Obteniendo todas las transacciones");
         return transactionRepository.findAll();
     }
 
+    // Busca una transacción principal por ID o lanza excepción si no existe
     public Transaction obtenerPorId(Long id) {
         log.info("Buscando transacción con id: {}", id);
         return transactionRepository.findById(id)
@@ -133,7 +136,7 @@ public class TransactionService {
         return actualizada;
     }
 
-    // Eliminar transacción
+    // Elimina físicamente la transacción del registro de datos
     public void eliminar(Long id) {
         log.info("Eliminando transacción con id: {}", id);
         if (!transactionRepository.existsById(id)) {
@@ -142,28 +145,29 @@ public class TransactionService {
                     "Transacción no encontrada con id: " + id);
         }
         transactionRepository.deleteById(id);
-        log.info("Transacción {} eliminada correctamente", id);
+        log.info("Transacción {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
+    // Recupera todos los movimientos financieros pertenecientes a un RUN
     public List<Transaction> obtenerPorUsuario(String rutUsuario) {
         log.info("Obteniendo transacciones del usuario: {}", rutUsuario);
         return transactionRepository.findByRutUsuario(rutUsuario);
     }
 
+    // Clasifica el listado según la naturaleza del cobro/devolución
     public List<Transaction> obtenerPorTipo(String tipo) {
         log.info("Obteniendo transacciones de tipo: {}", tipo);
         return transactionRepository.findByTipo(tipo);
     }
 
+    // Lista las transacciones según su situación de procesamiento
     public List<Transaction> obtenerPorEstado(String estado) {
         log.info("Obteniendo transacciones con estado: {}", estado);
         return transactionRepository.findByEstado(estado);
     }
 
+    // Cruza filtros para obtener el historial de un RUN bajo una situación específica
     public List<Transaction> obtenerPorUsuarioYEstado(
             String rutUsuario, String estado) {
         log.info("Obteniendo transacciones de {} con estado {}",
@@ -172,6 +176,7 @@ public class TransactionService {
                 rutUsuario, estado);
     }
 
+    // Filtra transacciones basándose en un bloque temporal de inicio y término
     public List<Transaction> obtenerPorRangoFechas(
             LocalDateTime desde, LocalDateTime hasta) {
         log.info("Obteniendo transacciones entre {} y {}", desde, hasta);
@@ -179,17 +184,20 @@ public class TransactionService {
                 desde, hasta);
     }
 
+    // Busca transacciones cuyo valor económico supere la cifra indicada
     public List<Transaction> obtenerPorMontoMayorA(BigDecimal monto) {
         log.info("Obteniendo transacciones con monto mayor a {}", monto);
         return transactionRepository.findByMontoTotalGreaterThan(monto);
     }
 
+    // Permite búsquedas parciales por coincidencia de texto dentro de las glosas
     public List<Transaction> buscarPorDescripcion(String texto) {
         log.info("Buscando transacciones con descripción: {}", texto);
         return transactionRepository
                 .findByDescripcionContainingIgnoreCase(texto);
     }
 
+    // Devuelve los movimientos de un RUN ordenados de forma cronológica descendente
     public List<Transaction> obtenerPorUsuarioOrdenadas(
             String rutUsuario) {
         log.info("Obteniendo transacciones de {} ordenadas", rutUsuario);
@@ -197,16 +205,19 @@ public class TransactionService {
                 .findByRutUsuarioOrderByCreatedAtDesc(rutUsuario);
     }
 
+    // Extrae los últimos 10 movimientos ingresados globalmente al sistema
     public List<Transaction> obtenerUltimasTransacciones() {
         log.info("Obteniendo las últimas 10 transacciones");
         return transactionRepository.findTop10ByOrderByIdDesc();
     }
 
+    // Cuenta de forma consolidada el número de filas bajo una situación específica
     public long contarPorEstado(String estado) {
         log.info("Contando transacciones con estado: {}", estado);
         return transactionRepository.countByEstado(estado);
     }
 
+    // Cuenta la cantidad de registros pertenecientes a una categoría de flujo
     public long contarPorTipo(String tipo) {
         log.info("Contando transacciones de tipo: {}", tipo);
         return transactionRepository.countByTipo(tipo);

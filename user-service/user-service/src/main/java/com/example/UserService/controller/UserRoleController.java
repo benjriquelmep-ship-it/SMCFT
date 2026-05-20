@@ -1,3 +1,4 @@
+// Recibe las peticiones HTTP de User Role Service y retorna ResponseEntity con JSON
 package com.example.UserService.controller;
 
 import com.example.UserService.dto.UserRoleDTO;
@@ -17,23 +18,19 @@ import java.util.List;
 public class UserRoleController {
     private final UserRoleService userRoleService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // GET /api/v1/users/roles → todos los roles del sistema
+    // GET /api/v1/users/roles → todos los roles del sistema : Lista todas las asignaciones de roles globales
     @GetMapping
     public ResponseEntity<List<UserRole>> obtenerTodos() {
         return ResponseEntity.ok(userRoleService.obtenerTodos());
     }
 
-    // GET /api/v1/users/roles/1 → rol por id
+    // GET /api/v1/users/roles/1 → rol por id : Busca una asignación específica mediante su clave primaria
     @GetMapping("/{id}")
     public ResponseEntity<UserRole> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(userRoleService.obtenerPorId(id));
     }
 
-    // POST /api/v1/users/roles → asignar nuevo rol a un usuario
+    // POST /api/v1/users/roles → asignar nuevo rol a un usuario : Registra una nueva vinculación de perfil para un usuario
     @PostMapping
     public ResponseEntity<UserRole> asignar(
             @Valid @RequestBody UserRoleDTO dto) {
@@ -41,18 +38,15 @@ public class UserRoleController {
                 .body(userRoleService.asignar(dto));
     }
 
-    // DELETE /api/v1/users/roles/1 → eliminar un rol del historial
+    // DELETE /api/v1/users/roles/1 → eliminar un rol del historial : Remueve físicamente una asignación por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         userRoleService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
-    // GET /api/v1/users/roles/usuario/1
+    // GET /api/v1/users/roles/usuario/1 : Filtra los perfiles que han sido asignados históricamente a un usuario
     // Historial completo de roles de un usuario
     @GetMapping("/usuario/{userId}")
     public ResponseEntity<List<UserRole>> obtenerPorUsuario(
@@ -60,7 +54,7 @@ public class UserRoleController {
         return ResponseEntity.ok(userRoleService.obtenerPorUsuario(userId));
     }
 
-    // GET /api/v1/users/roles/usuario/1/activos
+    // GET /api/v1/users/roles/usuario/1/activos : Obtiene la asignación que se encuentra vigente para el usuario
     // Solo el rol activo actual de un usuario
     @GetMapping("/usuario/{userId}/activos")
     public ResponseEntity<List<UserRole>> obtenerActivosPorUsuario(
@@ -69,7 +63,7 @@ public class UserRoleController {
                 userRoleService.obtenerActivosPorUsuario(userId));
     }
 
-    // GET /api/v1/users/roles/tipo/FISCALIZADOR
+    // GET /api/v1/users/roles/tipo/FISCALIZADOR : Lista todas las asignaciones históricas de un tipo de perfil
     // Todos los roles de un tipo específico
     @GetMapping("/tipo/{rol}")
     public ResponseEntity<List<UserRole>> obtenerPorRol(
@@ -77,14 +71,15 @@ public class UserRoleController {
         return ResponseEntity.ok(userRoleService.obtenerPorRol(rol));
     }
 
-    // GET /api/v1/users/roles/tipo/FISCALIZADOR/activos
+    // GET /api/v1/users/roles/tipo/FISCALIZADOR/activos : Filtra usuarios que tienen el perfil indicado vigente actualmente
+    // Tipo de rol activo actual
     @GetMapping("/tipo/{rol}/activos")
     public ResponseEntity<List<UserRole>> obtenerActivosPorRol(
             @PathVariable String rol) {
         return ResponseEntity.ok(userRoleService.obtenerActivosPorRol(rol));
     }
 
-    // GET /api/v1/users/roles/ultimos
+    // GET /api/v1/users/roles/ultimos : Devuelve los últimos 10 cambios de perfil registrados globalmente
     // Los últimos 10 roles asignados en el sistema
     @GetMapping("/ultimos")
     public ResponseEntity<List<UserRole>> obtenerUltimosAsignados() {

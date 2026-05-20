@@ -1,6 +1,4 @@
-// service/VehicleDocumentService.java
-// Lógica de negocio para los documentos de vehículos
-
+// Capa de servicio encargada de procesar las reglas de negocio y ciclos de vida de la documentación vehicular
 package com.example.VehicleService.service;
 
 import com.example.VehicleService.dto.VehicleDocumentDTO;
@@ -26,15 +24,13 @@ public class VehicleDocumentService {
     // VehicleService se inyecta para verificar que el vehículo existe
     private final VehicleService vehicleService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
+    // Recupera la totalidad de los documentos almacenados globalmente en la base de datos
     public List<VehicleDocument> obtenerTodos() {
         log.info("Obteniendo todos los documentos");
         return documentRepository.findAll();
     }
 
+    // Busca un documento específico por su ID o lanza una excepción en caso de no hallarlo
     public VehicleDocument obtenerPorId(Long id) {
         log.info("Buscando documento con id: {}", id);
         return documentRepository.findById(id)
@@ -73,7 +69,7 @@ public class VehicleDocumentService {
         return guardado;
     }
 
-    // Actualizar documento
+    // Actualiza el tipo y la fecha de expiración de un registro documental existente
     public VehicleDocument actualizar(Long id, VehicleDocumentDTO dto) {
         log.info("Actualizando documento con id: {}", id);
         VehicleDocument existente = obtenerPorId(id);
@@ -96,7 +92,7 @@ public class VehicleDocumentService {
         return actualizado;
     }
 
-    // Eliminar documento
+    // Remueve de forma física un registro de documento validando previamente su existencia
     public void eliminar(Long id) {
         log.info("Eliminando documento con id: {}", id);
         if (!documentRepository.existsById(id)) {
@@ -108,9 +104,6 @@ public class VehicleDocumentService {
         log.info("Documento {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
     // Todos los documentos de un vehículo
     public List<VehicleDocument> obtenerPorVehiculo(Long vehicleId) {

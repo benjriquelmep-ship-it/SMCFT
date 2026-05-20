@@ -1,4 +1,5 @@
-// controller/ReportDetailController.java
+// Recibe peticiones HTTP para gestionar las líneas de detalle de los reportes
+// Delega la persistencia al ReportDetailService y retorna formato JSON
 package com.example.ReportService.controller;
 
 import com.example.ReportService.dto.ReportDetailDTO;
@@ -18,20 +19,20 @@ public class ReportDetailController {
 
     private final ReportDetailService detailService;
 
-    // GET /api/v1/report-details
+    // GET /api/v1/report-details : Lista todos los detalles de reportes del sistema
     @GetMapping
     public ResponseEntity<List<ReportDetail>> obtenerTodos() {
         return ResponseEntity.ok(detailService.obtenerTodos());
     }
 
-    // GET /api/v1/report-details/1
+    // GET /api/v1/report-details/1 : Busca un detalle específico por su ID
     @GetMapping("/{id}")
     public ResponseEntity<ReportDetail> obtenerPorId(
             @PathVariable Long id) {
         return ResponseEntity.ok(detailService.obtenerPorId(id));
     }
 
-    // POST /api/v1/report-details
+    // POST /api/v1/report-details : Agrega una nueva línea de detalle a un reporte
     @PostMapping
     public ResponseEntity<ReportDetail> agregar(
             @Valid @RequestBody ReportDetailDTO dto) {
@@ -39,7 +40,7 @@ public class ReportDetailController {
                 .body(detailService.agregar(dto));
     }
 
-    // PUT /api/v1/report-details/1
+    // PUT /api/v1/report-details/1 : Actualiza por completo un detalle existente por su ID
     @PutMapping("/{id}")
     public ResponseEntity<ReportDetail> actualizar(
             @PathVariable Long id,
@@ -47,14 +48,14 @@ public class ReportDetailController {
         return ResponseEntity.ok(detailService.actualizar(id, dto));
     }
 
-    // DELETE /api/v1/report-details/1
+    // DELETE /api/v1/report-details/1 : Elimina un detalle físico por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         detailService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    // GET /api/v1/report-details/reporte/1
+    // GET /api/v1/report-details/reporte/1 : Filtra todos los detalles asociados a un reporte padre
     @GetMapping("/reporte/{reportId}")
     public ResponseEntity<List<ReportDetail>> obtenerPorReporte(
             @PathVariable Long reportId) {
@@ -62,7 +63,7 @@ public class ReportDetailController {
                 detailService.obtenerPorReporte(reportId));
     }
 
-    // GET /api/v1/report-details/categoria/AUTORIZADOS
+    // GET /api/v1/report-details/categoria/AUTORIZADOS : Filtra detalles por categoría o etiqueta
     @GetMapping("/categoria/{categoria}")
     public ResponseEntity<List<ReportDetail>> obtenerPorCategoria(
             @PathVariable String categoria) {
@@ -70,7 +71,7 @@ public class ReportDetailController {
                 detailService.obtenerPorCategoria(categoria));
     }
 
-    // GET /api/v1/report-details/reporte/1/categoria/AUTORIZADOS
+    // GET /api/v1/report-details/reporte/1/categoria/AUTORIZADOS : Combina filtros: ID de reporte + categoría
     @GetMapping("/reporte/{reportId}/categoria/{categoria}")
     public ResponseEntity<List<ReportDetail>> obtenerPorReporteYCategoria(
             @PathVariable Long reportId,
@@ -80,7 +81,7 @@ public class ReportDetailController {
                         reportId, categoria));
     }
 
-    // GET /api/v1/report-details/buscar?descripcion=cruces
+    // GET /api/v1/report-details/buscar?descripcion=cruces : Busca detalles que contengan el texto en su descripción
     @GetMapping("/buscar")
     public ResponseEntity<List<ReportDetail>> buscarPorDescripcion(
             @RequestParam String descripcion) {
@@ -88,7 +89,7 @@ public class ReportDetailController {
                 detailService.buscarPorDescripcion(descripcion));
     }
 
-    // GET /api/v1/report-details/reporte/1/ordenados
+    // GET /api/v1/report-details/reporte/1/ordenados : Lista los detalles de un reporte de forma secuencial u ordenada
     @GetMapping("/reporte/{reportId}/ordenados")
     public ResponseEntity<List<ReportDetail>> obtenerOrdenados(
             @PathVariable Long reportId) {
@@ -96,7 +97,7 @@ public class ReportDetailController {
                 detailService.obtenerPorReporteOrdenados(reportId));
     }
 
-    // GET /api/v1/report-details/ultimos
+    // GET /api/v1/report-details/ultimos : Devuelve los últimos 10 detalles registrados en la base de datos
     @GetMapping("/ultimos")
     public ResponseEntity<List<ReportDetail>> obtenerUltimos() {
         return ResponseEntity.ok(detailService.obtenerUltimosDetalles());

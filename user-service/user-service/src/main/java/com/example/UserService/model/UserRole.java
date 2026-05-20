@@ -1,9 +1,10 @@
+// Entidad JPA que mapea la estructura de la tabla "user_roles" en la base de datos
 package com.example.UserService.model;
 
 // Representa el historial de roles de un usuario
 // Tiene una relación @ManyToOne con User
 // Muchos roles pertenecen a un usuario
-// Esta entidad cumple con IE 2.2.3 — relaciones entre entidades
+
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRole {
+
+    // Identificador único de la asignación del rol histórico
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

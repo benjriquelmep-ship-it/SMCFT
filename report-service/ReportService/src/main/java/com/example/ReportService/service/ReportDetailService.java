@@ -1,4 +1,4 @@
-// service/ReportDetailService.java
+// Capa de servicio que procesa las reglas de negocio de las líneas de detalle
 package com.example.ReportService.service;
 
 import com.example.ReportService.dto.ReportDetailDTO;
@@ -20,15 +20,14 @@ public class ReportDetailService {
     private final ReportDetailRepository detailRepository;
     private final ReportService reportService;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
 
+    // Devuelve todos los registros guardados en la tabla
     public List<ReportDetail> obtenerTodos() {
         log.info("Obteniendo todos los detalles");
         return detailRepository.findAll();
     }
 
+    // Busca un detalle o levanta excepción si no existe
     public ReportDetail obtenerPorId(Long id) {
         log.info("Buscando detalle con id: {}", id);
         return detailRepository.findById(id)
@@ -39,6 +38,7 @@ public class ReportDetailService {
                 });
     }
 
+    // Valida y asocia un nuevo detalle al reporte padre
     public ReportDetail agregar(ReportDetailDTO dto) {
         log.info("Agregando detalle al reporte: {}", dto.getReportId());
 
@@ -65,6 +65,7 @@ public class ReportDetailService {
         return guardado;
     }
 
+    // Modifica los campos de un detalle existente
     public ReportDetail actualizar(Long id, ReportDetailDTO dto) {
         log.info("Actualizando detalle con id: {}", id);
         ReportDetail existente = obtenerPorId(id);
@@ -79,6 +80,7 @@ public class ReportDetailService {
         return actualizado;
     }
 
+    // Borra físicamente un detalle si el ID es válido
     public void eliminar(Long id) {
         log.info("Eliminando detalle con id: {}", id);
         if (!detailRepository.existsById(id)) {
@@ -90,20 +92,20 @@ public class ReportDetailService {
         log.info("Detalle {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
 
+    // Busca los detalles pertenecientes a un mismo reporte
     public List<ReportDetail> obtenerPorReporte(Long reportId) {
         log.info("Obteniendo detalles del reporte: {}", reportId);
         return detailRepository.findByReportId(reportId);
     }
 
+    // Agrupa detalles según su etiqueta o categoría
     public List<ReportDetail> obtenerPorCategoria(String categoria) {
         log.info("Obteniendo detalles de categoría: {}", categoria);
         return detailRepository.findByCategoria(categoria);
     }
 
+    // Filtra detalles cruzando el ID del reporte y la categoría
     public List<ReportDetail> obtenerPorReporteYCategoria(
             Long reportId, String categoria) {
         log.info("Obteniendo detalles de reporte {} categoría {}",
@@ -112,12 +114,14 @@ public class ReportDetailService {
                 reportId, categoria);
     }
 
+    // Busca coincidencias de texto parcial ignorando mayúsculas
     public List<ReportDetail> buscarPorDescripcion(String descripcion) {
         log.info("Buscando detalles con descripción: {}", descripcion);
         return detailRepository
                 .findByDescripcionContainingIgnoreCase(descripcion);
     }
 
+    // Devuelve las líneas del reporte ordenadas por valor descendente
     public List<ReportDetail> obtenerPorReporteOrdenados(Long reportId) {
         log.info("Obteniendo detalles del reporte {} ordenados",
                 reportId);
@@ -125,6 +129,7 @@ public class ReportDetailService {
                 .findByReportIdOrderByValorDesc(reportId);
     }
 
+    // Obtiene una lista con las últimas 10 inserciones
     public List<ReportDetail> obtenerUltimosDetalles() {
         log.info("Obteniendo los últimos 10 detalles");
         return detailRepository.findTop10ByOrderByIdDesc();

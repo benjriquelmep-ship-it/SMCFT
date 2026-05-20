@@ -1,7 +1,4 @@
-// repository/VehicleRepository.java
-// Acceso a datos de la tabla vehicles
-// Consultas derivadas del apunte integradas
-
+// Repositorio JPA para gestionar las consultas y operaciones sobre la tabla "vehicles"
 package com.example.VehicleService.repository;
 
 import com.example.VehicleService.model.Vehicle;

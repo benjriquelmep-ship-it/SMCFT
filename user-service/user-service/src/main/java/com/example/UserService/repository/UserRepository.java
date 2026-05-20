@@ -1,3 +1,4 @@
+// Repositorio JPA para gestionar las consultas y operaciones sobre la tabla "users"
 package com.example.UserService.repository;
 
 // JpaRepository ya te da save(), findById(), findAll(), delete() gratis

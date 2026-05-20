@@ -1,3 +1,4 @@
+// Configura la comunicación HTTP entre microservicios
 package com.example.TransactionService.config;
 
 import org.springframework.beans.factory.annotation.Value;

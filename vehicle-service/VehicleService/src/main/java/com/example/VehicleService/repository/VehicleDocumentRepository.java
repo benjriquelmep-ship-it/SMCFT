@@ -1,6 +1,4 @@
-// repository/VehicleDocumentRepository.java
-// Acceso a datos de la tabla vehicle_documents
-
+// Repositorio JPA para gestionar las consultas y operaciones sobre la tabla "vehicle_documents"
 package com.example.VehicleService.repository;
 
 import com.example.VehicleService.model.VehicleDocument;

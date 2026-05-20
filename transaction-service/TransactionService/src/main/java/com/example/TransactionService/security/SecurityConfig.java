@@ -1,3 +1,4 @@
+// Configuración centralizada de seguridad y control de accesos HTTP
 package com.example.TransactionService.security;
 
 import lombok.RequiredArgsConstructor;
@@ -17,11 +18,14 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
+    // Define las reglas de autorización y los filtros de la aplicación
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
             throws Exception {
         http
+                // Desactiva CSRF por no usar estados de sesión (cookies)
                 .csrf(csrf -> csrf.disable())
+                // Configura la API como Stateless (sin estado ni sesiones en servidor)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
@@ -38,6 +42,7 @@ public class SecurityConfig {
                         // POST, PUT, PATCH, DELETE requieren token
                         .anyRequest().authenticated()
                 )
+                // Registra el filtro JWT antes de la validación por defecto de Spring
                 .addFilterBefore(jwtFilter,
                         UsernamePasswordAuthenticationFilter.class);
 

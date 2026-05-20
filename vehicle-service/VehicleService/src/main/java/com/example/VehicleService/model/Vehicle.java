@@ -1,7 +1,4 @@
-// model/Vehicle.java
-// Representa la tabla "vehicles" en la base de datos smcft_vehicles
-// Tiene una relación @OneToMany con VehicleDocument
-
+// Entidad JPA que mapea la estructura de la tabla "vehicles" en la base de datos
 package com.example.VehicleService.model;
 
 import jakarta.persistence.*;
@@ -16,13 +13,11 @@ import java.util.List;
 @Table(name = "vehicles")
 // Lombok genera getters, setters, toString, equals y hashCode
 @Data
-// JPA necesita constructor vacío para crear instancias al leer de la BD
 @NoArgsConstructor
-// Permite crear objetos con todos los valores en una línea
 @AllArgsConstructor
 public class Vehicle {
 
-    // Clave primaria con auto incremento
+    // Identificador único autoincremental del parque automotor
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,12 +27,15 @@ public class Vehicle {
     @Column(nullable = false, unique = true, length = 10)
     private String patente;
 
+    // Fabricante o marca de la unidad automotriz
     @Column(nullable = false, length = 50)
     private String marca;
 
+    // Línea o modelo específico del vehículo
     @Column(nullable = false, length = 50)
     private String modelo;
 
+    // Año de fabricación de la estructura vehicular
     @Column(nullable = false)
     private Integer anio;
 

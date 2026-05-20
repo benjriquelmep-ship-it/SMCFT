@@ -1,3 +1,4 @@
+// Entidad JPA que mapea la estructura de la tabla "transactions" en la base de datos
 package com.example.TransactionService.model;
 
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Transaction {
 
+    // Clave primaria autoincremental de la tabla
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

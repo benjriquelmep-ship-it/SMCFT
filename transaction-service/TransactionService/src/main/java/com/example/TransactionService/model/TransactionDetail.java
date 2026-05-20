@@ -1,3 +1,4 @@
+// Entidad JPA que mapea la estructura de la tabla "transaction_details" en la base de datos
 package com.example.TransactionService.model;
 
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class TransactionDetail {
 
+    // Identificador único de la línea de detalle
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

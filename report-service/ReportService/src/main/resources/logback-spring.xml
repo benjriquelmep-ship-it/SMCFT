@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- Lee el nombre del microservicio desde el application.properties -->
     <springProperty scope="context" name="APP_NAME" source="spring.application.name"/>
 
+    <!-- Salida de logs por consola en formato JSON estructurado -->
     <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Añade el nombre del servicio como campo fijo en cada JSON -->
             <customFields>{"service":"${APP_NAME}"}</customFields>
         </encoder>
     </appender>
 
+    <!-- Guardado de logs en archivos físicos rotativos en formato JSON -->
     <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Ruta y nombre del archivo de logs activo -->
         <file>logs/${APP_NAME}.json</file>
+        <!-- Política de rotación: genera un archivo nuevo al día y retiene máximo 7 días -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.json</fileNamePattern>
             <maxHistory>7</maxHistory>
@@ -19,6 +25,7 @@
         </encoder>
     </appender>
 
+    <!-- Configuración raíz: captura nivel INFO hacia arriba y lo envía a consola y archivo -->
     <root level="INFO">
         <appender-ref ref="JSON_CONSOLE"/>
         <appender-ref ref="JSON_FILE"/>

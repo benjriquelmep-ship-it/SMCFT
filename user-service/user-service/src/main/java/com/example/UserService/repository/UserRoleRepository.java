@@ -1,3 +1,4 @@
+// Repositorio JPA para gestionar las consultas y operaciones sobre la tabla "user_roles"
 package com.example.UserService.repository;
 
 // Acceso a datos de la tabla user_roles

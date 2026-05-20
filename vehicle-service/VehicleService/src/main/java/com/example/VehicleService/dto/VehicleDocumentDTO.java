@@ -1,6 +1,4 @@
-// dto/VehicleDocumentDTO.java
-// Lo que el cliente manda para agregar un documento a un vehículo
-
+// Objeto de transferencia de datos para la validación de certificados y documentos vehiculares
 package com.example.VehicleService.dto;
 
 import jakarta.validation.constraints.*;
@@ -10,11 +8,11 @@ import java.time.LocalDate;
 @Data
 public class VehicleDocumentDTO {
 
-    // ID del vehículo al que se agrega el documento
+    // Identificador único del vehículo al que se asocia el papel
     @NotNull(message = "El ID del vehículo es obligatorio")
     private Long vehicleId;
 
-    // Tipo de documento aduanero
+    // Categoría del padrón o seguro según enumeración reglamentaria
     @NotBlank(message = "El tipo de documento es obligatorio")
     @Pattern(
             regexp = "PERMISO_CIRCULACION|SEGURO_OBLIGATORIO|REVISION_TECNICA",
@@ -23,11 +21,12 @@ public class VehicleDocumentDTO {
     )
     private String tipo;
 
-    // Número único del documento
+    // Código, folio o número correlativo único impreso en el documento
     @NotBlank(message = "El número de documento es obligatorio")
     @Size(max = 50, message = "El número no puede tener más de 50 caracteres")
     private String numero;
 
+    // Fecha límite de vigencia legal para el certificado
     // @Future valida que la fecha sea posterior a hoy
     @NotNull(message = "La fecha de vencimiento es obligatoria")
     @Future(message = "La fecha de vencimiento debe ser futura")

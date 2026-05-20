@@ -1,3 +1,4 @@
+// Centraliza y captura los errores de toda la aplicación para responder con JSON limpio
 package com.example.TransactionService.exception;
 
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ public class GlobalExceptionHandler {
     private static final Logger log =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    // Captura fallas de validación de los DTO (@Valid) y retorna HTTP 400 (Bad Request)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> manejarValidacion(
             MethodArgumentNotValidException ex) {
@@ -28,6 +30,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
     }
 
+    // Captura errores de lógica o negocio (RuntimeException) y retorna HTTP 404 (Not Found)
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> manejarRuntime(
             RuntimeException ex) {

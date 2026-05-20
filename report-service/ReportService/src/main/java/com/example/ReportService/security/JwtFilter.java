@@ -1,4 +1,4 @@
-// security/JwtFilter.java
+// Filtro de seguridad que se ejecuta en cada petición HTTP entrante para validar tokens
 package com.example.ReportService.security;
 
 import jakarta.servlet.FilterChain;
@@ -31,11 +31,14 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Extrae el encabezado 'Authorization' de la petición HTTP
         String authHeader = request.getHeader("Authorization");
 
+        // Verifica si viene el token con el prefijo estándar 'Bearer '
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7); // Remueve "Bearer " para aislar el JWT
 
+            // Valida la firma, expiración y estructura del token
             if (jwtUtil.esValido(token)) {
                 String email = jwtUtil.obtenerEmail(token);
                 String rol   = jwtUtil.obtenerRol(token);
@@ -43,6 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 log.info("Token válido en Report Service para: {} rol: {}",
                         email, rol);
 
+                // Autentica al usuario en el contexto de Spring Security con su rol correspondiente
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
@@ -57,6 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
+        // Continúa con el siguiente filtro en la cadena de seguridad de Spring
         filterChain.doFilter(request, response);
     }
 }

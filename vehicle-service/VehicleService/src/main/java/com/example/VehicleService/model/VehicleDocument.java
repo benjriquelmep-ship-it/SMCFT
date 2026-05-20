@@ -1,9 +1,4 @@
-// model/VehicleDocument.java
-// Representa los documentos asociados a un vehículo
-// Tiene una relación @ManyToOne con Vehicle
-// Muchos documentos pertenecen a un vehículo
-// Cumple con IE 2.2.3 — relaciones entre entidades
-
+// Entidad JPA que mapea la estructura de la tabla "vehicle_documents" en la base de datos
 package com.example.VehicleService.model;
 
 import jakarta.persistence.*;
@@ -19,7 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class VehicleDocument {
 
-    // Clave primaria con auto incremento
+    // Identificador único autoincremental del documento vehicular
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

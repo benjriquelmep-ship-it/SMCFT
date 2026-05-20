@@ -1,3 +1,4 @@
+// Centraliza y captura los errores de toda la aplicación para responder con JSON limpio
 package com.example.UserService.exception;
 
 // @ControllerAdvice atrapa TODOS los errores de todos los controllers
