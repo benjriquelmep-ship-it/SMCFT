@@ -24,7 +24,7 @@ public interface EntryItemRepository
     List<EntryItem> findByAprobadoTrue();
 
     // Devuelve TODOS los items no aprobados del sistema
-    List<EntryItem> findByAprobadoFalse();-
+    List<EntryItem> findByAprobadoFalse();
 
     // Busca items cuya descripción contenga el texto buscado
     List<EntryItem> findByDescripcionContainingIgnoreCase(
