@@ -8,7 +8,7 @@ import com.example.SanitaryService.dto.VehicleResponseDTO;
 import com.example.SanitaryService.model.Sanitary;
 import com.example.SanitaryService.repository.SanitaryRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;                         e
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
