@@ -45,7 +45,7 @@ public class GatewayConfig {
 
                 // 9. Transaction Service (Puerto: 2030)
                 .route("transaction_service_route", r -> r.path("/api/v1/transactions/**")
-                        .uri("http://localhost:2030"))
+                        .uri("http://localhost:2040"))
 
                 // 10. Report Service (Puerto: 2028)
                 .route("report_service_route", r -> r.path("/api/v1/reports/**")
