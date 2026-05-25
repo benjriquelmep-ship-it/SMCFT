@@ -100,7 +100,7 @@ public class ItemCategoryController {
     @GetMapping("/requieren-declaracion")
     public ResponseEntity<List<ItemCategory>> obtenerConDeclaracion() {
         return ResponseEntity.ok(
-                categoryService.obtenerQueRequierenDeclaracion());
+                categoryService.obtenerRequierenDeclaracion());
     }
 
     // GET /api/v1/item-categories/sin-declaracion
