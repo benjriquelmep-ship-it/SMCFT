@@ -22,12 +22,10 @@ import java.util.List;
 @Slf4j
 public class BorderCrossingService {
 
-<<<<<<< HEAD
     // Para registrar mensajes en la consola de IntelliJ
     private static final Logger log =
             LoggerFactory.getLogger(BorderCrossingService.class);
-=======
->>>>>>> 042337db361a22d3143d66d1ebbfca96e8954f65
+
 
     // Accede a la tabla border_crossings en la BD
     private final BorderCrossingRepository crossingRepository;
