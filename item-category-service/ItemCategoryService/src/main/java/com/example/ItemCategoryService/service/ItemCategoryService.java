@@ -123,8 +123,8 @@ public class ItemCategoryService {
         log.info("Obteniendo categorías inactivas");
         return categoryRepository.findByActivoFalse();
     }
-
-    // Devuelve categorías ACTIVAS que requieren declaración obligatoria{
+    // Devuelve categorías ACTIVAS que requieren declaración obligatoria
+    public List<ItemCategory> obtenerRequierenDeclaracion() {
         log.info("Obteniendo categorías que requieren declaración");
         return categoryRepository
                 .findByRequiereDeclaracionTrueAndActivoTrue();

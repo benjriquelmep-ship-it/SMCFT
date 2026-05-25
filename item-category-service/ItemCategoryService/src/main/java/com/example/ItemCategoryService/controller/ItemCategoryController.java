@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@RestController s
+@RestController
 @RequestMapping("/api/v1/item-categories")
 @RequiredArgsConstructor
 public class ItemCategoryController {
