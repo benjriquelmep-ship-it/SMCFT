@@ -36,7 +36,7 @@ public class GatewayConfig {
                         .uri("http://localhost:2029"))
 
                 // 7. Deadline Service (Puerto: 2024)
-                .route("deadline_service_route", r -> r.path("/api/v1/deadlines/**")
+                .route("deadline_service_route", r -> r.path("/api/v1/deadline-alerts/**")
                         .uri("http://localhost:2024"))
 
                 // 8. Item Category Service (Puerto: 2026)
