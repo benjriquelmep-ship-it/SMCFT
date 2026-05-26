@@ -56,7 +56,7 @@ public class GatewayConfig {
                         .uri("http://localhost:2027"))
 
                 // 12. Audit Service (Puerto: 2021)
-                .route("audit_service_route", r -> r.path("/api/v1/audit/**")
+                .route("audit_service_route", r -> r.path("/api/v1/audits/**")
                         .uri("http://localhost:2021"))
 
                 .build();
