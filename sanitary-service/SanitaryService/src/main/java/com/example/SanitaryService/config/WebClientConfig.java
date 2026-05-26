@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${userservice.url}")
-    private String userServiceUrl;
+    @Value("${vehicleservice.url}")
+    private String vehicleServiceUrl;
 
     // WebClient para User Service
     // Transaction Service verifica que el usuario existe
@@ -18,7 +18,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl(userServiceUrl)
+                .baseUrl(vehicleServiceUrl)
                 .build();
     }
 }
