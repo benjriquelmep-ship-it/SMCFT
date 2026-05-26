@@ -24,7 +24,7 @@ public class GatewayConfig {
                         .uri("http://localhost:2032"))
 
                 // 4. Border Crossing Service (Puerto: 2023)
-                .route("border_crossing_route", r -> r.path("/api/v1/crossings/**")
+                .route("border_crossing_route", r -> r.path("/api/v1/border-crossings/**")
                         .uri("http://localhost:2023"))
 
                 // 5. Entry Service (Puerto: 2025)
