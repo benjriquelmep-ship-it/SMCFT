@@ -40,7 +40,7 @@ public class GatewayConfig {
                         .uri("http://localhost:2024"))
 
                 // 8. Item Category Service (Puerto: 2026)
-                .route("item_category_route", r -> r.path("/api/v1/categories/**")
+                .route("item_category_route", r -> r.path("/api/v1/item-categories/**")
                         .uri("http://localhost:2026"))
 
                 // 9. Transaction Service (Puerto: 2030)
