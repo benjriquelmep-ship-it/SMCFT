@@ -1,10 +1,12 @@
 package com.example.AuditService.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
+@Schema(description = "Entidad que representa a una auditoria registrada en el sistema")
 public class AuditDTO {
 
     // RUT del auditor que está creando la auditoría

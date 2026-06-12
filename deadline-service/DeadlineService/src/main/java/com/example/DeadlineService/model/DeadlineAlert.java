@@ -8,17 +8,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "deadline_alerts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa deadline alert")
 public class DeadlineAlert {
 
     // Id de la alerta — se genera automáticamente en la BD
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Id", example = "1")
     private Long id;
 
     // RELACIÓN @ManyToOne — muchas alertas pertenecen a un deadline
@@ -29,22 +32,27 @@ public class DeadlineAlert {
 
     // Mensaje descriptivo de la alerta
     @Column(nullable = false, length = 500)
+    @Schema(description = "Mensaje", example = "ejemplo", maxLength = 500)
     private String mensaje;
 
     // Cuántos días le quedaban al deadline cuando se generó la alerta
     @Column(name = "dias_restantes", nullable = false)
+    @Schema(description = "Dias Restantes", example = "1")
     private Integer diasRestantes;
 
     // Tipo de alerta según la urgencia
     @Column(name = "tipo_alerta", nullable = false, length = 30)
+    @Schema(description = "Tipo Alerta", example = "PARTICULAR", maxLength = 30)
     private String tipoAlerta;
 
     // Si la alerta ya fue enviada al Notification Service
     // Se inicializa en false porque toda alerta nueva está pendiente
     @Column(nullable = false)
+    @Schema(description = "Enviada", example = "true")
     private Boolean enviada = false;
 
     // Fecha y hora en que se creó la alerta
     @Column(name = "created_at")
+    @Schema(description = "Created At", example = "2024-01-15")
     private LocalDateTime createdAt;
 }

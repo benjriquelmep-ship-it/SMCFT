@@ -7,12 +7,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "items")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa item")
 public class Item {
 
     @Id
@@ -30,17 +32,21 @@ public class Item {
 
     // Nombre del item específico
     @Column(nullable = false, length = 100)
+    @Schema(description = "Nombre", example = "Juan Pérez", maxLength = 100)
     private String nombre;
 
     // Descripción del item
     @Column(nullable = false, length = 300)
+    @Schema(description = "Descripcion", example = "ejemplo", maxLength = 300)
     private String descripcion;
 
     // Unidad de medida
     @Column(nullable = false, length = 30)
+    @Schema(description = "Unidad", example = "ejemplo", maxLength = 30)
     private String unidad;
 
     // Si el item está activo en el sistema
     @Column(nullable = false)
+    @Schema(description = "Activo", example = "true")
     private Boolean activo = true;
 }

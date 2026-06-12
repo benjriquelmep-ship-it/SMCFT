@@ -6,12 +6,15 @@ package com.example.UserService.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
+@Schema(description = "DTO que representa user role")
 public class UserRoleDTO {
     // ID del usuario al que se le asigna el nuevo rol
     // @NotNull porque es Long (número) — @NotBlank solo aplica a String
     @NotNull(message = "El ID del usuario es obligatorio")
+    @Schema(description = "User Id", example = "1")
     private Long userId;
 
     // Perfil o privilegio a registrar bajo las opciones del sistema
@@ -20,5 +23,6 @@ public class UserRoleDTO {
             regexp = "ADMINISTRADOR|FISCALIZADOR|VIAJERO",
             message = "El rol debe ser ADMINISTRADOR, FISCALIZADOR o VIAJERO"
     )
+    @Schema(description = "Rol", example = "VIAJERO")
     private String rol;
 }

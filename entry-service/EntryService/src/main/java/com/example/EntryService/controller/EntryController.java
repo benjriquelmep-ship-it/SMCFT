@@ -14,11 +14,16 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/v1/entries")
 
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class EntryController {
 
     // EntryService contiene toda la lógica de negocio
@@ -27,6 +32,13 @@ public class EntryController {
 
     // GET /api/v1/entries
     // Devuelve todos los ingresos del sistema
+    @Operation(summary = "Obtener Todos", description = "Devuelve todos los ingresos del sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping
     public ResponseEntity<List<Entry>> obtenerTodos() {
         return ResponseEntity.ok(entryService.obtenerTodos());
@@ -35,6 +47,13 @@ public class EntryController {
     // GET /api/v1/entries/1
     // Devuelve un ingreso específico por su id
     // Deadline Service llama a este endpoint para verificar ingresos
+    @Operation(summary = "Obtener Por Id", description = "Deadline Service llama a este endpoint para verificar ingresos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<Entry> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(entryService.obtenerPorId(id));
@@ -42,6 +61,13 @@ public class EntryController {
 
     // POST /api/v1/entries
     // Registra un nuevo ingreso al país
+    @Operation(summary = "Registrar", description = "Registra un nuevo ingreso al país")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PostMapping
     public ResponseEntity<Entry> registrar(
             @Valid @RequestBody EntryDTO dto) {
@@ -50,6 +76,13 @@ public class EntryController {
                 .body(entryService.registrar(dto));
     }
 
+    @Operation(summary = "Actualizar", description = "HTTP 201 = se creó un nuevo recurso exitosamente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<Entry> actualizar(
             @PathVariable Long id,
@@ -61,6 +94,13 @@ public class EntryController {
     // El fiscalizador autoriza el ingreso — cambia estado a AUTORIZADO
     // rutFiscalizador = obligatorio, quien autoriza
     // observaciones = opcional, comentarios adicionales
+    @Operation(summary = "Autorizar", description = "observaciones = opcional, comentarios adicionales")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PatchMapping("/{id}/autorizar")
     public ResponseEntity<Entry> autorizar(
             @PathVariable Long id,
@@ -73,6 +113,13 @@ public class EntryController {
     // PATCH /api/v1/entries/1/rechazar
     // El fiscalizador rechaza el ingreso — cambia estado a RECHAZADO
     // Al rechazar el vehículo vuelve a su estado anterior
+    @Operation(summary = "Rechazar", description = "Al rechazar el vehículo vuelve a su estado anterior")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<Entry> rechazar(
             @PathVariable Long id,
@@ -84,6 +131,13 @@ public class EntryController {
 
     // DELETE /api/v1/entries/1
     // Elimina un ingreso por su id
+    @Operation(summary = "Eliminar", description = "Elimina un ingreso por su id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         entryService.eliminar(id);
@@ -93,6 +147,13 @@ public class EntryController {
 
     // GET /api/v1/entries/patente/ABC123
     // Devuelve todos los ingresos de un vehículo específico
+    @Operation(summary = "Obtener Por Patente", description = "Devuelve todos los ingresos de un vehículo específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/patente/{patente}")
     public ResponseEntity<List<Entry>> obtenerPorPatente(
             @PathVariable String patente) {
@@ -102,6 +163,13 @@ public class EntryController {
 
     // GET /api/v1/entries/conductor/12345678-9
     // Devuelve todos los ingresos de un conductor específico
+    @Operation(summary = "Obtener Por Conductor", description = "Devuelve todos los ingresos de un conductor específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/conductor/{rut}")
     public ResponseEntity<List<Entry>> obtenerPorConductor(
             @PathVariable String rut) {
@@ -111,6 +179,13 @@ public class EntryController {
 
     // GET /api/v1/entries/estado/PENDIENTE
     // Devuelve ingresos por estado (PENDIENTE, AUTORIZADO, RECHAZADO)
+    @Operation(summary = "Obtener Por Estado", description = "Devuelve ingresos por estado (PENDIENTE, AUTORIZADO, RECHAZADO)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<Entry>> obtenerPorEstado(
             @PathVariable String estado) {
@@ -121,6 +196,13 @@ public class EntryController {
     // Devuelve ingresos por tipo
     // RETORNO           → vehículo que regresa al país
     // ADMISION_TEMPORAL → vehículo extranjero que entra temporalmente
+    @Operation(summary = "Obtener Por Tipo", description = "ADMISION_TEMPORAL → vehículo extranjero que entra temporalmente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/tipo/{tipoIngreso}")
     public ResponseEntity<List<Entry>> obtenerPorTipo(
             @PathVariable String tipoIngreso) {
@@ -130,6 +212,13 @@ public class EntryController {
 
     // GET /api/v1/entries/paso/Los Libertadores
     // Devuelve todos los ingresos de un paso fronterizo específico
+    @Operation(summary = "Obtener Por Paso", description = "Devuelve todos los ingresos de un paso fronterizo específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/paso/{pasoFronterizo}")
     public ResponseEntity<List<Entry>> obtenerPorPaso(
             @PathVariable String pasoFronterizo) {
@@ -139,6 +228,13 @@ public class EntryController {
 
     // GET /api/v1/entries/fiscalizador/12345678-9
     // Devuelve todos los ingresos que procesó un fiscalizador específico
+    @Operation(summary = "Obtener Por Fiscalizador", description = "Devuelve todos los ingresos que procesó un fiscalizador específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/fiscalizador/{rut}")
     public ResponseEntity<List<Entry>> obtenerPorFiscalizador(
             @PathVariable String rut) {
@@ -148,6 +244,13 @@ public class EntryController {
 
     // GET /api/v1/entries/patente/ABC123/estado/AUTORIZADO
     // Combina dos filtros: patente + estado
+    @Operation(summary = "Obtener Por Patente Y Estado", description = "Combina dos filtros: patente + estado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/patente/{patente}/estado/{estado}")
     public ResponseEntity<List<Entry>> obtenerPorPatenteYEstado(
             @PathVariable String patente,
@@ -158,6 +261,13 @@ public class EntryController {
 
     // GET /api/v1/entries/fechas?desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59
     // Devuelve ingresos registrados en un rango de fechas
+    @Operation(summary = "Obtener Por Fechas", description = "Devuelve ingresos registrados en un rango de fechas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/fechas")
     public ResponseEntity<List<Entry>> obtenerPorFechas(
             @RequestParam String desde,
@@ -173,6 +283,13 @@ public class EntryController {
     // GET /api/v1/entries/buscar?pais=argentina
     // Busca ingresos cuyo país de origen contenga el texto buscado
     // No necesitas escribir el nombre exacto — busca si lo contiene
+    @Operation(summary = "Buscar Por Pais", description = "No necesitas escribir el nombre exacto — busca si lo contiene")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/buscar")
     public ResponseEntity<List<Entry>> buscarPorPais(
             @RequestParam String pais) {
@@ -182,6 +299,13 @@ public class EntryController {
 
     // GET /api/v1/entries/patente/ABC123/ordenados
     // Devuelve los ingresos de un vehículo del más reciente al más antiguo
+    @Operation(summary = "Obtener Por Patente Ordenados", description = "Devuelve los ingresos de un vehículo del más reciente al más antiguo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/patente/{patente}/ordenados")
     public ResponseEntity<List<Entry>> obtenerPorPatenteOrdenados(
             @PathVariable String patente) {
@@ -191,6 +315,13 @@ public class EntryController {
 
     // GET /api/v1/entries/ultimos
     // Devuelve los últimos 10 ingresos registrados en el sistema
+    @Operation(summary = "Obtener Ultimos Ingresos", description = "Devuelve los últimos 10 ingresos registrados en el sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/ultimos")
     public ResponseEntity<List<Entry>> obtenerUltimosIngresos() {
         return ResponseEntity.ok(entryService.obtenerUltimosIngresos());

@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 //donde recibe peticiones HTTP y las devuelves en JSON
 @RestController
@@ -18,6 +22,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/audits")
 //genera el constructor automatico
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class AuditController {
 
     //donde se contiene la logica del negocio
@@ -26,18 +31,39 @@ public class AuditController {
     // CRUD BÁSICO
 
     // GET /api/v1/audits = devuelve todas las auditorias
+    @Operation(summary = "Obtener Todas", description = "GET /api/v1/audits = devuelve todas las auditorias")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping
     public ResponseEntity<List<Audit>> obtenerTodas() {
         return ResponseEntity.ok(auditService.obtenerTodas());
     }
 
     // GET /api/v1/audits/1 = para buscar por id
+    @Operation(summary = "Obtener Por Id", description = "GET /api/v1/audits/1 = para buscar por id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<Audit> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(auditService.obtenerPorId(id));
     }
 
     // POST /api/v1/audits = donde creamos una nueva auditoria
+    @Operation(summary = "Registrar", description = "POST /api/v1/audits = donde creamos una nueva auditoria")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PostMapping
     public ResponseEntity<Audit> registrar(
             @Valid @RequestBody AuditDTO dto) {
@@ -46,12 +72,26 @@ public class AuditController {
     }
 
     // PATCH /api/v1/audits/1/completar = cambiamos el estado a completado (actualizacion parcial)
+    @Operation(summary = "Completar", description = "PATCH /api/v1/audits/1/completar = cambiamos el estado a completado (actualizacion parcial)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PatchMapping("/{id}/completar")
     public ResponseEntity<Audit> completar(@PathVariable Long id) {
         return ResponseEntity.ok(auditService.completar(id));
     }
 
     // PATCH /api/v1/audits/1/observacion = cambia el estado a observacion (actualizacion parcial)
+    @Operation(summary = "Marcar Observacion", description = "PATCH /api/v1/audits/1/observacion = cambia el estado a observacion (actualizacion parcial)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @PatchMapping("/{id}/observacion")
     public ResponseEntity<Audit> marcarObservacion(
             @PathVariable Long id) {
@@ -59,6 +99,13 @@ public class AuditController {
     }
 
     // DELETE /api/v1/audits/1 = elimina  auditoria (no tiene body)
+    @Operation(summary = "Eliminar", description = "DELETE /api/v1/audits/1 = elimina  auditoria (no tiene body)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         auditService.eliminar(id);
@@ -68,6 +115,13 @@ public class AuditController {
     // CONSULTAS DERIVADAS
 
     // GET /api/v1/audits/auditor/12345678-9 = busca las auditorias de un auditor especifico
+    @Operation(summary = "Obtener Por Auditor", description = "GET /api/v1/audits/auditor/12345678-9 = busca las auditorias de un auditor especifico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/auditor/{rut}")
     public ResponseEntity<List<Audit>> obtenerPorAuditor(
             @PathVariable String rut) {
@@ -75,6 +129,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/tipo/USUARIO = Busca auditorías por tipo (/tipo/USUARIO, /tipo/SISTEMA, /tipo/TRANSACCION)
+    @Operation(summary = "Obtener Por Tipo", description = "GET /api/v1/audits/tipo/USUARIO = Busca auditorías por tipo (/tipo/USUARIO, /tipo/SISTEMA, /tipo/TRANSACCION)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/tipo/{tipo}")
     public ResponseEntity<List<Audit>> obtenerPorTipo(
             @PathVariable String tipo) {
@@ -82,6 +143,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/estado/EN_PROCESO = Busca auditorías por estado (/estado/EN_PROCESO, /estado/COMPLETADA, /estado/OBSERVACION)
+    @Operation(summary = "Obtener Por Estado", description = "GET /api/v1/audits/estado/EN_PROCESO = Busca auditorías por estado (/estado/EN_PROCESO, /estado/COMPLETADA, /estado/OBSERVACION)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<Audit>> obtenerPorEstado(
             @PathVariable String estado) {
@@ -89,6 +157,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/entidad/User Service = Busca auditorías de una entidad específica (/entidad/User Service, /entidad/Border Crossing Service)
+    @Operation(summary = "Obtener Por Entidad", description = "GET /api/v1/audits/entidad/User Service = Busca auditorías de una entidad específica (/entidad/User Service, /entidad/Border Crossing Service)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/entidad/{entidad}")
     public ResponseEntity<List<Audit>> obtenerPorEntidad(
             @PathVariable String entidad) {
@@ -96,6 +171,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/entidad/User Service/1 = Busca auditorías de una entidad Y un registro específico
+    @Operation(summary = "Obtener Por Entidad Y Id", description = "GET /api/v1/audits/entidad/User Service/1 = Busca auditorías de una entidad Y un registro específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/entidad/{entidad}/{entidadId}")
     public ResponseEntity<List<Audit>> obtenerPorEntidadYId(
             @PathVariable String entidad,
@@ -105,6 +187,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/fechas?desde=...&hasta=... = busca por un rango de fecha y hora
+    @Operation(summary = "Obtener Por Fechas", description = "GET /api/v1/audits/fechas?desde=...&hasta=... = busca por un rango de fecha y hora")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/fechas")
     public ResponseEntity<List<Audit>> obtenerPorFechas(
             @RequestParam String desde,
@@ -116,6 +205,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/auditor/12345678-9/ordenadas = ordena de más reciente a más antigua
+    @Operation(summary = "Obtener Por Auditor Ordenadas", description = "GET /api/v1/audits/auditor/12345678-9/ordenadas = ordena de más reciente a más antigua")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/auditor/{rut}/ordenadas")
     public ResponseEntity<List<Audit>> obtenerPorAuditorOrdenadas(
             @PathVariable String rut) {
@@ -124,6 +220,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/en-proceso/ordenadas = Devuelve solo las auditorías EN_PROCESO ordenadas de más antigua a más reciente
+    @Operation(summary = "Obtener En Proceso Ordenadas", description = "GET /api/v1/audits/en-proceso/ordenadas = Devuelve solo las auditorías EN_PROCESO ordenadas de más antigua a más reciente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/en-proceso/ordenadas")
     public ResponseEntity<List<Audit>> obtenerEnProcesoOrdenadas() {
         return ResponseEntity.ok(
@@ -131,6 +234,13 @@ public class AuditController {
     }
 
     // GET /api/v1/audits/ultimas = Devuelve las últimas 10 auditorías registradas en el sistema
+    @Operation(summary = "Obtener Ultimas", description = "GET /api/v1/audits/ultimas = Devuelve las últimas 10 auditorías registradas en el sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     @GetMapping("/ultimas")
     public ResponseEntity<List<Audit>> obtenerUltimas() {
         return ResponseEntity.ok(

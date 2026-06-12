@@ -11,17 +11,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "user_roles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa user role")
 public class UserRole {
 
     // Identificador único de la asignación del rol histórico
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Id", example = "1")
     private Long id;
 
     // RELACIÓN @ManyToOne — muchos roles pertenecen a un usuario
@@ -37,15 +40,18 @@ public class UserRole {
     // Rol asignado en este momento histórico del usuario
     // Permite ver qué roles ha tenido un usuario a lo largo del tiempo
     @Column(nullable = false, length = 50)
+    @Schema(description = "Rol", example = "VIAJERO", maxLength = 50)
     private String rol;
 
     // Fecha y hora exacta en que se asignó este rol
     @Column(name = "asignado_at")
+    @Schema(description = "Asignado At", example = "2024-01-15")
     private LocalDateTime asignadoAt;
 
     // Si este rol sigue siendo el activo del usuario
     // activo = false → fue reemplazado por un nuevo rol
     // Solo debe existir un rol con activo = true por usuario a la vez
     @Column(nullable = false)
+    @Schema(description = "Activo", example = "true")
     private Boolean activo = true;
 }

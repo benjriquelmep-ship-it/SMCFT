@@ -38,6 +38,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/report-details/**").permitAll()
 
+                        // Swagger/OpenAPI — público para documentación
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // RUTAS PROTEGIDAS
                         // Exige token válido para POST, PUT, PATCH y DELETE
                         .anyRequest().authenticated()

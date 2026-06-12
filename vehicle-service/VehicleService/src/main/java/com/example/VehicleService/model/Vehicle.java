@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 // @Entity le dice a JPA que esta clase representa una tabla en MySQL
 @Entity
@@ -15,44 +16,53 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa vehicle")
 public class Vehicle {
 
     // Identificador único autoincremental del parque automotor
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Id", example = "1")
     private Long id;
 
     // Patente única del vehículo
     // unique = true → no pueden existir dos vehículos con la misma patente
     @Column(nullable = false, unique = true, length = 10)
+    @Schema(description = "Patente", example = "ABC-123", maxLength = 10)
     private String patente;
 
     // Fabricante o marca de la unidad automotriz
     @Column(nullable = false, length = 50)
+    @Schema(description = "Marca", example = "Toyota", maxLength = 50)
     private String marca;
 
     // Línea o modelo específico del vehículo
     @Column(nullable = false, length = 50)
+    @Schema(description = "Modelo", example = "Corolla", maxLength = 50)
     private String modelo;
 
     // Año de fabricación de la estructura vehicular
     @Column(nullable = false)
+    @Schema(description = "Anio", example = "2024")
     private Integer anio;
 
     // Tipo del vehículo según clasificación aduanera
     // "PARTICULAR", "DIPLOMATICO", "COMERCIAL"
     @Column(name = "tipo_vehiculo", nullable = false, length = 30)
+    @Schema(description = "Tipo Vehiculo", example = "PARTICULAR", maxLength = 30)
     private String tipoVehiculo;
 
     // Solo guardamos el RUT del propietario, no el objeto User completo
     // Esto mantiene los microservicios desacoplados entre sí
     // Si necesitamos más datos del propietario consultamos a User Service
     @Column(name = "rut_propietario", nullable = false, length = 12)
+    @Schema(description = "Rut Propietario", example = "12345678-9", maxLength = 12)
     private String rutPropietario;
 
     // Estado actual del vehículo en el sistema fronterizo
     // "EN_TERRITORIO_NACIONAL", "FUERA_DEL_PAIS", "ADMISION_TEMPORAL"
     @Column(nullable = false, length = 30)
+    @Schema(description = "Estado", example = "ACTIVO", maxLength = 30)
     private String estado;
 
     // RELACIÓN @OneToMany — un vehículo tiene muchos documentos

@@ -34,6 +34,9 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Swagger/OpenAPI — público para documentación
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // Aquí TODO requiere token válido porque: registrar cruces = acción sensible de seguridad..
                         // Solo fiscalizadores y administradores operan aquí
                         .anyRequest().authenticated()

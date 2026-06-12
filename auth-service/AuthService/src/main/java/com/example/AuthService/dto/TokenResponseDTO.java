@@ -5,9 +5,11 @@ package com.example.AuthService.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Data
+@Schema(description = "DTO que representa token")
 public class TokenResponseDTO {
 
     // Token JWT que el cliente guarda y envía en cada petición
@@ -15,8 +17,10 @@ public class TokenResponseDTO {
     private String token;
 
     // Rol del usuario para que el frontend sepa qué pantallas mostrar
+    @Schema(description = "Rol", example = "VIAJERO")
     private String rol;
 
     // Mensaje de confirmación para el cliente
+    @Schema(description = "Mensaje", example = "ejemplo")
     private String mensaje;
 }

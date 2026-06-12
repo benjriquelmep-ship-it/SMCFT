@@ -35,6 +35,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/validar").permitAll()
                         .requestMatchers("/api/v1/auth/rol").permitAll()
+
+                        // Swagger/OpenAPI — público para documentación
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // Todas las demás rutas requieren token válido
                         .anyRequest().authenticated()
                 )

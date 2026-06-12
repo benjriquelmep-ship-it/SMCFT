@@ -6,18 +6,22 @@ package com.example.AuthService.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
+@Schema(description = "DTO que representa login")
 public class LoginDTO {
 
     // @NotBlank valida que no sea null, vacío ni solo espacios
     // @Email verifica que tenga formato de email válido (contiene @ y dominio)
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email no tiene formato válido")
+    @Schema(description = "Email", example = "usuario@ejemplo.cl")
     private String email;
 
     // Solo verificamos que no esté vacío
     // No ponemos @Size mínimo porque el usuario ya tiene su contraseña registrada
     @NotBlank(message = "La contraseña es obligatoria")
+    @Schema(description = "Password", example = "********")
     private String password;
 }

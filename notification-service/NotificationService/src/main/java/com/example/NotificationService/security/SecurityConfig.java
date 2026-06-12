@@ -63,6 +63,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH,
                                 "/api/v1/notification-recipients/*/leida").permitAll()
 
+                        // Swagger/OpenAPI — público para documentación
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // Cualquier otra petición que no sea las de arriba
                         // requiere que el usuario esté autenticado
                         // Ej: POST /notifications → crear notificación

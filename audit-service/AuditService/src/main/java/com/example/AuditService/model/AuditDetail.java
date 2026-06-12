@@ -8,12 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "audit_details")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa audit detail")
 public class AuditDetail {
 
     @Id
@@ -28,26 +30,32 @@ public class AuditDetail {
 
     // Acción auditada
     @Column(nullable = false, length = 100)
+    @Schema(description = "Accion", example = "ejemplo", maxLength = 100)
     private String accion;
 
     // Descripción detallada
     @Column(nullable = false, length = 500)
+    @Schema(description = "Descripcion", example = "ejemplo", maxLength = 500)
     private String descripcion;
 
     // RUT del usuario que realizó la acción
     @Column(name = "rut_usuario", nullable = false, length = 12)
+    @Schema(description = "Rut Usuario", example = "12345678-9", maxLength = 12)
     private String rutUsuario;
 
     // Resultado de la acción
     // "EXITOSO", "FALLIDO", "SOSPECHOSO"
     @Column(nullable = false, length = 30)
+    @Schema(description = "Resultado", example = "ejemplo", maxLength = 30)
     private String resultado;
 
     // IP desde donde se realizó la acción
     @Column(name = "ip_address", length = 45)
+    @Schema(description = "Ip Address", example = "ejemplo", maxLength = 45)
     private String ipAddress;
 
     // Fecha y hora de la acción
     @Column(name = "fecha_accion", nullable = false)
+    @Schema(description = "Fecha Accion", example = "2024-01-15")
     private LocalDateTime fechaAccion;
 }

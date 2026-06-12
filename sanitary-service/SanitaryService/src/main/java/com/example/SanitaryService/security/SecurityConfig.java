@@ -50,6 +50,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/sanitary/**").permitAll()
 
+                        // Swagger/OpenAPI — público para documentación
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // Cualquier otra petición que no sea GET
                         // requiere que el usuario esté autenticado
                         // Ej: POST /api/v1/sanitary → registrar inspección
