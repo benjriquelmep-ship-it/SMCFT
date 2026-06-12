@@ -46,6 +46,7 @@ public class Notification {
     // RELACIÓN @OneToMany — una notificación tiene muchos destinatarios
     @OneToMany(mappedBy = "notification",
             cascade = CascadeType.ALL,
+            orphanRemoval = true,
             fetch = FetchType.LAZY)
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<NotificationRecipient> destinatarios;

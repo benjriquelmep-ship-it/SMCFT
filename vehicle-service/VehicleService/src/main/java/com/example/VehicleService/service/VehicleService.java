@@ -111,6 +111,9 @@ public class VehicleService {
         existente.setModelo(dto.getModelo());
         existente.setAnio(dto.getAnio());
         existente.setTipoVehiculo(dto.getTipoVehiculo());
+        if (dto.getEstado() != null) {
+            existente.setEstado(dto.getEstado());
+        }
 
         Vehicle actualizado = vehicleRepository.save(existente);
         log.info("Vehículo {} actualizado correctamente", id);

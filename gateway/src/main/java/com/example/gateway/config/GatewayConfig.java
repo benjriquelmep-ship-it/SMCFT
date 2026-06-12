@@ -52,7 +52,7 @@ public class GatewayConfig {
                         .uri("http://localhost:2028"))
 
                 // 11. Notification Service (Puerto: 2027)
-                .route("notification_service_route", r -> r.path("/api/v1/notifications/**")
+                .route("notification_service_route", r -> r.path("/api/v1/notifications/**", "/api/v1/notification-recipients/**")
                         .uri("http://localhost:2027"))
 
                 // 12. Audit Service (Puerto: 2021)

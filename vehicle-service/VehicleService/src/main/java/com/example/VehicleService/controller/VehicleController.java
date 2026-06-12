@@ -18,9 +18,13 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    // GET /api/v1/vehicles : Lista todos los vehículos registrados en la base de datos
+    // GET /api/v1/vehicles?rutPropietario=12345678-9 : Lista todos los vehículos, opcionalmente filtrados por propietario
     @GetMapping
-    public ResponseEntity<List<Vehicle>> obtenerTodos() {
+    public ResponseEntity<List<Vehicle>> obtenerTodos(
+            @RequestParam(required = false) String rutPropietario) {
+        if (rutPropietario != null) {
+            return ResponseEntity.ok(vehicleService.obtenerPorPropietario(rutPropietario));
+        }
         return ResponseEntity.ok(vehicleService.obtenerTodos());
     }
 

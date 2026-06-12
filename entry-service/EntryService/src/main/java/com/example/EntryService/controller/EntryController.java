@@ -50,6 +50,13 @@ public class EntryController {
                 .body(entryService.registrar(dto));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Entry> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody EntryDTO dto) {
+        return ResponseEntity.ok(entryService.actualizar(id, dto));
+    }
+
     // PATCH /api/v1/entries/1/autorizar
     // El fiscalizador autoriza el ingreso — cambia estado a AUTORIZADO
     // rutFiscalizador = obligatorio, quien autoriza

@@ -6,13 +6,16 @@ package com.example.NotificationService.service;
 import com.example.NotificationService.dto.DeadlineAlertResponseDTO;
 import com.example.NotificationService.dto.NotificationDTO;
 import com.example.NotificationService.model.Notification;
+import com.example.NotificationService.model.NotificationRecipient;
 import com.example.NotificationService.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,10 @@ public class NotificationService {
     // Cliente HTTP para llamar a Deadline Service
     // Se usa para obtener alertas pendientes y marcarlas como enviadas
     private final WebClient webClient;
+
+    // Cliente HTTP para llamar a User Service
+    // Se usa para consultar datos del usuario (nombre, email) por RUT
+    private final WebClient userServiceWebClient;
 
     // Devuelve todas las notificaciones de la BD
     public List<Notification> obtenerTodas() {
@@ -45,7 +52,8 @@ public class NotificationService {
     }
 
     // Crea una notificación manual con los datos del DTO
-    // No tiene reglas de negocio — cualquier notificación válida se crea
+    // Si el DTO incluye destinatarioRut, consulta User Service para obtener
+    // los datos del destinatario y lo agrega automáticamente
     public Notification crear(NotificationDTO dto) {
         log.info("Creando notificación: {}", dto.getTitulo());
 
@@ -58,9 +66,80 @@ public class NotificationService {
         nueva.setEstado("PENDIENTE");                   // toda notificación nueva inicia PENDIENTE
         nueva.setCreatedAt(LocalDateTime.now());        // fecha y hora actual
 
+        // Si se especificó un RUT de destinatario, buscar sus datos en User Service
+        String rut = dto.getDestinatarioRut();
+        if (rut != null && !rut.isBlank()) {
+            try {
+                log.info("Buscando destinatario con RUT: {}", rut);
+                Map<String, Object> userData = userServiceWebClient.get()
+                        .uri("/api/v1/users/rut/{rut}", rut)
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .block();
+
+                if (userData != null) {
+                    NotificationRecipient destinatario = new NotificationRecipient();
+                    destinatario.setNotification(nueva);
+                    destinatario.setRutDestinatario(rut);
+                    destinatario.setEmail((String) userData.getOrDefault("email", ""));
+                    destinatario.setNombre((String) userData.getOrDefault("nombre", ""));
+                    destinatario.setLeida(false);
+
+                    List<NotificationRecipient> destinatarios = new ArrayList<>();
+                    destinatarios.add(destinatario);
+                    nueva.setDestinatarios(destinatarios);
+                    log.info("Destinatario asignado: {} - {}", rut, destinatario.getNombre());
+                }
+            } catch (Exception e) {
+                log.error("Error al obtener datos del usuario con RUT {}: {}", rut, e.getMessage());
+            }
+        }
+
         Notification guardada = notificationRepository.save(nueva);
         log.info("Notificación creada con id: {}", guardada.getId());
         return guardada;
+    }
+
+    // Actualiza los datos editables de una notificación existente
+    // Solo se actualizan titulo, mensaje, tipo — el estado se maneja por separado
+    public Notification actualizar(Long id, NotificationDTO dto) {
+        log.info("Actualizando notificación {}", id);
+        Notification notificacion = obtenerPorId(id);
+        notificacion.setTitulo(dto.getTitulo());
+        notificacion.setMensaje(dto.getMensaje());
+        notificacion.setTipo(dto.getTipo());
+
+        // Limpiar destinatarios anteriores y reemplazar con el nuevo si se especifica RUT
+        if (notificacion.getDestinatarios() != null) {
+            notificacion.getDestinatarios().clear();
+        }
+
+        String rut = dto.getDestinatarioRut();
+        if (rut != null && !rut.isBlank()) {
+            try {
+                Map<String, Object> userData = userServiceWebClient.get()
+                        .uri("/api/v1/users/rut/{rut}", rut)
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .block();
+                if (userData != null) {
+                    NotificationRecipient destinatario = new NotificationRecipient();
+                    destinatario.setNotification(notificacion);
+                    destinatario.setRutDestinatario(rut);
+                    destinatario.setEmail((String) userData.getOrDefault("email", ""));
+                    destinatario.setNombre((String) userData.getOrDefault("nombre", ""));
+                    destinatario.setLeida(false);
+                    notificacion.getDestinatarios().add(destinatario);
+                    log.info("Destinatario actualizado: {} - {}", rut, destinatario.getNombre());
+                }
+            } catch (Exception e) {
+                log.error("Error al obtener datos del usuario con RUT {}: {}", rut, e.getMessage());
+            }
+        }
+
+        Notification actualizada = notificationRepository.save(notificacion);
+        log.info("Notificación {} actualizada", id);
+        return actualizada;
     }
 
     // Marca una notificación como enviada al destinatario

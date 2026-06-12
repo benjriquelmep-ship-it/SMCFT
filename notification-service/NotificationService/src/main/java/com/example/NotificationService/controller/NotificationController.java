@@ -82,6 +82,15 @@ public class NotificationController {
                 notificationService.marcarComoError(id));
     }
 
+    // PUT /api/v1/notifications/1
+    // Actualiza los datos editables de una notificación existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Notification> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody NotificationDTO dto) {
+        return ResponseEntity.ok(notificationService.actualizar(id, dto));
+    }
+
     // DELETE /api/v1/notifications/1
     // Elimina una notificación por su id
     // ResponseEntity<Void> = respuesta sin body → HTTP 204

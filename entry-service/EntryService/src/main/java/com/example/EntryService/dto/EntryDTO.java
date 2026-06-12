@@ -44,4 +44,7 @@ public class EntryDTO {
             message = "El tipo debe ser RETORNO o ADMISION_TEMPORAL"
     )
     private String tipoIngreso;
+
+    // Estado del ingreso — PENDIENTE, AUTORIZADO o RECHAZADO
+    private String estado;
 }

@@ -34,4 +34,9 @@ public class NotificationDTO {
     // ID de la alerta de deadline que originó esta notificación
     // Este campo es OPCIONAL → no tiene @NotNull ni @NotBlank
     private Long deadlineAlertId;
+
+    // RUT del destinatario al que va dirigida la notificación
+    // Si se proporciona, el sistema creará automáticamente un destinatario
+    // Este campo es OPCIONAL — si no se manda, la notificación no tiene destinatario asignado
+    private String destinatarioRut;
 }

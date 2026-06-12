@@ -21,7 +21,7 @@ public class NotificationRecipient {
     // a una notificación
     @ManyToOne
     @JoinColumn(name = "notification_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"destinatarios"})
     private Notification notification;
 
     @Column(name = "rut_destinatario", nullable = false, length = 12)

@@ -28,6 +28,21 @@ public class EntryService {
     // Se usa para verificar y actualizar el estado del vehículo
     private final WebClient webClient;
 
+    public Entry actualizar(Long id, EntryDTO dto) {
+        log.info("Actualizando ingreso id: {}", id);
+        Entry entry = obtenerPorId(id);
+        entry.setPatente(dto.getPatente().toUpperCase());
+        entry.setRutConductor(dto.getRutConductor());
+        entry.setPaisOrigen(dto.getPaisOrigen());
+        entry.setPasoFronterizo(dto.getPasoFronterizo());
+        entry.setFechaIngreso(dto.getFechaIngreso());
+        entry.setTipoIngreso(dto.getTipoIngreso());
+        if (dto.getEstado() != null) {
+            entry.setEstado(dto.getEstado());
+        }
+        return entryRepository.save(entry);
+    }
+
     // Devuelve todos los ingresos de la BD
     public List<Entry> obtenerTodos() {
         log.info("Obteniendo todos los ingresos");

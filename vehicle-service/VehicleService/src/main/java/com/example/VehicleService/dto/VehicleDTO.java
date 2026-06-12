@@ -43,4 +43,7 @@ public class VehicleDTO {
     @NotBlank(message = "El RUT del propietario es obligatorio")
     @Size(max = 12, message = "El RUT no puede tener más de 12 caracteres")
     private String rutPropietario;
+
+    // Estado del vehículo — EN_TERRITORIO_NACIONAL, FUERA_DEL_PAIS, ADMISION_TEMPORAL
+    private String estado;
 }
