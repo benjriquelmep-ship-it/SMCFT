@@ -1,7 +1,6 @@
-package com.example.AuthService.dto;
-
 // Lo que el cliente recibe después de un login exitoso
 // El cliente debe guardar el token y enviarlo en cada petición posterior
+package com.example.AuthService.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,18 +8,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Data
-@Schema(description = "DTO que representa token")
+@Schema(description = "Payload de salida que transporta el token de seguridad y los privilegios asignados al usuario")
 public class TokenResponseDTO {
 
-    // Token JWT que el cliente guarda y envía en cada petición
-    // Header de cada petición: Authorization: Bearer eyJhbGci...
+    @Schema(
+            description = "Token JWT firmado digitalmente que debe adjuntarse en las cabeceras HTTP (Authorization: Bearer <token>)",
+            example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String token;
 
-    // Rol del usuario para que el frontend sepa qué pantallas mostrar
-    @Schema(description = "Rol", example = "VIAJERO")
+    @Schema(
+            description = "Rol operativo asignado para el control de vistas en la interfaz de usuario",
+            example = "FISCALIZADOR",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String rol;
 
-    // Mensaje de confirmación para el cliente
-    @Schema(description = "Mensaje", example = "ejemplo")
+    @Schema(
+            description = "Mensaje informativo sobre el resultado conforme del proceso de autenticación",
+            example = "Autenticación concedida con éxito. Bienvenido al sistema de control fronterizo.",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String mensaje;
 }

@@ -16,25 +16,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/items")
 @RequiredArgsConstructor
+@Tag(name = "Catálogo de Artículos (Ítems)", description = "Endpoints para el desglose, administración y vigencia de las mercancías o artículos específicos declarables")
 @SecurityRequirement(name = "bearerAuth")
 public class ItemController {
 
-    // ItemService contiene toda la lógica de negocio
-    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final ItemService itemService;
 
     // GET /api/v1/items
-    // Devuelve todos los items del sistema
-    @Operation(summary = "Obtener Todos", description = "Devuelve todos los items del sistema")
+    @Operation(summary = "Listar todos los artículos del catálogo", description = "Expone el maestro central unificado de todas las mercancías e ítems específicos cargados en el sistema.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Maestro de artículos recuperado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT ausente"),
+            @ApiResponse(responseCode = "403", description = "Sin privilegios requeridos")
     })
     @GetMapping
     public ResponseEntity<List<Item>> obtenerTodos() {
@@ -42,13 +40,10 @@ public class ItemController {
     }
 
     // GET /api/v1/items/1
-    // Devuelve un item específico por su id
-    @Operation(summary = "Obtener Por Id", description = "Devuelve un item específico por su id")
+    @Operation(summary = "Obtener artículo específico por ID", description = "Busca el nombre comercial, unidad métrica y estado de vigencia de un artículo por su clave primaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Artículo localizado de forma correcta en el catálogo"),
+            @ApiResponse(responseCode = "404", description = "El ID del artículo solicitado no se encuentra registrado")
     })
     @GetMapping("/{id}")
     public ResponseEntity<Item> obtenerPorId(@PathVariable Long id) {
@@ -56,31 +51,23 @@ public class ItemController {
     }
 
     // POST /api/v1/items
-    // Crea un nuevo item dentro de una categoría
-    @Operation(summary = "Crear", description = "Crea un nuevo item dentro de una categoría")
+    @Operation(summary = "Insertar nuevo artículo al catálogo", description = "Valida el formulario inyectado y acopla una nueva mercancía vinculada obligatoriamente al ID de una categoría arancelaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "201", description = "Artículo incorporado de forma conforme al catálogo general"),
+            @ApiResponse(responseCode = "400", description = "Payload DTO con campos vacíos o inconsistencias de tipo")
     })
     @PostMapping
-    public ResponseEntity<Item> crear(
-            @Valid @RequestBody ItemDTO dto) {
-        // HTTP 201 = se creó un nuevo recurso exitosamente
+    public ResponseEntity<Item> crear(@Valid @RequestBody ItemDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(itemService.crear(dto));
     }
 
     // PUT /api/v1/items/1
-    // Actualiza TODOS los campos de un item
-    // El cliente debe mandar todos los campos del ItemDTO
-    @Operation(summary = "Actualizar", description = "El cliente debe mandar todos los campos del ItemDTO")
+    @Operation(summary = "Actualizar artículo por completo", description = "Sobreescribe de forma total las propiedades, nombres comerciales y unidades físicas de medida de un artículo por su ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Artículo modificado exitosamente en el maestro"),
+            @ApiResponse(responseCode = "400", description = "Datos de actualización erróneos"),
+            @ApiResponse(responseCode = "404", description = "El artículo a modificar no fue localizado")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Item> actualizar(
@@ -90,30 +77,23 @@ public class ItemController {
     }
 
     // PATCH /api/v1/items/1/desactivar
-    // Desactiva un item — cambia activo a false
-    // Los items desactivados no pueden usarse en nuevos cruces
-    @Operation(summary = "Desactivar", description = "Los items desactivados no pueden usarse en nuevos cruces")
+    @Operation(summary = "Desactivar artículo del catálogo", description = "Pone la vigencia lógica del bien en falso, impidiendo que el Border Crossing Service lo asocie a nuevos tránsitos fronterizos.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "204", description = "Artículo inhabilitado del catálogo correctamente. Sin contenido."),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "El ID de artículo especificado no existe")
     })
     @PatchMapping("/{id}/desactivar")
     public ResponseEntity<Void> desactivar(@PathVariable Long id) {
         itemService.desactivar(id);
-        // HTTP 204 = operación exitosa sin contenido en la respuesta
         return ResponseEntity.noContent().build();
     }
 
     // DELETE /api/v1/items/1
-    // Elimina un item por su id
-    @Operation(summary = "Eliminar", description = "Elimina un item por su id")
+    @Operation(summary = "Eliminar artículo de la base de datos", description = "Remueve físicamente la hilera de persistencia del artículo de forma definitiva.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "204", description = "Artículo purgado con éxito de la persistencia. Sin contenido."),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
@@ -122,48 +102,29 @@ public class ItemController {
     }
 
     // GET /api/v1/items/categoria/1
-    // Devuelve todos los items de una categoría específica
-    // Incluye activos e inactivos
-    @Operation(summary = "Obtener Por Categoria", description = "Incluye activos e inactivos")
+    @Operation(summary = "Listar artículos por Categoría arancelaria", description = "Recupera la lista histórica desglosada (activos e inactivos) de artículos acoplados a una partida arancelaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección de artículos de la categoría obtenida con éxito")
     })
     @GetMapping("/categoria/{categoryId}")
-    public ResponseEntity<List<Item>> obtenerPorCategoria(
-            @PathVariable Long categoryId) {
-        return ResponseEntity.ok(
-                itemService.obtenerPorCategoria(categoryId));
+    public ResponseEntity<List<Item>> obtenerPorCategoria(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(itemService.obtenerPorCategoria(categoryId));
     }
 
     // GET /api/v1/items/categoria/1/activos
-    // Devuelve solo los items ACTIVOS de una categoría específica
-    // Los items activos son los que se pueden usar en nuevos cruces
-    @Operation(summary = "Obtener Activos Por Categoria", description = "Los items activos son los que se pueden usar en nuevos cruces")
+    @Operation(summary = "Listar artículos Activos por Categoría", description = "Aísla y retorna las mercancías vigentes y seleccionables en andén aduanero que pertenecen a una subpartida arancelaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Desglose operativo activo devuelto de forma conforme")
     })
     @GetMapping("/categoria/{categoryId}/activos")
-    public ResponseEntity<List<Item>> obtenerActivosPorCategoria(
-            @PathVariable Long categoryId) {
-        return ResponseEntity.ok(
-                itemService.obtenerActivosPorCategoria(categoryId));
+    public ResponseEntity<List<Item>> obtenerActivosPorCategoria(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(itemService.obtenerActivosPorCategoria(categoryId));
     }
 
     // GET /api/v1/items/activos
-    // Devuelve TODOS los items activos del sistema sin importar la categoría
-    // Útil para ver qué items están disponibles en el sistema
-    @Operation(summary = "Obtener Activos", description = "Útil para ver qué items están disponibles en el sistema")
+    @Operation(summary = "Listar todos los artículos vigentes", description = "Filtro global operativo que expone la totalidad de artículos habilitados para transacciones comerciales o personales en frontera.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Maestro de artículos vigentes leídos con éxito")
     })
     @GetMapping("/activos")
     public ResponseEntity<List<Item>> obtenerActivos() {
@@ -171,62 +132,39 @@ public class ItemController {
     }
 
     // GET /api/v1/items/buscar?nombre=laptop
-    // Busca items cuyo nombre contenga el texto buscado
-    // No necesitas escribir el nombre exacto — busca si lo contiene
-    @Operation(summary = "Buscar Por Nombre", description = "No necesitas escribir el nombre exacto — busca si lo contiene")
+    @Operation(summary = "Buscar artículos por Coincidencia descriptiva", description = "Ejecuta una consulta de concordancia parcial (LIKE) sobre los nombres de las mercancías catalogadas.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Coincidencias de búsqueda leídas de forma conforme")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Item>> buscarPorNombre(
-            @RequestParam String nombre) {
+    public ResponseEntity<List<Item>> buscarPorNombre(@RequestParam String nombre) {
         return ResponseEntity.ok(itemService.buscarPorNombre(nombre));
     }
 
     // GET /api/v1/items/unidad/kg
-    // Devuelve todos los items que se miden en una unidad específica
-    @Operation(summary = "Obtener Por Unidad", description = "Devuelve todos los items que se miden en una unidad específica")
+    @Operation(summary = "Listar artículos por Unidad de medida", description = "Agrupa y extrae los ítems basándose en su métrica de empaque o volumen (ej: Litros, Unidades, Kilogramos).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registros agrupados por métrica devueltos con éxito")
     })
     @GetMapping("/unidad/{unidad}")
-    public ResponseEntity<List<Item>> obtenerPorUnidad(
-            @PathVariable String unidad) {
+    public ResponseEntity<List<Item>> obtenerPorUnidad(@PathVariable String unidad) {
         return ResponseEntity.ok(itemService.obtenerPorUnidad(unidad));
     }
 
     // GET /api/v1/items/categoria/1/ordenados
-    // Devuelve los items de una categoría ordenados alfabéticamente por nombre
-    // Útil para mostrar una lista ordenada en el frontend
-    @Operation(summary = "Obtener Por Categoria Ordenados", description = "Útil para mostrar una lista ordenada en el frontend")
+    @Operation(summary = "Listar artículos de una categoría ordenados alfabéticamente", description = "Retorna el desglose de productos de una subpartida arancelaria indexada de la A a la Z, ideal para componentes Frontend.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección ordenada devuelta con éxito")
     })
     @GetMapping("/categoria/{categoryId}/ordenados")
-    public ResponseEntity<List<Item>> obtenerPorCategoriaOrdenados(
-            @PathVariable Long categoryId) {
-        return ResponseEntity.ok(
-                itemService.obtenerPorCategoriaOrdenados(categoryId));
+    public ResponseEntity<List<Item>> obtenerPorCategoriaOrdenados(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(itemService.obtenerPorCategoriaOrdenados(categoryId));
     }
 
     // GET /api/v1/items/ultimos
-    // Devuelve los últimos 10 items registrados en el sistema
-    // Útil para monitorear los items más recientemente creados
-    @Operation(summary = "Obtener Ultimos", description = "Útil para monitorear los items más recientemente creados")
+    @Operation(summary = "Listar últimas inserciones de artículos", description = "Endpoint administrativo que lee los últimos 10 artículos incorporados recientemente al catálogo general.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Últimas inserciones leídas de forma conforme")
     })
     @GetMapping("/ultimos")
     public ResponseEntity<List<Item>> obtenerUltimos() {

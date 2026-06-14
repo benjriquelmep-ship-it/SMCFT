@@ -1,4 +1,4 @@
-package com.example.ReportService.config;
+package com.example.ReportService.config; // Valida que coincida con tu estructura real de paquetes
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -13,26 +13,21 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Report Service API")
+                        .title("SMCFT - Report Service API")
                         .version("1.0")
-                        .description("Microservicio de reportes")
+                        .description("Microservicio analítico encargado de la generación de informes consolidados, estadísticas de tránsito fronterizo y auditorías aduaneras.")
                         .contact(new Contact()
-                                .name("Fernando")
-                                .email("correo@ejemplo.cl")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName))
-                .schemaRequirement(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl")))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .schemaRequirement(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

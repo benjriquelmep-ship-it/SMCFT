@@ -14,22 +14,24 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 // Todas las rutas empiezan con /api/v1/users/roles
 @RequestMapping("/api/v1/users/roles")
 @RequiredArgsConstructor
+@Tag(name = "Roles de Usuario", description = "Endpoints para la asignación, revocación e historial de perfiles de acceso aduaneros")
 @SecurityRequirement(name = "bearerAuth")
 public class UserRoleController {
+
     private final UserRoleService userRoleService;
 
     // GET /api/v1/users/roles → todos los roles del sistema : Lista todas las asignaciones de roles globales
-    @Operation(summary = "Obtener Todos", description = "GET /api/v1/users/roles → todos los roles del sistema : Lista todas las asignaciones de roles globales")
+    @Operation(summary = "Listar todas las asignaciones de roles", description = "Muestra el registro completo de asignaciones de roles hechas en la plataforma.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección histórica de roles devuelta con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado - Token inválido o ausente"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos de administrador")
     })
     @GetMapping
     public ResponseEntity<List<UserRole>> obtenerTodos() {
@@ -37,12 +39,12 @@ public class UserRoleController {
     }
 
     // GET /api/v1/users/roles/1 → rol por id : Busca una asignación específica mediante su clave primaria
-    @Operation(summary = "Obtener Por Id", description = "GET /api/v1/users/roles/1 → rol por id : Busca una asignación específica mediante su clave primaria")
+    @Operation(summary = "Obtener asignación de rol por ID", description = "Busca el registro individual de un rol histórico basándose en su ID único.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Asignación de rol localizada correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "403", description = "Sin permisos"),
+            @ApiResponse(responseCode = "404", description = "El ID del registro de rol solicitado no fue encontrado")
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserRole> obtenerPorId(@PathVariable Long id) {
@@ -50,10 +52,10 @@ public class UserRoleController {
     }
 
     // POST /api/v1/users/roles → asignar nuevo rol a un usuario : Registra una nueva vinculación de perfil para un usuario
-    @Operation(summary = "Asignar", description = "POST /api/v1/users/roles → asignar nuevo rol a un usuario : Registra una nueva vinculación de perfil para un usuario")
+    @Operation(summary = "Asignar un nuevo rol a un usuario", description = "Crea un registro de asignación de perfil vinculándolo de manera mandatoria a un ID de usuario.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "201", description = "Rol asignado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Estructura DTO errónea o datos incompatibles"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
@@ -65,12 +67,12 @@ public class UserRoleController {
     }
 
     // DELETE /api/v1/users/roles/1 → eliminar un rol del historial : Remueve físicamente una asignación por su ID
-    @Operation(summary = "Eliminar", description = "DELETE /api/v1/users/roles/1 → eliminar un rol del historial : Remueve físicamente una asignación por su ID")
+    @Operation(summary = "Eliminar un rol del historial", description = "Remueve permanentemente el registro físico de la asignación de un perfil específico en la base de datos.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "204", description = "Asignación de rol eliminada correctamente. Sin contenido de retorno."),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "403", description = "Sin permisos"),
+            @ApiResponse(responseCode = "404", description = "El ID del registro de rol no existe")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
@@ -78,13 +80,10 @@ public class UserRoleController {
         return ResponseEntity.noContent().build();
     }
 
-
     // GET /api/v1/users/roles/usuario/1 : Filtra los perfiles que han sido asignados históricamente a un usuario
-    // Historial completo de roles de un usuario
-    @Operation(summary = "Obtener Por Usuario", description = "Historial completo de roles de un usuario")
+    @Operation(summary = "Obtener historial de roles de un usuario", description = "Lista la secuencia histórica completa de roles que ha poseído un usuario a lo largo del tiempo.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Historial de roles del usuario obtenido con éxito"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
@@ -95,13 +94,12 @@ public class UserRoleController {
     }
 
     // GET /api/v1/users/roles/usuario/1/activos : Obtiene la asignación que se encuentra vigente para el usuario
-    // Solo el rol activo actual de un usuario
-    @Operation(summary = "Obtener Activos Por Usuario", description = "Solo el rol activo actual de un usuario")
+    @Operation(summary = "Obtener el rol activo actual de un usuario", description = "Retorna de manera exclusiva la asignación de rol que se encuentra vigente en el instante actual de la consulta.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Rol activo actual obtenido correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "403", description = "Sin permisos"),
+            @ApiResponse(responseCode = "404", description = "El usuario no cuenta con un perfil activo asignado")
     })
     @GetMapping("/usuario/{userId}/activos")
     public ResponseEntity<List<UserRole>> obtenerActivosPorUsuario(
@@ -111,11 +109,9 @@ public class UserRoleController {
     }
 
     // GET /api/v1/users/roles/tipo/FISCALIZADOR : Lista todas las asignaciones históricas de un tipo de perfil
-    // Todos los roles de un tipo específico
-    @Operation(summary = "Obtener Por Rol", description = "Todos los roles de un tipo específico")
+    @Operation(summary = "Listar asignaciones por tipo de rol específico", description = "Lista de forma masiva a todos los usuarios vinculados históricamente a una categoría de rol.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Registros mapeados correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
@@ -126,11 +122,9 @@ public class UserRoleController {
     }
 
     // GET /api/v1/users/roles/tipo/FISCALIZADOR/activos : Filtra usuarios que tienen el perfil indicado vigente actualmente
-    // Tipo de rol activo actual
-    @Operation(summary = "Obtener Activos Por Rol", description = "Tipo de rol activo actual")
+    @Operation(summary = "Listar usuarios con rol activo específico", description = "Filtra la base de datos para extraer únicamente a los usuarios cuyo rol activo y vigente sea el ingresado en el parámetro.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Colección de usuarios con rol vigente devuelta con éxito"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
@@ -141,11 +135,9 @@ public class UserRoleController {
     }
 
     // GET /api/v1/users/roles/ultimos : Devuelve los últimos 10 cambios de perfil registrados globalmente
-    // Los últimos 10 roles asignados en el sistema
-    @Operation(summary = "Obtener Ultimos Asignados", description = "Los últimos 10 roles asignados en el sistema")
+    @Operation(summary = "Listar las últimas 10 asignaciones de rol", description = "Endpoint de control de auditoría administrativa que expone las últimas 10 transacciones de roles efectuadas en la plataforma.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Historial de auditoría de roles recuperado exitosamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })

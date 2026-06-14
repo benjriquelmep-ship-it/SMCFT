@@ -16,34 +16,46 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Entidad que representa login attempt")
+@Schema(description = "Entidad del modelo físico que registra la traza de auditoría perimetral para cada intento de autenticación en el sistema")
 public class LoginAttempt {
 
-    // Clave primaria con auto incremento
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Id", example = "1")
+    @Schema(description = "Clave primaria autoincremental del registro de intento de acceso", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
-    // Email con el que se intentó hacer login
     @Column(nullable = false, length = 150)
-    @Schema(description = "Email", example = "usuario@ejemplo.cl", maxLength = 150)
+    @Schema(
+            description = "Identificador de usuario (email) con el que se pretendió realizar la autenticación",
+            example = "fiscalizador@aduana.cl",
+            maxLength = 150,
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String email;
 
-    // true = login exitoso, false = login fallido
     @Column(nullable = false)
-    @Schema(description = "Exitoso", example = "true")
+    @Schema(
+            description = "Estado de resolución del intento: verdadero para accesos conformes, falso para credenciales rechazadas",
+            example = "true",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private Boolean exitoso;
 
-    // IP desde donde se intentó el login
-    // nullable porque no siempre está disponible
     @Column(name = "ip_address", length = 45)
-    @Schema(description = "Ip Address", example = "ejemplo", maxLength = 45)
+    @Schema(
+            description = "Dirección de red IPv4 o IPv6 desde la cual se originó el socket de la petición HTTP",
+            example = "192.168.1.45",
+            maxLength = 45
+    )
     private String ipAddress;
 
-    // Fecha y hora exacta del intento
     @Column(name = "intento_at")
-    @Schema(description = "Intento At", example = "2024-01-15")
+    @Schema(
+            description = "Fecha y hora exacta del servidor en que se procesó el intento de autenticación",
+            example = "2026-06-12T23:52:00",
+            type = "string",
+            format = "date-time"
+    )
     private LocalDateTime intentoAt;
 
     // RELACIÓN @ManyToOne — muchos intentos pueden estar asociados
@@ -53,5 +65,6 @@ public class LoginAttempt {
     @ManyToOne
     @JoinColumn(name = "token_blacklist_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonBackReference
+    @Schema(description = "Referencia al token revocado en lista negra asociado al ciclo de sesión del intento (si aplica)")
     private TokenBlacklist tokenBlacklist;
 }

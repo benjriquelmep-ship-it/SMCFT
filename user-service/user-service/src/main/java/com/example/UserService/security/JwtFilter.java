@@ -1,5 +1,5 @@
 // Filtro de seguridad que se ejecuta en cada petición HTTP entrante para validar tokens
-package com.example.UserService.segurity;
+package com.example.UserService.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,6 +24,13 @@ public class JwtFilter extends OncePerRequestFilter {
             LoggerFactory.getLogger(JwtFilter.class);
 
     private final JwtUtil jwtUtil;
+
+    // Le ordena al filtro omitirse por completo si la petición web va dirigida a Swagger o OpenAPI
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

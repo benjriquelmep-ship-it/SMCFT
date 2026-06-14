@@ -1,4 +1,4 @@
-package com.example.AuthService.config;
+package com.example.AuthService.config; // Valida que coincida con tu paquete real
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -13,26 +13,21 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Auth Service API")
+                        .title("SMCFT - Auth Service API")
                         .version("1.0")
-                        .description("Microservicio de autenticación y autorización")
+                        .description("Microservicio central de autenticación y autorización. Responsable del inicio de sesión, emisión y firma de tokens JWT y control de roles de usuarios y fiscalizadores.")
                         .contact(new Contact()
-                                .name("Fernando")
-                                .email("correo@ejemplo.cl")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName))
-                .schemaRequirement(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl")))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .schemaRequirement(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

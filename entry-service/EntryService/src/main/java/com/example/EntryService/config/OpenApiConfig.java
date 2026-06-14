@@ -1,4 +1,4 @@
-package com.example.EntryService.config;
+package com.example.EntryService.config; // Valida que coincida con tu paquete real
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -13,26 +13,21 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Entry Service API")
+                        .title("SMCFT - Entry Service API")
                         .version("1.0")
-                        .description("Microservicio de ingresos vehiculares")
+                        .description("Microservicio operativo encargado del control, registro y visación de ingresos vehiculares y peatonales en el perímetro aduanero.")
                         .contact(new Contact()
-                                .name("Fernando")
-                                .email("correo@ejemplo.cl")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName))
-                .schemaRequirement(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl")))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .schemaRequirement(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

@@ -13,26 +13,20 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
-        final String securitySchemeName = "bearerAuth";
-
+        final String securitySchemeName = "bearerAuth"; // Esquema de seguridad coincidente con la guía
         return new OpenAPI()
                 .info(new Info()
-                        .title("User Service API")
+                        .title("SMCFT - User Service API")
                         .version("1.0")
-                        .description("Microservicio de gestión de usuarios")
+                        .description("Microservicio encargado de la gestión de usuarios, roles y perfiles aduaneros.")
                         .contact(new Contact()
-                                .name("Fernando")
-                                .email("correo@ejemplo.cl")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName))
-                .schemaRequirement(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl"))) // Ajustado con tus datos de desarrollo
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .schemaRequirement(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

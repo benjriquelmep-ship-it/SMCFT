@@ -31,6 +31,13 @@ public class JwtFilter extends OncePerRequestFilter {
     // Se inyecta automáticamente por @RequiredArgsConstructor
     private final JwtUtil jwtUtil;
 
+    // Excluye las rutas de Swagger UI y OpenAPI para que no requieran validación de JWT
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+    }
+
     // Este método se ejecuta automáticamente en CADA petición
     // que llega al Audit Service antes de llegar al Controller
     @Override
@@ -84,7 +91,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        //permite que la petición continúe
+        // permite que la petición continúe
         // hacia el siguiente filtro o hacia el Controller
         filterChain.doFilter(request, response);
     }

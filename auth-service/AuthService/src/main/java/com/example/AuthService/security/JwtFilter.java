@@ -37,6 +37,13 @@ public class JwtFilter extends OncePerRequestFilter {
     // y no puede usar ese token aunque sea válido
     private final TokenBlacklistRepository tokenBlacklistRepository;
 
+    // Excluye las rutas de Swagger UI y OpenAPI para que no requieran validación de JWT ni verificación de Blacklist
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+    }
+
     // Se ejecuta automáticamente en CADA petición antes de llegar al Controller
     @Override
     protected void doFilterInternal(HttpServletRequest request,

@@ -15,73 +15,63 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/v1/entries")
-
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "1. Gestión de Ingresos Fronterizos", description = "Endpoints operativos destinados a la apertura, tramitación, andén de visación y auditoría de accesos vehiculares al territorio nacional")
 public class EntryController {
 
-    // EntryService contiene toda la lógica de negocio
-    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final EntryService entryService;
 
-    // GET /api/v1/entries
-    // Devuelve todos los ingresos del sistema
-    @Operation(summary = "Obtener Todos", description = "Devuelve todos los ingresos del sistema")
+    @Operation(summary = "Obtener Catálogo Global de Ingresos", description = "Recupera la nómina histórica y completa de solicitudes de ingreso registradas en los complejos fronterizos.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Listado de ingresos recuperado exitosamente."),
+            @ApiResponse(responseCode = "400", description = "Petición incorrecta o parámetros de búsqueda inconsistentes."),
+            @ApiResponse(responseCode = "401", description = "Falta de autenticación. Token JWT ausente o inválido."),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado. Rol de usuario insuficiente.")
     })
     @GetMapping
     public ResponseEntity<List<Entry>> obtenerTodos() {
         return ResponseEntity.ok(entryService.obtenerTodos());
     }
 
-    // GET /api/v1/entries/1
-    // Devuelve un ingreso específico por su id
-    // Deadline Service llama a este endpoint para verificar ingresos
-    @Operation(summary = "Obtener Por Id", description = "Deadline Service llama a este endpoint para verificar ingresos")
+    @Operation(summary = "Obtener Detalle de un Ingreso por ID", description = "Recupera los datos de un trámite perimetral específico mediante su identificador numérico único. Utilizado internamente por Deadline Service.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registro de ingreso localizado y devuelto."),
+            @ApiResponse(responseCode = "400", description = "Identificador de ingreso provisto con formato no válido."),
+            @ApiResponse(responseCode = "401", description = "Acceso no autorizado."),
+            @ApiResponse(responseCode = "403", description = "Permisos de usuario insuficientes.")
     })
     @GetMapping("/{id}")
     public ResponseEntity<Entry> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(entryService.obtenerPorId(id));
     }
 
-    // POST /api/v1/entries
-    // Registra un nuevo ingreso al país
-    @Operation(summary = "Registrar", description = "Registra un nuevo ingreso al país")
+    @Operation(summary = "Registrar Solicitud de Ingreso Vehicular", description = "Inicia una nueva orden de internación vehicular en el andén de control, dejando el estado inicial como PENDIENTE.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "201", description = "Solicitud de ingreso creada correctamente en el sistema."),
+            @ApiResponse(responseCode = "400", description = "Payload de entrada inválido o errores de validación estructural."),
+            @ApiResponse(responseCode = "401", description = "Token de autenticación faltante."),
+            @ApiResponse(responseCode = "403", description = "Acceso restringido.")
     })
     @PostMapping
-    public ResponseEntity<Entry> registrar(
-            @Valid @RequestBody EntryDTO dto) {
-        // HTTP 201 = se creó un nuevo recurso exitosamente
+    public ResponseEntity<Entry> registrar(@Valid @RequestBody EntryDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(entryService.registrar(dto));
     }
 
-    @Operation(summary = "Actualizar", description = "HTTP 201 = se creó un nuevo recurso exitosamente")
+    @Operation(summary = "Actualizar Solicitud de Ingreso", description = "Modifica las propiedades de cabecera asociadas a una orden de acceso fronterizo identificada por su ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registro modificado y persistido de manera conforme."),
+            @ApiResponse(responseCode = "400", description = "Errores de validación en los datos del DTO."),
+            @ApiResponse(responseCode = "401", description = "Usuario no autenticado."),
+            @ApiResponse(responseCode = "403", description = "Operación denegada.")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Entry> actualizar(
@@ -90,16 +80,12 @@ public class EntryController {
         return ResponseEntity.ok(entryService.actualizar(id, dto));
     }
 
-    // PATCH /api/v1/entries/1/autorizar
-    // El fiscalizador autoriza el ingreso — cambia estado a AUTORIZADO
-    // rutFiscalizador = obligatorio, quien autoriza
-    // observaciones = opcional, comentarios adicionales
-    @Operation(summary = "Autorizar", description = "observaciones = opcional, comentarios adicionales")
+    @Operation(summary = "Autorizar Trámite de Ingreso", description = "Cambia el estado de la solicitud a 'AUTORIZADO', visando el acceso de la unidad vehicular por parte del fiscalizador en caseta.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Trámite de ingreso visado y firmado correctamente."),
+            @ApiResponse(responseCode = "400", description = "El RUT del fiscalizador es obligatorio o el ingreso no está en estado válido."),
+            @ApiResponse(responseCode = "401", description = "Inicie sesión para completar el aforo."),
+            @ApiResponse(responseCode = "403", description = "Rol de fiscalizador requerido.")
     })
     @PatchMapping("/{id}/autorizar")
     public ResponseEntity<Entry> autorizar(
@@ -110,15 +96,12 @@ public class EntryController {
                 entryService.autorizar(id, rutFiscalizador, observaciones));
     }
 
-    // PATCH /api/v1/entries/1/rechazar
-    // El fiscalizador rechaza el ingreso — cambia estado a RECHAZADO
-    // Al rechazar el vehículo vuelve a su estado anterior
-    @Operation(summary = "Rechazar", description = "Al rechazar el vehículo vuelve a su estado anterior")
+    @Operation(summary = "Rechazar Trámite de Ingreso", description = "Deniega el acceso del vehículo al territorio nacional cambiando su estado a 'RECHAZADO' y revirtiendo la situación previa de la unidad.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Acceso denegado exitosamente en los registros."),
+            @ApiResponse(responseCode = "400", description = "Inconsistencia en los datos o parámetros de firma del rechazo."),
+            @ApiResponse(responseCode = "401", description = "No autenticado."),
+            @ApiResponse(responseCode = "403", description = "Falta de privilegios de control.")
     })
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<Entry> rechazar(
@@ -129,218 +112,134 @@ public class EntryController {
                 entryService.rechazar(id, rutFiscalizador, observaciones));
     }
 
-    // DELETE /api/v1/entries/1
-    // Elimina un ingreso por su id
-    @Operation(summary = "Eliminar", description = "Elimina un ingreso por su id")
+    @Operation(summary = "Remover Registro de Ingreso", description = "Elimina permanentemente una orden de acceso del motor de base de datos por medio de su clave primaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "204", description = "Registro eliminado físicamente sin contenido de retorno."),
+            @ApiResponse(responseCode = "400", description = "Id provisto inexistente o bloqueado."),
+            @ApiResponse(responseCode = "401", description = "Acceso no válido."),
+            @ApiResponse(responseCode = "403", description = "Acceso estrictamente prohibido para este rol.")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         entryService.eliminar(id);
-        // HTTP 204 = operación exitosa sin contenido en la respuesta
         return ResponseEntity.noContent().build();
     }
 
-    // GET /api/v1/entries/patente/ABC123
-    // Devuelve todos los ingresos de un vehículo específico
-    @Operation(summary = "Obtener Por Patente", description = "Devuelve todos los ingresos de un vehículo específico")
+    @Operation(summary = "Buscar Ingresos por Placa Patente", description = "Recupera la trazabilidad histórica de ingresos al país filtrando por una patente específica.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Historial de tránsito vehicular recuperado.")
     })
     @GetMapping("/patente/{patente}")
-    public ResponseEntity<List<Entry>> obtenerPorPatente(
-            @PathVariable String patente) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorPatente(patente));
+    public ResponseEntity<List<Entry>> obtenerPorPatente(@PathVariable String patente) {
+        return ResponseEntity.ok(entryService.obtenerPorPatente(patente));
     }
 
-    // GET /api/v1/entries/conductor/12345678-9
-    // Devuelve todos los ingresos de un conductor específico
-    @Operation(summary = "Obtener Por Conductor", description = "Devuelve todos los ingresos de un conductor específico")
+    @Operation(summary = "Buscar Ingresos por RUN del Conductor", description = "Entrega el listado de registros migratorios asociados al documento de identidad del conductor.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Historial por conductor obtenido con éxito.")
     })
     @GetMapping("/conductor/{rut}")
-    public ResponseEntity<List<Entry>> obtenerPorConductor(
-            @PathVariable String rut) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorConductor(rut));
+    public ResponseEntity<List<Entry>> obtenerPorConductor(@PathVariable String rut) {
+        return ResponseEntity.ok(entryService.obtenerPorConductor(rut));
     }
 
-    // GET /api/v1/entries/estado/PENDIENTE
-    // Devuelve ingresos por estado (PENDIENTE, AUTORIZADO, RECHAZADO)
-    @Operation(summary = "Obtener Por Estado", description = "Devuelve ingresos por estado (PENDIENTE, AUTORIZADO, RECHAZADO)")
+    @Operation(summary = "Filtrar Ingresos por Estado Operativo", description = "Devuelve las solicitudes agrupadas por su estado actual de tramitación (PENDIENTE, AUTORIZADO, RECHAZADO).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registros agrupados por estado recuperados.")
     })
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Entry>> obtenerPorEstado(
-            @PathVariable String estado) {
+    public ResponseEntity<List<Entry>> obtenerPorEstado(@PathVariable String estado) {
         return ResponseEntity.ok(entryService.obtenerPorEstado(estado));
     }
 
-    // GET /api/v1/entries/tipo/RETORNO
-    // Devuelve ingresos por tipo
-    // RETORNO           → vehículo que regresa al país
-    // ADMISION_TEMPORAL → vehículo extranjero que entra temporalmente
-    @Operation(summary = "Obtener Por Tipo", description = "ADMISION_TEMPORAL → vehículo extranjero que entra temporalmente")
+    @Operation(summary = "Filtrar Ingresos por Régimen Aduanero", description = "Filtra el universo de accesos según la modalidad legal invocada (RETORNO o ADMISION_TEMPORAL).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registros clasificados por tipo legal devueltos.")
     })
     @GetMapping("/tipo/{tipoIngreso}")
-    public ResponseEntity<List<Entry>> obtenerPorTipo(
-            @PathVariable String tipoIngreso) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorTipoIngreso(tipoIngreso));
+    public ResponseEntity<List<Entry>> obtenerPorTipo(@PathVariable String tipoIngreso) {
+        return ResponseEntity.ok(entryService.obtenerPorTipoIngreso(tipoIngreso));
     }
 
-    // GET /api/v1/entries/paso/Los Libertadores
-    // Devuelve todos los ingresos de un paso fronterizo específico
-    @Operation(summary = "Obtener Por Paso", description = "Devuelve todos los ingresos de un paso fronterizo específico")
+    @Operation(summary = "Buscar Ingresos por Complejo Fronterizo", description = "Lista todas las fiscalizaciones ejecutadas en un andén o aduana específica del perímetro.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Historial del complejo fronterizo recuperado.")
     })
     @GetMapping("/paso/{pasoFronterizo}")
-    public ResponseEntity<List<Entry>> obtenerPorPaso(
-            @PathVariable String pasoFronterizo) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorPasoFronterizo(pasoFronterizo));
+    public ResponseEntity<List<Entry>> obtenerPorPaso(@PathVariable String pasoFronterizo) {
+        return ResponseEntity.ok(entryService.obtenerPorPasoFronterizo(pasoFronterizo));
     }
 
-    // GET /api/v1/entries/fiscalizador/12345678-9
-    // Devuelve todos los ingresos que procesó un fiscalizador específico
-    @Operation(summary = "Obtener Por Fiscalizador", description = "Devuelve todos los ingresos que procesó un fiscalizador específico")
+    @Operation(summary = "Buscar Ingresos por RUN de Fiscalizador", description = "Permite auditar el volumen de trámites revisados e ingresados por un funcionario aduanero en particular.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Registros visados por el funcionario obtenidos.")
     })
     @GetMapping("/fiscalizador/{rut}")
-    public ResponseEntity<List<Entry>> obtenerPorFiscalizador(
-            @PathVariable String rut) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorFiscalizador(rut));
+    public ResponseEntity<List<Entry>> obtenerPorFiscalizador(@PathVariable String rut) {
+        return ResponseEntity.ok(entryService.obtenerPorFiscalizador(rut));
     }
 
-    // GET /api/v1/entries/patente/ABC123/estado/AUTORIZADO
-    // Combina dos filtros: patente + estado
-    @Operation(summary = "Obtener Por Patente Y Estado", description = "Combina dos filtros: patente + estado")
+    @Operation(summary = "Filtrar por Coincidencia Dual de Patente y Estado", description = "Ejecuta una búsqueda de control combinando la placa patente con la situación resolutiva actual de la orden.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Coincidencia de registros devuelta exitosamente.")
     })
     @GetMapping("/patente/{patente}/estado/{estado}")
     public ResponseEntity<List<Entry>> obtenerPorPatenteYEstado(
             @PathVariable String patente,
             @PathVariable String estado) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorPatenteYEstado(patente, estado));
+        return ResponseEntity.ok(entryService.obtenerPorPatenteYEstado(patente, estado));
     }
 
-    // GET /api/v1/entries/fechas?desde=2025-01-01T00:00:00&hasta=2025-12-31T23:59:59
-    // Devuelve ingresos registrados en un rango de fechas
-    @Operation(summary = "Obtener Por Fechas", description = "Devuelve ingresos registrados en un rango de fechas")
+    @Operation(summary = "Filtrar por Rango Cronológico de Fechas", description = "Extrae las solicitudes formalizadas dentro de una ventana de tiempo delimitada por parámetros ISO LocalDateTime.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Ventana cronológica de ingresos localizada.")
     })
     @GetMapping("/fechas")
     public ResponseEntity<List<Entry>> obtenerPorFechas(
             @RequestParam String desde,
             @RequestParam String hasta) {
-        // Convierte el texto a fecha
-        // Ej: "2025-01-01T00:00:00" → LocalDateTime del 1 enero 2025
         LocalDateTime fechaDesde = LocalDateTime.parse(desde);
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta);
-        return ResponseEntity.ok(
-                entryService.obtenerPorRangoFechas(fechaDesde, fechaHasta));
+        return ResponseEntity.ok(entryService.obtenerPorRangoFechas(fechaDesde, fechaHasta));
     }
 
-    // GET /api/v1/entries/buscar?pais=argentina
-    // Busca ingresos cuyo país de origen contenga el texto buscado
-    // No necesitas escribir el nombre exacto — busca si lo contiene
-    @Operation(summary = "Buscar Por Pais", description = "No necesitas escribir el nombre exacto — busca si lo contiene")
+    @Operation(summary = "Buscar por Coincidencia Parcial de País de Origen", description = "Buscador flexible que localiza registros cuyo origen calce con el patrón o subcadena de texto ingresada.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Resultados parciales recuperados.")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Entry>> buscarPorPais(
-            @RequestParam String pais) {
-        return ResponseEntity.ok(
-                entryService.buscarPorPaisOrigen(pais));
+    public ResponseEntity<List<Entry>> buscarPorPais(@RequestParam String pais) {
+        return ResponseEntity.ok(entryService.buscarPorPaisOrigen(pais));
     }
 
-    // GET /api/v1/entries/patente/ABC123/ordenados
-    // Devuelve los ingresos de un vehículo del más reciente al más antiguo
-    @Operation(summary = "Obtener Por Patente Ordenados", description = "Devuelve los ingresos de un vehículo del más reciente al más antiguo")
+    @Operation(summary = "Obtener Historial Cronológico Inverso por Patente", description = "Retorna la trazabilidad de accesos de un vehículo ordenados de forma descendente, del evento más nuevo al más antiguo.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Historial ordenado correctamente.")
     })
     @GetMapping("/patente/{patente}/ordenados")
-    public ResponseEntity<List<Entry>> obtenerPorPatenteOrdenados(
-            @PathVariable String patente) {
-        return ResponseEntity.ok(
-                entryService.obtenerPorPatenteOrdenados(patente));
+    public ResponseEntity<List<Entry>> obtenerPorPatenteOrdenados(@PathVariable String patente) {
+        return ResponseEntity.ok(entryService.obtenerPorPatenteOrdenados(patente));
     }
 
-    // GET /api/v1/entries/ultimos
-    // Devuelve los últimos 10 ingresos registrados en el sistema
-    @Operation(summary = "Obtener Ultimos Ingresos", description = "Devuelve los últimos 10 ingresos registrados en el sistema")
+    @Operation(summary = "Obtener Últimos Ingresos del Sistema", description = "Mapea un cuadro de mando rápido devolviendo los últimos 10 registros ingresados a la plataforma.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Dashboard de las últimas 10 entradas obtenido.")
     })
     @GetMapping("/ultimos")
     public ResponseEntity<List<Entry>> obtenerUltimosIngresos() {
         return ResponseEntity.ok(entryService.obtenerUltimosIngresos());
     }
 
-    // GET /api/v1/entries/estadisticas/estado/AUTORIZADO
-    // Cuenta cuántos ingresos hay con ese estado
+    @Operation(summary = "Métrica Totalizadora por Estado", description = "Entrega un contador estadístico consolidado que indica la cantidad de registros en base a un estado consultado.")
     @GetMapping("/estadisticas/estado/{estado}")
-    public ResponseEntity<Map<String, Long>> contarPorEstado(
-            @PathVariable String estado) {
+    public ResponseEntity<Map<String, Long>> contarPorEstado(@PathVariable String estado) {
         long total = entryService.contarPorEstado(estado);
         return ResponseEntity.ok(Map.of("total", total));
     }
 
-    // GET /api/v1/entries/estadisticas/tipo/RETORNO
-    // Cuenta cuántos ingresos hay de ese tipo
+    @Operation(summary = "Métrica Totalizadora por Régimen", description = "Entrega un contador estadístico consolidado basado en el tipo de destinación aduanera indicada.")
     @GetMapping("/estadisticas/tipo/{tipo}")
-    public ResponseEntity<Map<String, Long>> contarPorTipo(
-            @PathVariable String tipo) {
+    public ResponseEntity<Map<String, Long>> contarPorTipo(@PathVariable String tipo) {
         long total = entryService.contarPorTipo(tipo);
         return ResponseEntity.ok(Map.of("total", total));
     }

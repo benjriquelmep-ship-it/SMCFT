@@ -36,7 +36,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/validar").permitAll()
                         .requestMatchers("/api/v1/auth/rol").permitAll()
 
-                        // Swagger/OpenAPI — público para documentación
+                        // CORREGIDO: Abrimos la ruta exacta personalizada que consume el API Gateway
+                        .requestMatchers("/api/v1/auth/v3/api-docs").permitAll()
+
+                        // Swagger/OpenAPI genérico — público para documentación local
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         // Todas las demás rutas requieren token válido

@@ -17,25 +17,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/item-categories")
 @RequiredArgsConstructor
+@Tag(name = "Categorías Arancelarias", description = "Endpoints para la parametrización, control de franquicias y exenciones tributarias de las clasificaciones de mercancías")
 @SecurityRequirement(name = "bearerAuth")
 public class ItemCategoryController {
 
-    // ItemCategoryService contiene toda la lógica de negocio
-    // El Controller solo recibe y responde — nunca tiene lógica propia
     private final ItemCategoryService categoryService;
 
     // GET /api/v1/item-categories
-    // Devuelve todas las categorías del sistema
-    @Operation(summary = "Obtener Todas", description = "Devuelve todas las categorías del sistema")
+    @Operation(summary = "Listar todas las categorías arancelarias", description = "Recupera el catálogo completo de subpartidas y clasificaciones de equipaje configuradas en la plataforma fronteriza.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Catálogo de categorías arancelarias recuperado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado - Falta token Bearer JWT"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos - Privilegios insuficientes")
     })
     @GetMapping
     public ResponseEntity<List<ItemCategory>> obtenerTodas() {
@@ -43,48 +41,35 @@ public class ItemCategoryController {
     }
 
     // GET /api/v1/item-categories/1
-    // Devuelve una categoría específica por su id
-    // Border Crossing Service llama a este endpoint
-    // para verificar que la categoría existe y está activa
-    // antes de agregar un item a un cruce
-    @Operation(summary = "Obtener Por Id", description = "antes de agregar un item a un cruce")
+    @Operation(summary = "Obtener categoría arancelaria por ID", description = "Busca las reglas de declaración y límites de valor en USD de una categoría específica. Utilizado de manera perimetral por el Border Crossing Service.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Categoría arancelaria localizada correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "El ID de categoría solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ItemCategory> obtenerPorId(
-            @PathVariable Long id) {
+    public ResponseEntity<ItemCategory> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.obtenerPorId(id));
     }
 
     // POST /api/v1/item-categories
-    // Crea una nueva categoría de item
-    @Operation(summary = "Crear", description = "Crea una nueva categoría de item")
+    @Operation(summary = "Registrar nueva categoría arancelaria", description = "Valida el payload de entrada y da de alta una nueva clasificación de mercancías con sus respectivas restricciones de exención fiscal.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "201", description = "Categoría arancelaria registrada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Payload inválido o restricciones de validación del DTO infringidas")
     })
     @PostMapping
-    public ResponseEntity<ItemCategory> crear(
-            @Valid @RequestBody ItemCategoryDTO dto) {
-        // HTTP 201 = se creó un nuevo recurso exitosamente
+    public ResponseEntity<ItemCategory> crear(@Valid @RequestBody ItemCategoryDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(categoryService.crear(dto));
     }
 
     // PUT /api/v1/item-categories/1
-    // Actualiza TODOS los campos de una categoría
-    @Operation(summary = "Actualizar", description = "Actualiza TODOS los campos de una categoría")
+    @Operation(summary = "Actualizar categoría arancelaria por completo", description = "Reemplaza íntegramente las propiedades, límites arancelarios y banderas de control de una categoría a partir de su ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Categoría arancelaria modificada de forma conforme"),
+            @ApiResponse(responseCode = "400", description = "Datos de actualización inválidos"),
+            @ApiResponse(responseCode = "404", description = "La categoría solicitada no se encuentra registrada")
     })
     @PutMapping("/{id}")
     public ResponseEntity<ItemCategory> actualizar(
@@ -94,31 +79,23 @@ public class ItemCategoryController {
     }
 
     // PATCH /api/v1/item-categories/1/desactivar
-    // Desactiva una categoría — cambia activo a false
-    // Las categorías desactivadas no pueden usarse en nuevos items
-    // ResponseEntity<Void> = respuesta sin body → HTTP 204
-    @Operation(summary = "Desactivar", description = "ResponseEntity<Void> = respuesta sin body → HTTP 204")
+    @Operation(summary = "Desactivar categoría arancelaria", description = "Modifica el flag de vigencia de la categoría a inactivo, bloqueando su uso para nuevas declaraciones en frontera.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "204", description = "Categoría desactivada del sistema correctamente. Sin contenido."),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "La categoría solicitada no existe")
     })
     @PatchMapping("/{id}/desactivar")
     public ResponseEntity<Void> desactivar(@PathVariable Long id) {
         categoryService.desactivar(id);
-        // HTTP 204 = operación exitosa sin contenido en la respuesta
         return ResponseEntity.noContent().build();
     }
 
     // DELETE /api/v1/item-categories/1
-    // Elimina una categoría por su id
-    @Operation(summary = "Eliminar", description = "Elimina una categoría por su id")
+    @Operation(summary = "Eliminar categoría arancelaria físicamente", description = "Remueve de forma permanente el registro de la categoría de la base de datos central.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "204", description = "Registro purgado de la base de datos de manera exitosa. Sin contenido."),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
@@ -127,14 +104,9 @@ public class ItemCategoryController {
     }
 
     // GET /api/v1/item-categories/activas
-    // Devuelve solo las categorías activas (activo = true)
-    // Border Crossing Service solo puede usar categorías activas
-    @Operation(summary = "Obtener Activas", description = "Border Crossing Service solo puede usar categorías activas")
+    @Operation(summary = "Listar categorías arancelarias Activas", description = "Filtra la base de datos exponiendo únicamente las clasificaciones vigentes admitidas por el andén del Border Crossing Service.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Nómina de categorías activas recuperada con éxito")
     })
     @GetMapping("/activas")
     public ResponseEntity<List<ItemCategory>> obtenerActivas() {
@@ -142,14 +114,9 @@ public class ItemCategoryController {
     }
 
     // GET /api/v1/item-categories/inactivas
-    // Devuelve solo las categorías desactivadas (activo = false)
-    // Útil para ver qué categorías ya no están disponibles
-    @Operation(summary = "Obtener Inactivas", description = "Útil para ver qué categorías ya no están disponibles")
+    @Operation(summary = "Listar categorías arancelarias Inactivas", description = "Filtra e identifica aquellas subpartidas obsoletas o descontinuadas en los controles fronterizos.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Nómina de categorías inactivas devuelta correctamente")
     })
     @GetMapping("/inactivas")
     public ResponseEntity<List<ItemCategory>> obtenerInactivas() {
@@ -157,28 +124,19 @@ public class ItemCategoryController {
     }
 
     // GET /api/v1/item-categories/requieren-declaracion
-    // Devuelve categorías que requieren declaración obligatoria
-    @Operation(summary = "Obtener Con Declaracion", description = "Devuelve categorías que requieren declaración obligatoria")
+    @Operation(summary = "Listar categorías que Requieren Declaración", description = "Aísla y retorna aquellas categorías que obligan penalmente al operador o viajero a levantar una declaración jurada de internación.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Listado prioritario de control aduanero extraído con éxito")
     })
     @GetMapping("/requieren-declaracion")
     public ResponseEntity<List<ItemCategory>> obtenerConDeclaracion() {
-        return ResponseEntity.ok(
-                categoryService.obtenerRequierenDeclaracion());
+        return ResponseEntity.ok(categoryService.obtenerRequierenDeclaracion());
     }
 
     // GET /api/v1/item-categories/sin-declaracion
-    // Devuelve categorías que NO requieren declaración obligatoria
-    @Operation(summary = "Obtener Sin Declaracion", description = "Devuelve categorías que NO requieren declaración obligatoria")
+    @Operation(summary = "Listar categorías Sin Obligación de Declaración", description = "Retorna el conjunto de clasificaciones que forman parte del libre tránsito dentro de las franquicias ordinarias.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Listado de libre internación obtenido correctamente")
     })
     @GetMapping("/sin-declaracion")
     public ResponseEntity<List<ItemCategory>> obtenerSinDeclaracion() {
@@ -186,50 +144,32 @@ public class ItemCategoryController {
     }
 
     // GET /api/v1/item-categories/buscar?nombre=electro
-    // Busca categorías cuyo nombre contenga el texto buscado
-    // No necesitas escribir el nombre exacto — busca si lo contiene
-    @Operation(summary = "Buscar Por Nombre", description = "No necesitas escribir el nombre exacto — busca si lo contiene")
+    @Operation(summary = "Buscar categorías por Coincidencia de nombre", description = "Realiza una consulta de texto parcial (LIKE) sobre la columna de identificación de las categorías.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Coincidencias arancelarias devueltas de manera exitosa")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<ItemCategory>> buscarPorNombre(
-            @RequestParam String nombre) {
+    public ResponseEntity<List<ItemCategory>> buscarPorNombre(@RequestParam String nombre) {
         return ResponseEntity.ok(categoryService.buscarPorNombre(nombre));
     }
 
     // GET /api/v1/item-categories/limite?valor=300
-    // Devuelve categorías cuyo límite de valor sea menor o igual al valor buscado
-    @Operation(summary = "Obtener Por Limite", description = "Devuelve categorías cuyo límite de valor sea menor o igual al valor buscado")
+    @Operation(summary = "Listar categorías acotadas por Límite de Valor USD", description = "Retorna las clasificaciones arancelarias cuya franquicia máxima permitida sea menor o igual al monto parametrizado.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Filtro volumétrico de franquicias ejecutado con éxito")
     })
     @GetMapping("/limite")
-    public ResponseEntity<List<ItemCategory>> obtenerPorLimite(
-            @RequestParam BigDecimal valor) {
-        return ResponseEntity.ok(
-                categoryService.obtenerPorLimiteValor(valor));
+    public ResponseEntity<List<ItemCategory>> obtenerPorLimite(@RequestParam BigDecimal valor) {
+        return ResponseEntity.ok(categoryService.obtenerPorLimiteValor(valor));
     }
 
     // GET /api/v1/item-categories/activas/ordenadas
-    // Devuelve categorías activas ordenadas alfabéticamente por nombre
-    // Útil para mostrar una lista ordenada en el frontend
-    @Operation(summary = "Obtener Activas Ordenadas", description = "Útil para mostrar una lista ordenada en el frontend")
+    @Operation(summary = "Listar categorías activas ordenadas alfabéticamente", description = "Recupera el catálogo operativo ordenado correlativamente de la A a la Z por nombre, optimizado para su despliegue en Frontend.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Catálogo ordenado secuencialmente recuperado con éxito")
     })
     @GetMapping("/activas/ordenadas")
     public ResponseEntity<List<ItemCategory>> obtenerActivasOrdenadas() {
-        return ResponseEntity.ok(
-                categoryService.obtenerActivasOrdenadas());
+        return ResponseEntity.ok(categoryService.obtenerActivasOrdenadas());
     }
 }

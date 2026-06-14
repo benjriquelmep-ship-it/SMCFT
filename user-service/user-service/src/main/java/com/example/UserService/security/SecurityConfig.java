@@ -1,4 +1,4 @@
-package com.example.AuditService.security;
+package com.example.UserService.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,14 +25,14 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // EXCLUSIÓN MAESTRA SWAGGER GATEWAY
-                        .requestMatchers("/api/v1/audits/v3/api-docs").permitAll()
+                        .requestMatchers("/api/v1/users/v3/api-docs").permitAll()
 
                         // RUTAS PÚBLICAS EXISTENTES
-                        .requestMatchers(HttpMethod.GET, "/api/v1/audits/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/audit-details/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/email/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/rut/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // RUTAS PROTEGIDAS
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

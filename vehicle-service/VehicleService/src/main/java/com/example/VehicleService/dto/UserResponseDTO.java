@@ -4,32 +4,43 @@ package com.example.VehicleService.dto;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-// Vehicle Service usa esto para verificar que el RUT del propietario
-// existe en User Service antes de registrar un vehículo nuevo
 @Data
-@Schema(description = "DTO que representa user")
+@Schema(description = "Payload que procesa la información de identidad del propietario retornada por el User Service para validaciones cruzadas")
 public class UserResponseDTO {
-    // Clave primaria única del usuario en el microservicio origen
-    @Schema(description = "Id", example = "1")
+
+    @Schema(
+            description = "Identificador único de la cuenta de usuario en el sistema de origen",
+            example = "1"
+    )
     private Long id;
 
-    // Identificador único del ciudadano chileno (RUT)
-    @Schema(description = "Rut", example = "12345678-9")
+    @Schema(
+            description = "RUN/RUT de identidad chileno del titular verificado",
+            example = "12345678-9"
+    )
     private String rut;
 
-    // Nombre completo o razón social del titular
-    @Schema(description = "Nombre", example = "Juan Pérez")
+    @Schema(
+            description = "Nombre completo o razón social del propietario",
+            example = "Benjamin Alexis Riquelme Pozo"
+    )
     private String nombre;
 
-    // Correo electrónico principal de la cuenta
-    @Schema(description = "Email", example = "usuario@ejemplo.cl")
+    @Schema(
+            description = "Dirección de correo electrónico institucional o personal del dueño",
+            example = "usuario@ejemplo.cl"
+    )
     private String email;
 
-    // Nivel de permisos o rol asignado en el sistema
-    @Schema(description = "Rol", example = "VIAJERO")
+    @Schema(
+            description = "Perfil de acceso o rol principal asignado en la plataforma",
+            example = "VIAJERO"
+    )
     private String rol;
 
-    // Si activo = false el propietario no puede registrar vehículos
-    @Schema(description = "Activo", example = "true")
+    @Schema(
+            description = "Estado de vigencia del usuario. Si es 'false', la cuenta no está autorizada para matricular vehículos.",
+            example = "true"
+    )
     private Boolean activo;
 }

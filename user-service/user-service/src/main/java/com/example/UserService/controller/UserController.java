@@ -1,8 +1,6 @@
 // Recibe las peticiones HTTP de User Service y retorna ResponseEntity con JSON
 package com.example.UserService.controller;
 
-// Solo recibe la petición HTTP, llama al Service y devuelve la respuesta
-
 import com.example.UserService.dto.UserDTO;
 import com.example.UserService.model.User;
 import com.example.UserService.service.UserService;
@@ -16,23 +14,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/users")   // Todas las rutas empiezan con /api/users
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@Tag(name = "Usuarios", description = "Endpoints para la gestión, registro y consulta de ciudadanos y funcionarios en el sistema fronterizo")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
-    // Spring inyecta el UserService automáticamente
+
     private final UserService userService;
 
     // GET /api/v1/users → obtener todos los usuarios : Lista todos los usuarios registrados
-    // ResponseEntity.ok() envuelve la respuesta con HTTP 200
-    @Operation(summary = "Obtener Todos", description = "ResponseEntity.ok() envuelve la respuesta con HTTP 200")
+    @Operation(summary = "Listar todos los usuarios", description = "Recupera la colección global de usuarios registrados en el sistema.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Lista de usuarios recuperada con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado - Falta token Bearer JWT"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos - Rol no autorizado")
     })
     @GetMapping
     public ResponseEntity<List<User>> obtenerTodos() {
@@ -40,13 +38,12 @@ public class UserController {
     }
 
     // GET /api/v1/users/1 : Busca un usuario por su ID primario
-    // @PathVariable extrae el {id} de la URL
-    @Operation(summary = "Obtener Por Id", description = "@PathVariable extrae el {id} de la URL")
+    @Operation(summary = "Obtener usuario por ID", description = "Busca en la base de datos la ficha detallada de un usuario a partir de su clave primaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Usuario localizado correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "403", description = "Sin permisos"),
+            @ApiResponse(responseCode = "404", description = "El ID de usuario solicitado no existe")
     })
     @GetMapping("/{id}")
     public ResponseEntity<User> obtenerPorId(@PathVariable Long id) {
@@ -54,13 +51,11 @@ public class UserController {
     }
 
     // GET /api/v1/users/email/juan@gmail.com : Obtiene un usuario mediante su correo electrónico institucional
-    // Auth Service llama este endpoint durante el login
-    @Operation(summary = "Obtener Por Email", description = "Auth Service llama este endpoint durante el login")
+    @Operation(summary = "Obtener usuario por Email", description = "Recupera los datos del usuario utilizando su correo electrónico. Endpoint consumido por Auth Service durante el login.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Usuario autenticado/localizado correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "No existe ninguna cuenta asociada a este correo")
     })
     @GetMapping("/email/{email}")
     public ResponseEntity<User> obtenerPorEmail(@PathVariable String email) {
@@ -68,13 +63,11 @@ public class UserController {
     }
 
     // GET /api/v1/users/rut/12345678-9 : Obtiene un usuario mediante su RUN/RUT de identidad chileno
-    // Vehicle Service llama este endpoint para verificar propietarios
-    @Operation(summary = "Obtener Por Rut", description = "Vehicle Service llama este endpoint para verificar propietarios")
+    @Operation(summary = "Obtener usuario por RUN/RUT", description = "Busca a un ciudadano mediante su identificador nacional chileno. Consumido por Vehicle Service para validar propietarios.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Ciudadano verificado correctamente"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "El RUN ingresado no pertenece a ningún usuario registrado")
     })
     @GetMapping("/rut/{rut}")
     public ResponseEntity<User> obtenerPorRut(@PathVariable String rut) {
@@ -82,60 +75,51 @@ public class UserController {
     }
 
     // POST /api/v1/users → crear nuevo usuario : Registra un nuevo usuario aplicando reglas de validación
-    // @Valid activa las validaciones del UserDTO
-    // @RequestBody convierte el JSON del body al DTO automáticamente
-    @Operation(summary = "Crear", description = "@RequestBody convierte el JSON del body al DTO automáticamente")
+    @Operation(summary = "Registrar un nuevo usuario", description = "Valida el esquema del payload y da de alta un nuevo usuario en la base de datos centralizada.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Estructura del JSON inválida o datos mal formateados"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PostMapping
     public ResponseEntity<User> crear(@Valid @RequestBody UserDTO dto) {
-        // HTTP 201 Created — se creó un nuevo recurso
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.crear(dto));
     }
 
     // PUT /api/v1/users/1 → actualizar usuario existente : Reemplaza los datos de un usuario por su ID
-    @Operation(summary = "Actualizar", description = "PUT /api/v1/users/1 → actualizar usuario existente : Reemplaza los datos de un usuario por su ID")
+    @Operation(summary = "Actualizar usuario existente", description = "Sobreescribe las propiedades de un usuario en base a su clave primaria.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de actualización inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "El usuario a modificar no fue localizado")
     })
     @PutMapping("/{id}")
     public ResponseEntity<User> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody UserDTO dto) {
-        // HTTP 200 OK — actualización exitosa
         return ResponseEntity.ok(userService.actualizar(id, dto));
     }
 
     // DELETE /api/v1/users/1 → desactivar usuario (soft delete) : Desactiva lógicamente el flag de vigencia
-    @Operation(summary = "Eliminar", description = "DELETE /api/v1/users/1 → desactivar usuario (soft delete) : Desactiva lógicamente el flag de vigencia")
+    @Operation(summary = "Dar de baja un usuario (Soft Delete)", description = "Desactiva lógicamente la cuenta de un usuario cambiando su estado de vigencia a inactivo.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "204", description = "Usuario deshabilitado exitosamente. Sin contenido de retorno."),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "404", description = "El usuario especificado no existe")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         userService.eliminar(id);
-        // HTTP 204 No Content — operación exitosa sin body en la respuesta
         return ResponseEntity.noContent().build();
     }
 
     // GET /api/v1/users/activos : Filtra únicamente las cuentas vigentes del sistema
-    @Operation(summary = "Obtener Activos", description = "GET /api/v1/users/activos : Filtra únicamente las cuentas vigentes del sistema")
+    @Operation(summary = "Listar usuarios activos", description = "Retorna únicamente los usuarios que se encuentran habilitados y vigentes en el sistema.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección de usuarios activos devuelta con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/activos")
     public ResponseEntity<List<User>> obtenerActivos() {
@@ -143,12 +127,10 @@ public class UserController {
     }
 
     // GET /api/v1/users/inactivos : Filtra cuentas que sufrieron soft delete o están deshabilitadas
-    @Operation(summary = "Obtener Inactivos", description = "GET /api/v1/users/inactivos : Filtra cuentas que sufrieron soft delete o están deshabilitadas")
+    @Operation(summary = "Listar usuarios inactivos", description = "Retorna la lista de usuarios deshabilitados o que sufrieron una baja lógica.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección de usuarios inactivos devuelta con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/inactivos")
     public ResponseEntity<List<User>> obtenerInactivos() {
@@ -156,12 +138,10 @@ public class UserController {
     }
 
     // GET /api/v1/users/rol/FISCALIZADOR : Lista usuarios pertenecientes a un perfil de accesos específico
-    @Operation(summary = "Obtener Por Rol", description = "GET /api/v1/users/rol/FISCALIZADOR : Lista usuarios pertenecientes a un perfil de accesos específico")
+    @Operation(summary = "Filtrar usuarios por Rol", description = "Filtra e identifica a las cuentas de usuario que posean un perfil de acceso específico (ej. ADMINISTRADOR, FISCALIZADOR, VIAJERO).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Usuarios filtrados por rol obtenidos correctamente"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/rol/{rol}")
     public ResponseEntity<List<User>> obtenerPorRol(@PathVariable String rol) {
@@ -169,12 +149,10 @@ public class UserController {
     }
 
     // GET /api/v1/users/rol/FISCALIZADOR/activos : Cruza filtros para obtener usuarios vigentes de un perfil determinado
-    @Operation(summary = "Obtener Activos Por Rol", description = "GET /api/v1/users/rol/FISCALIZADOR/activos : Cruza filtros para obtener usuarios vigentes de un perfil determinado")
+    @Operation(summary = "Filtrar usuarios activos por Rol", description = "Cruza lógica de filtros para aislar las cuentas que además de pertenecer al rol indicado estén vigentes de forma activa.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Filtro cruzado ejecutado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/rol/{rol}/activos")
     public ResponseEntity<List<User>> obtenerActivosPorRol(
@@ -183,13 +161,10 @@ public class UserController {
     }
 
     // GET /api/v1/users/buscar?nombre=juan : Busca coincidencias parciales por texto en la cadena de nombres
-    // @RequestParam extrae el parámetro de la query string (?nombre=juan)
-    @Operation(summary = "Buscar Por Nombre", description = "@RequestParam extrae el parámetro de la query string (?nombre=juan)")
+    @Operation(summary = "Buscar usuarios por coincidencia de nombre", description = "Realiza una consulta de texto con coincidencia parcial (LIKE) en el campo de nombres.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Coincidencias encontradas devueltas de forma exitosa"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
     public ResponseEntity<List<User>> buscarPorNombre(
@@ -198,12 +173,10 @@ public class UserController {
     }
 
     // GET /api/v1/users/activos/ordenados : Lista cuentas vigentes ordenadas alfabéticamente por nombre
-    @Operation(summary = "Obtener Activos Ordenados", description = "GET /api/v1/users/activos/ordenados : Lista cuentas vigentes ordenadas alfabéticamente por nombre")
+    @Operation(summary = "Listar usuarios activos ordenados alfabéticamente", description = "Devuelve la lista de cuentas activas ordenadas de la A a la Z basándose en la propiedad nombre.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos")
+            @ApiResponse(responseCode = "200", description = "Colección ordenada devuelta con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/activos/ordenados")
     public ResponseEntity<List<User>> obtenerActivosOrdenados() {

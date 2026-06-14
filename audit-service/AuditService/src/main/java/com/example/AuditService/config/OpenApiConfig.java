@@ -1,4 +1,4 @@
-package com.example.AuditService.config;
+package com.example.AuditService.config; // Valida que coincida con tu paquete real
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -13,26 +13,21 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Audit Service API")
+                        .title("SMCFT - Audit Service API")
                         .version("1.0")
-                        .description("Microservicio de auditoría")
+                        .description("Microservicio analítico de auditoría e integridad. Encargado del almacenamiento inmutable, indexación e historial forense de operaciones y eventos del ecosistema fronterizo.")
                         .contact(new Contact()
-                                .name("Aileen")
-                                .email("ai.oyaneder@duocuc.cl")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName))
-                .schemaRequirement(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl")))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .schemaRequirement(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

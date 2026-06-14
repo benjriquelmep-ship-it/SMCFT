@@ -30,6 +30,13 @@ public class JwtFilter extends OncePerRequestFilter {
     // Verifica la firma y expiración del token
     private final JwtUtil jwtUtil;
 
+    // Excluye las rutas de Swagger UI y OpenAPI para que no requieran validación de JWT
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+    }
+
     // Se ejecuta automáticamente en CADA petición antes de llegar al Controller
     @Override
     protected void doFilterInternal(HttpServletRequest request,

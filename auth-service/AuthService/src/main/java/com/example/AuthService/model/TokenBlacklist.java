@@ -17,34 +17,44 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @AllArgsConstructor
 @Table(name = "token_blacklist")
 @Entity
-@Schema(description = "Entidad que representa token blacklist")
+@Schema(description = "Entidad del modelo físico que actúa como bóveda de revocación para el almacenamiento y desestimación de tokens JWT invalidados")
 public class TokenBlacklist {
 
-    // Clave primaria con auto incremento
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Id", example = "1")
+    @Schema(description = "Clave primaria autoincremental del registro de revocación", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
-    // El token JWT completo que fue invalidado
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Schema(description = "Token", example = "eyJhbGciOiJIUzI1NiJ9...")
+    @Schema(
+            description = "Cadena original cifrada del JSON Web Token invalidado administrativamente por logout",
+            example = "eyJhbGciOiJIUzI1NiJ9...",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String token;
 
-    // Email del usuario que cerró sesión
-    // Útil para saber qué usuario invalidó qué token y cuándo
     @Column(nullable = false, length = 150)
-    @Schema(description = "Email", example = "usuario@ejemplo.cl", maxLength = 150)
+    @Schema(
+            description = "Correo electrónico del usuario titular de la sesión que fue revocada de forma anticipada",
+            example = "fiscalizador@aduana.cl",
+            maxLength = 150,
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String email;
 
-    // Fecha y hora exacta del cierre de sesión
     @Column(name = "invalidado_at")
-    @Schema(description = "Invalidado At", example = "2024-01-15")
+    @Schema(
+            description = "Fecha y hora exacta del servidor en que el usuario solicitó el cierre de sesión voluntario",
+            example = "2026-06-12T23:55:00",
+            type = "string",
+            format = "date-time"
+    )
     private LocalDateTime invalidadoAt;
 
     // RELACIÓN @OneToMany — un token invalidado puede tener
     // asociados varios intentos de login
     @OneToMany(mappedBy = "tokenBlacklist", fetch = FetchType.LAZY)
     @com.fasterxml.jackson.annotation.JsonManagedReference
+    @Schema(description = "Colección de intentos de login que operaron bajo el ciclo de vida o vigencia de este identificador")
     private List<LoginAttempt> intentos;
 }

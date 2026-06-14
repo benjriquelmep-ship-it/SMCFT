@@ -1,5 +1,5 @@
 // Componente encargado de desencriptar, leer y verificar la validez de los tokens JWT
-package com.example.UserService.segurity;
+package com.example.UserService.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

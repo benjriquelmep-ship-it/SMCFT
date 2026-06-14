@@ -9,12 +9,16 @@ import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
-@Schema(description = "DTO que representa user role")
+@Schema(description = "Estructura de entrada requerida para la reasignación o actualización de roles operativos de forma aislada")
 public class UserRoleDTO {
+
     // ID del usuario al que se le asigna el nuevo rol
-    // @NotNull porque es Long (número) — @NotBlank solo aplica a String
     @NotNull(message = "El ID del usuario es obligatorio")
-    @Schema(description = "User Id", example = "1")
+    @Schema(
+            description = "Identificador único (ID) del usuario en los registros centrales",
+            example = "1",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private Long userId;
 
     // Perfil o privilegio a registrar bajo las opciones del sistema
@@ -23,6 +27,11 @@ public class UserRoleDTO {
             regexp = "ADMINISTRADOR|FISCALIZADOR|VIAJERO",
             message = "El rol debe ser ADMINISTRADOR, FISCALIZADOR o VIAJERO"
     )
-    @Schema(description = "Rol", example = "VIAJERO")
+    @Schema(
+            description = "Nuevo nivel de privilegio técnico o perfil institucional a conceder",
+            example = "ADMINISTRADOR",
+            allowableValues = {"ADMINISTRADOR", "FISCALIZADOR", "VIAJERO"},
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String rol;
 }

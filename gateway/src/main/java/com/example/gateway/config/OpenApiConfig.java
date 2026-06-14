@@ -13,17 +13,16 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Gateway API")
+                        .title("SMCFT - API Gateway Proxy")
                         .version("1.0")
-                        .description("API Gateway del sistema SMCFT")
+                        .description("Puerta de enlace perimetral única (API Gateway) encargada del enrutamiento reactivo, resolución de políticas de CORS globales y agregación centralizada de documentación OpenAPI.")
                         .contact(new Contact()
-                                .name("Fernando")
-                                .email("correo@ejemplo.cl")))
+                                .name("Benjamin Riquelme")
+                                .email("benjamin@ejemplo.cl")))
                 .addSecurityItem(
                         new SecurityRequirement()
                                 .addList(securitySchemeName))
