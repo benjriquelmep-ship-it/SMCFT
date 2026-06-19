@@ -5,6 +5,7 @@ package com.example.AuthService.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -17,6 +18,7 @@ public class WebClientConfig {
 
     // @Bean registra este WebClient para que Spring lo inyecte en AuthService
     @Bean
+    @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
                 // URL base del User Service

@@ -5,6 +5,7 @@ package com.example.DeadlineService.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -17,6 +18,7 @@ public class WebClientConfig {
 
     //spring guarda este WebClient para inyectarlo automáticamente en DeadlineService cuando lo necesite
     @Bean
+    @LoadBalanced
     public WebClient webClient() {
 
         // Define la URL base de todas las peticiones

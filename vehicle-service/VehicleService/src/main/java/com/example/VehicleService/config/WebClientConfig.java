@@ -4,6 +4,7 @@ package com.example.VehicleService.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -14,6 +15,7 @@ public class WebClientConfig {
     private String userServiceUrl;
 
     @Bean
+    @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
                 // URL base del User Service

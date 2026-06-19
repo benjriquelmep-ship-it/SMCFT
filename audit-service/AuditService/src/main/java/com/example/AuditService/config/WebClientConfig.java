@@ -4,6 +4,7 @@ package com.example.AuditService.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
@@ -16,6 +17,7 @@ public class WebClientConfig {
 
 
     @Bean
+    @LoadBalanced
     public WebClient webClient() {
         //hace el llamado al user service
         return WebClient.builder()

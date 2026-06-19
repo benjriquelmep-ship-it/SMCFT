@@ -5,6 +5,7 @@ package com.example.BorderCrossingService.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -21,6 +22,7 @@ public class WebClientConfig {
     // WebClient para Vehicle Service
     // Usado para verificar el vehículo y actualizar su estado
     @Bean(name = "vehicleWebClient")
+    @LoadBalanced
     public WebClient vehicleWebClient() {
         return WebClient.builder()
                 .baseUrl(vehicleServiceUrl)
@@ -30,6 +32,7 @@ public class WebClientConfig {
     // WebClient para Item Category Service
     // Usado para validar las categorías del equipaje declarado
     @Bean(name = "itemCategoryWebClient")
+    @LoadBalanced
     public WebClient itemCategoryWebClient() {
         return WebClient.builder()
                 .baseUrl(itemCategoryServiceUrl)
