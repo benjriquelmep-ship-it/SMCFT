@@ -1,0 +1,238 @@
+services:
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: smcft-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: smcft_root_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+    networks:
+      - smcft-network
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: smcft-eureka
+    ports:
+      - "8760:8760"
+    networks:
+      - smcft-network
+
+  gateway:
+    build: ./gateway
+    container_name: smcft-gateway
+    ports:
+      - "2020:2020"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  audit-service:
+    build: ./audit-service/AuditService
+    container_name: smcft-audit
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/audit_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  auth-service:
+    build: ./auth-service/AuthService
+    container_name: smcft-auth
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/auth_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  border-crossing-service:
+    build: ./border-crossing-service/BorderCrossingService
+    container_name: smcft-border-crossing
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/border_crossing_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  deadline-service:
+    build: ./deadline-service/DeadlineService
+    container_name: smcft-deadline
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/deadline_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  entry-service:
+    build: ./entry-service/EntryService
+    container_name: smcft-entry
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/entry_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  item-category-service:
+    build: ./item-category-service/ItemCategoryService
+    container_name: smcft-item-category
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/item_category_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  notification-service:
+    build: ./notification-service/NotificationService
+    container_name: smcft-notification
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/notification_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  report-service:
+    build: ./report-service/ReportService
+    container_name: smcft-report
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/report_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  sanitary-service:
+    build: ./sanitary-service/SanitaryService
+    container_name: smcft-sanitary
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/sanitary_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  transaction-service:
+    build: ./transaction-service/TransactionService
+    container_name: smcft-transaction
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/transaction_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  user-service:
+    build: ./user-service/user-service
+    container_name: smcft-user
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  vehicle-service:
+    build: ./vehicle-service/VehicleService
+    container_name: smcft-vehicle
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/vehicles_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: smcft
+      SPRING_DATASOURCE_PASSWORD: smcft_pass
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+volumes:
+  mysql-data:
+
+networks:
+  smcft-network:
+    driver: bridge

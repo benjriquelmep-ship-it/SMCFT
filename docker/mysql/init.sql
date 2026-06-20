@@ -1,0 +1,27 @@
+CREATE DATABASE IF NOT EXISTS audit_db;
+CREATE DATABASE IF NOT EXISTS auth_db;
+CREATE DATABASE IF NOT EXISTS border_crossing_db;
+CREATE DATABASE IF NOT EXISTS deadline_db;
+CREATE DATABASE IF NOT EXISTS entry_db;
+CREATE DATABASE IF NOT EXISTS item_category_db;
+CREATE DATABASE IF NOT EXISTS notification_db;
+CREATE DATABASE IF NOT EXISTS report_db;
+CREATE DATABASE IF NOT EXISTS sanitary_db;
+CREATE DATABASE IF NOT EXISTS transaction_db;
+CREATE DATABASE IF NOT EXISTS user_db;
+CREATE DATABASE IF NOT EXISTS vehicles_db;
+
+CREATE USER IF NOT EXISTS 'smcft'@'%' IDENTIFIED BY 'smcft_pass';
+GRANT ALL PRIVILEGES ON audit_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON auth_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON border_crossing_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON deadline_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON entry_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON item_category_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON notification_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON report_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON sanitary_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON transaction_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON user_db.* TO 'smcft'@'%';
+GRANT ALL PRIVILEGES ON vehicles_db.* TO 'smcft'@'%';
+FLUSH PRIVILEGES;
