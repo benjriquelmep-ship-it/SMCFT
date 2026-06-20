@@ -1,38 +1,88 @@
-# SMCFT
-# SMCFT - Sistema de Modernización de Control Fronterizo Terrestre
+# SMCFT - Sistema de Monitoreo y Control Fronterizo Terrestre
 
-Este sistema está diseñado para la digitalización y agilización de los procesos aduaneros en pasos fronterizos terrestres. Permite gestionar el ingreso y salida de vehículos, declaraciones de equipaje y control sanitario, utilizando una arquitectura de microservicios desacoplada.
+**Estudiantes:** (completar nombres)
 
-## 🚀 Arquitectura del Proyecto (12 Microservicios)
+Sistema distribuido de microservicios para la gestión de control fronterizo, incluyendo registro de ingresos, inspecciones sanitarias, control vehicular, transacciones aduaneras, notificaciones y auditoría.
 
-El sistema se divide en servicios independientes para garantizar escalabilidad y mantenimiento:
+## Microservicios Implementados
 
-1.  **Auth Service**: Gestión de seguridad y tokens JWT.
-2.  **User Service**: Administración de perfiles (Administradores, Fiscalizadores y Viajeros).
-3.  **Vehicle Service**: Control de patentes, propiedad y estado de vehículos.
-4.  **Border Crossing Service**: Registro y validación de salidas temporales.
-5.  **Entry Service**: Gestión de ingresos al territorio nacional.
-6.  **Item Category Service**: Categorización de equipaje y mercancías declaradas.
-7.  **Deadline Service**: Control de plazos legales (regla de los 180 días).
-8.  **Report Service**: Generación de estadísticas y consultas avanzadas.
-9.  **Notification Service**: Sistema de alertas automáticas (Email/Push).
-10. **Transaction Service**: Historial completo de movimientos por usuario/patente.
-11. **Sanitary Service**: Control del SAG para mascotas y declaraciones juradas.
-12. **Audit Service**: Registro de logs de operaciones para transparencia.
+| # | Servicio | Puerto | Descripción |
+|---|---------|--------|-------------|
+| 1 | AuthService | 2022 | Autenticación y control de sesiones |
+| 2 | UserService | 2031 | Gestión de operadores e identidades |
+| 3 | VehicleService | 2032 | Parque vehicular y patentes |
+| 4 | BorderCrossingService | 2033 | Controles de tránsito y equipajes |
+| 5 | EntryService | 2025 | Declaraciones y registros de ingreso |
+| 6 | SanitaryService | 2029 | Inspecciones y visados sanitarios |
+| 7 | DeadlineService | 2024 | Control de alertas y tiempos límite |
+| 8 | ItemCategoryService | 2026 | Catálogo de categorías arancelarias |
+| 9 | TransactionService | 2040 | Conciliación y pagos aduaneros |
+| 10 | ReportService | 2028 | Motor de reportería estadística |
+| 11 | NotificationService | 2027 | Mensajería y despacho de alertas |
+| 12 | AuditService | 2021 | Bitácora e historial forense |
+| - | Eureka Server | 8760 | Service Discovery |
+| - | API Gateway | 2020 | Punto de entrada único |
 
-## 👥 Roles de Usuario
-* **Administrador (SNA)**: Gestión de normativas, parámetros y usuarios.
-* **Fiscalizador (Aduana / SAG)**: Validación de documentos, equipaje y estado sanitario.
-* **Usuario Particular (Viajero)**: Autogestión de formularios y consulta de estados.
+## Rutas del Gateway
 
-## 🛠️ Tecnologías Utilizadas
-* **Lenguaje:** Java 
-* **Framework:** Spring Boot 3.x
-* **Base de Datos:** MySQL (Micro-bases de datos independientes)
-* **Gestor de Dependencias:** Maven
-* **Control de Versiones:** Git & GitHub
+Todas las rutas parten de `http://localhost:2020/api/v1/`:
 
-## 💻 Configuración para Desarrolladores
-1. Clonar el repositorio:
-   ```bash
-   git clone [https://github.com/benjriquelmep-ship-it/SMCFT.git](https://github.com/benjriquelmep-ship-it/SMCFT.git)
+- `auth/**` → AuthService
+- `users/**` → UserService
+- `vehicles/**` → VehicleService
+- `border-crossings/**` → BorderCrossingService
+- `entries/**` → EntryService
+- `sanitary/**` → SanitaryService
+- `deadline-alerts/**` → DeadlineService
+- `item-categories/**` → ItemCategoryService
+- `transactions/**` → TransactionService
+- `reports/**` → ReportService
+- `notifications/**` → NotificationService
+- `audits/**` → AuditService
+
+## Documentación Swagger
+
+- **Gateway (centralizado):** http://localhost:2020/swagger-ui.html
+- **Eureka Dashboard:** http://localhost:8760
+
+## Ejecución Local
+
+### Requisitos
+- Java 21+
+- Maven 3.9+
+- MySQL 8.0 (con bases de datos creadas para cada servicio)
+
+### Inicio manual
+```bash
+# Cada servicio
+cd <servicio>
+./mvnw spring-boot:run
+```
+
+### Inicio con Docker
+```bash
+# Construir imágenes
+docker compose build
+
+# Levantar todos los servicios
+docker compose up -d
+
+# Ver estado
+docker compose ps
+
+# Ver logs
+docker compose logs -f <servicio>
+
+# Detener
+docker compose down
+```
+
+## Pruebas Unitarias
+
+```bash
+# Ejecutar tests de un servicio
+cd <servicio>
+./mvnw test
+```
+
+Cobertura mínima requerida: 80% sobre servicios y lógica de negocio.
