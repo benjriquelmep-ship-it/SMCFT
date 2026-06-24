@@ -5,6 +5,9 @@ import com.example.DeadlineService.model.DeadlineAlert;
 import com.example.DeadlineService.service.DeadlineAlertService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +35,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Rol de auditoría temporal insuficiente")
     })
     @GetMapping
-    public ResponseEntity<List<DeadlineAlert>> obtenerTodas() {
-        return ResponseEntity.ok(alertService.obtenerTodas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerTodas() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerTodas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerTodas()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/1
@@ -43,8 +51,11 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "404", description = "El ID de la alerta solicitado no existe en la base de datos")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DeadlineAlert> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(alertService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<DeadlineAlert>> obtenerPorId(@PathVariable Long id) {
+        DeadlineAlert alert = alertService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(alert,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(DeadlineAlertController.class).obtenerTodas()).withRel("alertas")));
     }
 
     // POST /api/v1/deadline-alerts
@@ -54,9 +65,11 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "400", description = "Payload DTO inválido o violación de restricciones estructurales")
     })
     @PostMapping
-    public ResponseEntity<DeadlineAlert> crear(@Valid @RequestBody DeadlineAlertDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(alertService.crear(dto));
+    public ResponseEntity<EntityModel<DeadlineAlert>> crear(@Valid @RequestBody DeadlineAlertDTO dto) {
+        DeadlineAlert alert = alertService.crear(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(alert,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(alert.getId())).withSelfRel(),
+                linkTo(methodOn(DeadlineAlertController.class).obtenerTodas()).withRel("alertas")));
     }
 
     // POST /api/v1/deadline-alerts/automatica/1
@@ -66,9 +79,11 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "400", description = "El ID del plazo provisto no calza con ninguna cabecera vigente")
     })
     @PostMapping("/automatica/{deadlineId}")
-    public ResponseEntity<DeadlineAlert> generarAutomatica(@PathVariable Long deadlineId) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(alertService.generarAlertaAutomatica(deadlineId));
+    public ResponseEntity<EntityModel<DeadlineAlert>> generarAutomatica(@PathVariable Long deadlineId) {
+        DeadlineAlert alert = alertService.generarAlertaAutomatica(deadlineId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(alert,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(alert.getId())).withSelfRel(),
+                linkTo(methodOn(DeadlineAlertController.class).obtenerTodas()).withRel("alertas")));
     }
 
     // PATCH /api/v1/deadline-alerts/1/enviada
@@ -78,8 +93,11 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "404", description = "El ID de la alerta especificado no fue localizado")
     })
     @PatchMapping("/{id}/enviada")
-    public ResponseEntity<DeadlineAlert> marcarComoEnviada(@PathVariable Long id) {
-        return ResponseEntity.ok(alertService.marcarComoEnviada(id));
+    public ResponseEntity<EntityModel<DeadlineAlert>> marcarComoEnviada(@PathVariable Long id) {
+        DeadlineAlert alert = alertService.marcarComoEnviada(id);
+        return ResponseEntity.ok(EntityModel.of(alert,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(DeadlineAlertController.class).obtenerTodas()).withRel("alertas")));
     }
 
     // DELETE /api/v1/deadline-alerts/1
@@ -100,8 +118,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Colección de alertas de la orden recuperada con éxito")
     })
     @GetMapping("/deadline/{deadlineId}")
-    public ResponseEntity<List<DeadlineAlert>> obtenerPorDeadline(@PathVariable Long deadlineId) {
-        return ResponseEntity.ok(alertService.obtenerPorDeadline(deadlineId));
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerPorDeadline(@PathVariable Long deadlineId) {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerPorDeadline(deadlineId).stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerPorDeadline(deadlineId)).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/no-enviadas
@@ -110,8 +133,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Cola de sincronización pendiente recuperada con éxito")
     })
     @GetMapping("/no-enviadas")
-    public ResponseEntity<List<DeadlineAlert>> obtenerNoEnviadas() {
-        return ResponseEntity.ok(alertService.obtenerNoEnviadas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerNoEnviadas() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerNoEnviadas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerNoEnviadas()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/enviadas
@@ -120,8 +148,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Historial de envíos sincronizados obtenido con éxito")
     })
     @GetMapping("/enviadas")
-    public ResponseEntity<List<DeadlineAlert>> obtenerEnviadas() {
-        return ResponseEntity.ok(alertService.obtenerEnviadas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerEnviadas() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerEnviadas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerEnviadas()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/urgentes
@@ -130,8 +163,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Bandeja de alertas críticas e imprevistas filtrada con éxito")
     })
     @GetMapping("/urgentes")
-    public ResponseEntity<List<DeadlineAlert>> obtenerUrgentes() {
-        return ResponseEntity.ok(alertService.obtenerUrgentesNoEnviadas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerUrgentes() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerUrgentesNoEnviadas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerUrgentes()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/vencidos
@@ -140,8 +178,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Bandeja de avisos de infracción temporal extraída de forma conforme")
     })
     @GetMapping("/vencidos")
-    public ResponseEntity<List<DeadlineAlert>> obtenerVencidos() {
-        return ResponseEntity.ok(alertService.obtenerVencidasNoEnviadas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerVencidos() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerVencidasNoEnviadas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerVencidos()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/deadline/1/ordenadas
@@ -150,8 +193,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Nómina secuencial ordenada recuperada con éxito")
     })
     @GetMapping("/deadline/{deadlineId}/ordenadas")
-    public ResponseEntity<List<DeadlineAlert>> obtenerOrdenadas(@PathVariable Long deadlineId) {
-        return ResponseEntity.ok(alertService.obtenerPorDeadlineOrdenadas(deadlineId));
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerOrdenadas(@PathVariable Long deadlineId) {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerPorDeadlineOrdenadas(deadlineId).stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerOrdenadas(deadlineId)).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/ultimas
@@ -160,8 +208,13 @@ public class DeadlineAlertController {
             @ApiResponse(responseCode = "200", description = "Extracto analítico rápido de auditoría devuelto")
     })
     @GetMapping("/ultimas")
-    public ResponseEntity<List<DeadlineAlert>> obtenerUltimas() {
-        return ResponseEntity.ok(alertService.obtenerUltimasAlertas());
+    public ResponseEntity<CollectionModel<EntityModel<DeadlineAlert>>> obtenerUltimas() {
+        List<EntityModel<DeadlineAlert>> alerts = alertService.obtenerUltimasAlertas().stream()
+                .map(a -> EntityModel.of(a,
+                        linkTo(methodOn(DeadlineAlertController.class).obtenerPorId(a.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(alerts,
+                linkTo(methodOn(DeadlineAlertController.class).obtenerUltimas()).withSelfRel()));
     }
 
     // GET /api/v1/deadline-alerts/estadisticas/pendientes

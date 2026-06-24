@@ -5,6 +5,9 @@ import com.example.ReportService.model.Report;
 import com.example.ReportService.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +35,13 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Rol administrativo insuficiente")
     })
     @GetMapping
-    public ResponseEntity<List<Report>> obtenerTodos() {
-        return ResponseEntity.ok(reportService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerTodos() {
+        List<EntityModel<Report>> reports = reportService.obtenerTodos().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/reports/1 : Busca un reporte por su ID
@@ -44,8 +52,11 @@ public class ReportController {
             @ApiResponse(responseCode = "404", description = "El ID de reporte solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Report> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(reportService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<Report>> obtenerPorId(@PathVariable Long id) {
+        Report report = reportService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(report,
+                linkTo(methodOn(ReportController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ReportController.class).obtenerTodos()).withRel("reportes")));
     }
 
     // POST /api/v1/reports : Crea e inicia la generación de un nuevo reporte
@@ -55,9 +66,11 @@ public class ReportController {
             @ApiResponse(responseCode = "400", description = "Rango de fechas inválido o estructura DTO incorrecta") // 🚨 Reparado: cambiado 'message' por 'description'
     })
     @PostMapping
-    public ResponseEntity<Report> generar(@Valid @RequestBody ReportDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reportService.generar(dto));
+    public ResponseEntity<EntityModel<Report>> generar(@Valid @RequestBody ReportDTO dto) {
+        Report report = reportService.generar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(report,
+                linkTo(methodOn(ReportController.class).obtenerPorId(report.getId())).withSelfRel(),
+                linkTo(methodOn(ReportController.class).obtenerTodos()).withRel("reportes")));
     }
 
     // PATCH /api/v1/reports/1/completar : Cambia el estado del reporte a COMPLETADO
@@ -68,8 +81,11 @@ public class ReportController {
             @ApiResponse(responseCode = "404", description = "El ID de reporte especificado no existe")
     })
     @PatchMapping("/{id}/completar")
-    public ResponseEntity<Report> completar(@PathVariable Long id) {
-        return ResponseEntity.ok(reportService.completar(id));
+    public ResponseEntity<EntityModel<Report>> completar(@PathVariable Long id) {
+        Report report = reportService.completar(id);
+        return ResponseEntity.ok(EntityModel.of(report,
+                linkTo(methodOn(ReportController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ReportController.class).obtenerTodos()).withRel("reportes")));
     }
 
     // PATCH /api/v1/reports/1/error : Registra una falla en el reporte con observaciones
@@ -79,11 +95,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PatchMapping("/{id}/error")
-    public ResponseEntity<Report> marcarError(
+    public ResponseEntity<EntityModel<Report>> marcarError(
             @PathVariable Long id,
             @RequestParam(required = false) String observaciones) {
-        return ResponseEntity.ok(
-                reportService.marcarError(id, observaciones));
+        Report report = reportService.marcarError(id, observaciones);
+        return ResponseEntity.ok(EntityModel.of(report,
+                linkTo(methodOn(ReportController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ReportController.class).obtenerTodos()).withRel("reportes")));
     }
 
     // DELETE /api/v1/reports/1 : Elimina físicamente un reporte por su ID
@@ -105,8 +123,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/tipo/{tipoReporte}")
-    public ResponseEntity<List<Report>> obtenerPorTipo(@PathVariable String tipoReporte) {
-        return ResponseEntity.ok(reportService.obtenerPorTipo(tipoReporte));
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerPorTipo(@PathVariable String tipoReporte) {
+        List<EntityModel<Report>> reports = reportService.obtenerPorTipo(tipoReporte).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerPorTipo(tipoReporte)).withSelfRel()));
     }
 
     // GET /api/v1/reports/generador/12345678-9 : Filtra reportes creados por el RUT de un usuario
@@ -116,8 +139,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/generador/{rut}")
-    public ResponseEntity<List<Report>> obtenerPorGenerador(@PathVariable String rut) {
-        return ResponseEntity.ok(reportService.obtenerPorGenerador(rut));
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerPorGenerador(@PathVariable String rut) {
+        List<EntityModel<Report>> reports = reportService.obtenerPorGenerador(rut).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerPorGenerador(rut)).withSelfRel()));
     }
 
     // GET /api/v1/reports/estado/ : Filtra reportes según su estado actual
@@ -127,8 +155,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Report>> obtenerPorEstado(@PathVariable String estado) {
-        return ResponseEntity.ok(reportService.obtenerPorEstado(estado));
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerPorEstado(@PathVariable String estado) {
+        List<EntityModel<Report>> reports = reportService.obtenerPorEstado(estado).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerPorEstado(estado)).withSelfRel()));
     }
 
     // GET /api/v1/reports/tipo/CRUCE_FRONTERIZO/completados : Obtiene reportes finalizados de un tipo específico
@@ -138,8 +171,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/tipo/{tipoReporte}/completados")
-    public ResponseEntity<List<Report>> obtenerCompletadosPorTipo(@PathVariable String tipoReporte) {
-        return ResponseEntity.ok(reportService.obtenerCompletadosPorTipo(tipoReporte));
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerCompletadosPorTipo(@PathVariable String tipoReporte) {
+        List<EntityModel<Report>> reports = reportService.obtenerCompletadosPorTipo(tipoReporte).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerCompletadosPorTipo(tipoReporte)).withSelfRel()));
     }
 
     // GET /api/v1/reports/buscar?titulo=frontera : Busca reportes que contengan el texto en su título
@@ -149,8 +187,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Report>> buscarPorTitulo(@RequestParam String titulo) {
-        return ResponseEntity.ok(reportService.buscarPorTitulo(titulo));
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> buscarPorTitulo(@RequestParam String titulo) {
+        List<EntityModel<Report>> reports = reportService.buscarPorTitulo(titulo).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).buscarPorTitulo(titulo)).withSelfRel()));
     }
 
     // GET /api/v1/reports/ultimos : Devuelve los últimos 10 reportes registrados
@@ -160,8 +203,13 @@ public class ReportController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<Report>> obtenerUltimos() {
-        return ResponseEntity.ok(reportService.obtenerUltimosReportes());
+    public ResponseEntity<CollectionModel<EntityModel<Report>>> obtenerUltimos() {
+        List<EntityModel<Report>> reports = reportService.obtenerUltimosReportes().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReportController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(reports,
+                linkTo(methodOn(ReportController.class).obtenerUltimos()).withSelfRel()));
     }
 
     // GET /api/v1/reports/estadisticas/estado/COMPLETADO : Cuenta el total de reportes en un estado

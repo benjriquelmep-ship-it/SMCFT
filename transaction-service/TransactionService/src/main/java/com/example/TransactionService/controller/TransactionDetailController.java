@@ -5,6 +5,9 @@ import com.example.TransactionService.model.TransactionDetail;
 import com.example.TransactionService.service.TransactionDetailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "403", description = "Sin privilegios requeridos")
     })
     @GetMapping
-    public ResponseEntity<List<TransactionDetail>> obtenerTodos() {
-        return ResponseEntity.ok(detailService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerTodos() {
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerTodos().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/1 : Busca un detalle de transacción específico por ID
@@ -43,8 +51,11 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "404", description = "El ID de detalle solicitado no existe en los registros")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionDetail> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(detailService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<TransactionDetail>> obtenerPorId(@PathVariable Long id) {
+        TransactionDetail detail = detailService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(detail,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // POST /api/v1/transaction-details : Agrega un nuevo concepto o línea de detalle a la transacción
@@ -54,10 +65,12 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "400", description = "Estructura DTO errónea o ID de cabecera inválido")
     })
     @PostMapping
-    public ResponseEntity<TransactionDetail> agregar(
+    public ResponseEntity<EntityModel<TransactionDetail>> agregar(
             @Valid @RequestBody TransactionDetailDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(detailService.agregar(dto));
+        TransactionDetail detail = detailService.agregar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(detail,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorId(detail.getId())).withSelfRel(),
+                linkTo(methodOn(TransactionDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // PUT /api/v1/transaction-details/1 : Actualiza por completo un detalle existente mediante su ID
@@ -69,10 +82,13 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "404", description = "El registro de detalle a modificar no fue hallado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<TransactionDetail> actualizar(
+    public ResponseEntity<EntityModel<TransactionDetail>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody TransactionDetailDTO dto) {
-        return ResponseEntity.ok(detailService.actualizar(id, dto));
+        TransactionDetail detail = detailService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(detail,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // DELETE /api/v1/transaction-details/1 : Elimina físicamente un registro de detalle por ID
@@ -94,9 +110,14 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/transaccion/{transactionId}")
-    public ResponseEntity<List<TransactionDetail>> obtenerPorTransaccion(
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerPorTransaccion(
             @PathVariable Long transactionId) {
-        return ResponseEntity.ok(detailService.obtenerPorTransaccion(transactionId));
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerPorTransaccion(transactionId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorTransaccion(transactionId)).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/tipo/COBRO : Filtra los detalles de transacciones por su tipo
@@ -106,9 +127,14 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/tipo/{tipoDetalle}")
-    public ResponseEntity<List<TransactionDetail>> obtenerPorTipo(
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerPorTipo(
             @PathVariable String tipoDetalle) {
-        return ResponseEntity.ok(detailService.obtenerPorTipoDetalle(tipoDetalle));
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerPorTipoDetalle(tipoDetalle).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorTipo(tipoDetalle)).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/transaccion/1/tipo/COBRO : Combina filtros
@@ -118,11 +144,15 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/transaccion/{transactionId}/tipo/{tipoDetalle}")
-    public ResponseEntity<List<TransactionDetail>> obtenerPorTransaccionYTipo(
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerPorTransaccionYTipo(
             @PathVariable Long transactionId,
             @PathVariable String tipoDetalle) {
-        return ResponseEntity.ok(
-                detailService.obtenerPorTransaccionYTipo(transactionId, tipoDetalle));
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerPorTransaccionYTipo(transactionId, tipoDetalle).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerPorTransaccionYTipo(transactionId, tipoDetalle)).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/buscar?concepto=multa : Busca detalles mediante coincidencia parcial de texto en el concepto
@@ -132,9 +162,14 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<TransactionDetail>> buscarPorConcepto(
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> buscarPorConcepto(
             @RequestParam String concepto) {
-        return ResponseEntity.ok(detailService.buscarPorConcepto(concepto));
+        List<EntityModel<TransactionDetail>> details = detailService.buscarPorConcepto(concepto).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).buscarPorConcepto(concepto)).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/transaccion/1/ordenados : Obtiene los detalles de una transacción ordenados por valor descendente
@@ -144,10 +179,14 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/transaccion/{transactionId}/ordenados")
-    public ResponseEntity<List<TransactionDetail>> obtenerOrdenados(
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerOrdenados(
             @PathVariable Long transactionId) {
-        return ResponseEntity.ok(
-                detailService.obtenerPorTransaccionOrdenados(transactionId));
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerPorTransaccionOrdenados(transactionId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerOrdenados(transactionId)).withSelfRel()));
     }
 
     // GET /api/v1/transaction-details/ultimos : Devuelve los últimos 10 detalles registrados en la base de datos
@@ -157,7 +196,12 @@ public class TransactionDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<TransactionDetail>> obtenerUltimos() {
-        return ResponseEntity.ok(detailService.obtenerUltimosDetalles());
+    public ResponseEntity<CollectionModel<EntityModel<TransactionDetail>>> obtenerUltimos() {
+        List<EntityModel<TransactionDetail>> details = detailService.obtenerUltimosDetalles().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(TransactionDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(TransactionDetailController.class).obtenerUltimos()).withSelfRel()));
     }
 }

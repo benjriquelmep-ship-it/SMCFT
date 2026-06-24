@@ -5,6 +5,9 @@ import com.example.BorderCrossingService.model.BorderCrossingItem;
 import com.example.BorderCrossingService.service.BorderCrossingItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "403", description = "Privilegios insuficientes para listar equipaje global")
     })
     @GetMapping
-    public ResponseEntity<List<BorderCrossingItem>> obtenerTodos() {
-        return ResponseEntity.ok(itemService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerTodos() {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerTodos().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/1
@@ -42,8 +50,11 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "404", description = "Ítem de declaración de equipaje no hallado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<BorderCrossingItem> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<BorderCrossingItem>> obtenerPorId(@PathVariable Long id) {
+        BorderCrossingItem item = itemService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(item,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // POST /api/v1/border-crossings/items
@@ -53,9 +64,11 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "400", description = "La categoría arancelaria provista no está activa o el DTO infringe validaciones numéricas")
     })
     @PostMapping
-    public ResponseEntity<BorderCrossingItem> agregar(@Valid @RequestBody BorderCrossingItemDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(itemService.agregar(dto));
+    public ResponseEntity<EntityModel<BorderCrossingItem>> agregar(@Valid @RequestBody BorderCrossingItemDTO dto) {
+        BorderCrossingItem item = itemService.agregar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(item,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(item.getId())).withSelfRel(),
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // PATCH /api/v1/border-crossings/items/1/aprobar
@@ -65,8 +78,11 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "400", description = "El trámite de cruce padre ya se encuentra cerrado o resuelto")
     })
     @PatchMapping("/{id}/aprobar")
-    public ResponseEntity<BorderCrossingItem> aprobar(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.aprobar(id));
+    public ResponseEntity<EntityModel<BorderCrossingItem>> aprobar(@PathVariable Long id) {
+        BorderCrossingItem item = itemService.aprobar(id);
+        return ResponseEntity.ok(EntityModel.of(item,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // PATCH /api/v1/border-crossings/items/1/rechazar
@@ -75,8 +91,11 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Línea de mercancía rechazada u objetada con éxito")
     })
     @PatchMapping("/{id}/rechazar")
-    public ResponseEntity<BorderCrossingItem> rechazar(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.rechazar(id));
+    public ResponseEntity<EntityModel<BorderCrossingItem>> rechazar(@PathVariable Long id) {
+        BorderCrossingItem item = itemService.rechazar(id);
+        return ResponseEntity.ok(EntityModel.of(item,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // DELETE /api/v1/border-crossings/items/1
@@ -96,8 +115,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Desglose de equipaje de la orden recuperado correctamente")
     })
     @GetMapping("/cruce/{borderCrossingId}")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerPorCruce(@PathVariable Long borderCrossingId) {
-        return ResponseEntity.ok(itemService.obtenerPorCruce(borderCrossingId));
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerPorCruce(@PathVariable Long borderCrossingId) {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerPorCruce(borderCrossingId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorCruce(borderCrossingId)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/cruce/1/aprobados
@@ -106,8 +130,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Filtro de artículos visados completado con éxito")
     })
     @GetMapping("/cruce/{borderCrossingId}/aprobados")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerAprobados(@PathVariable Long borderCrossingId) {
-        return ResponseEntity.ok(itemService.obtenerAprobadosPorCruce(borderCrossingId));
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerAprobados(@PathVariable Long borderCrossingId) {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerAprobadosPorCruce(borderCrossingId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerAprobados(borderCrossingId)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/cruce/1/no-aprobados
@@ -116,8 +145,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Filtro de artículos retenidos u observados completado")
     })
     @GetMapping("/cruce/{borderCrossingId}/no-aprobados")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerNoAprobados(@PathVariable Long borderCrossingId) {
-        return ResponseEntity.ok(itemService.obtenerNoAprobadosPorCruce(borderCrossingId));
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerNoAprobados(@PathVariable Long borderCrossingId) {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerNoAprobadosPorCruce(borderCrossingId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerNoAprobados(borderCrossingId)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/categoria/1
@@ -126,8 +160,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Agrupación arancelaria de artículos devuelta")
     })
     @GetMapping("/categoria/{categoriaId}")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerPorCategoria(@PathVariable Long categoriaId) {
-        return ResponseEntity.ok(itemService.obtenerPorCategoria(categoriaId));
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerPorCategoria(@PathVariable Long categoriaId) {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerPorCategoria(categoriaId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerPorCategoria(categoriaId)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/buscar?descripcion=laptop
@@ -136,8 +175,13 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Resultados de la consulta textual devueltos")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<BorderCrossingItem>> buscarPorDescripcion(@RequestParam String descripcion) {
-        return ResponseEntity.ok(itemService.buscarPorDescripcion(descripcion));
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> buscarPorDescripcion(@RequestParam String descripcion) {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.buscarPorDescripcion(descripcion).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).buscarPorDescripcion(descripcion)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/cruce/1/ordenados
@@ -146,9 +190,14 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Aforo comercial jerarquizado obtenido con éxito")
     })
     @GetMapping("/cruce/{borderCrossingId}/ordenados")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerOrdenados(@PathVariable Long borderCrossingId) {
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerOrdenados(@PathVariable Long borderCrossingId) {
         // Enlace corregido con la semántica del BorderCrossingItemService
-        return ResponseEntity.ok(itemService.obtenerPorCruceOrdenadosPorValor(borderCrossingId));
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerPorCruceOrdenadosPorValor(borderCrossingId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerOrdenados(borderCrossingId)).withSelfRel()));
     }
 
     // GET /api/v1/border-crossings/items/ultimos
@@ -157,7 +206,12 @@ public class BorderCrossingItemController {
             @ApiResponse(responseCode = "200", description = "Dashboard de monitoreo de equipajes obtenido de forma conforme")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<BorderCrossingItem>> obtenerUltimos() {
-        return ResponseEntity.ok(itemService.obtenerUltimosItems());
+    public ResponseEntity<CollectionModel<EntityModel<BorderCrossingItem>>> obtenerUltimos() {
+        List<EntityModel<BorderCrossingItem>> itemModels = itemService.obtenerUltimosItems().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(BorderCrossingItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(itemModels,
+                linkTo(methodOn(BorderCrossingItemController.class).obtenerUltimos()).withSelfRel()));
     }
 }

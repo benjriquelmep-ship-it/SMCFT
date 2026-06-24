@@ -5,6 +5,9 @@ import com.example.VehicleService.model.VehicleDocument;
 import com.example.VehicleService.service.VehicleDocumentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "403", description = "Sin permisos de acceso")
     })
     @GetMapping
-    public ResponseEntity<List<VehicleDocument>> obtenerTodos() {
-        return ResponseEntity.ok(documentService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerTodos() {
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerTodos().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/1 : Busca un documento específico a través de su ID primario
@@ -43,9 +51,12 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "404", description = "El ID de documento solicitado no fue encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<VehicleDocument> obtenerPorId(
+    public ResponseEntity<EntityModel<VehicleDocument>> obtenerPorId(
             @PathVariable Long id) {
-        return ResponseEntity.ok(documentService.obtenerPorId(id));
+        VehicleDocument document = documentService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(document,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(VehicleDocumentController.class).obtenerTodos()).withRel("documentos")));
     }
 
     // POST /api/v1/vehicles/documentos : Registra un nuevo documento acoplándolo a un vehículo existente
@@ -56,10 +67,12 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PostMapping
-    public ResponseEntity<VehicleDocument> agregar(
+    public ResponseEntity<EntityModel<VehicleDocument>> agregar(
             @Valid @RequestBody VehicleDocumentDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(documentService.agregar(dto));
+        VehicleDocument document = documentService.agregar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(document,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(document.getId())).withSelfRel(),
+                linkTo(methodOn(VehicleDocumentController.class).obtenerTodos()).withRel("documentos")));
     }
 
     // PUT /api/v1/vehicles/documentos/1 : Sobreescribe los metadatos y fechas de un documento específico
@@ -71,10 +84,13 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "404", description = "El registro documental no existe")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<VehicleDocument> actualizar(
+    public ResponseEntity<EntityModel<VehicleDocument>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody VehicleDocumentDTO dto) {
-        return ResponseEntity.ok(documentService.actualizar(id, dto));
+        VehicleDocument document = documentService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(document,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(VehicleDocumentController.class).obtenerTodos()).withRel("documentos")));
     }
 
     // PATCH /api/v1/vehicles/documentos/1/invalidar : Deshabilita de forma parcial la vigencia de un papel o padrón
@@ -85,8 +101,11 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "404", description = "Registro no localizado")
     })
     @PatchMapping("/{id}/invalidar")
-    public ResponseEntity<VehicleDocument> invalidar(@PathVariable Long id) {
-        return ResponseEntity.ok(documentService.invalidar(id));
+    public ResponseEntity<EntityModel<VehicleDocument>> invalidar(@PathVariable Long id) {
+        VehicleDocument document = documentService.invalidar(id);
+        return ResponseEntity.ok(EntityModel.of(document,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(VehicleDocumentController.class).obtenerTodos()).withRel("documentos")));
     }
 
     // DELETE /api/v1/vehicles/documentos/1 : Remueve físicamente el registro documental de la base de datos
@@ -109,10 +128,14 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/vehiculo/{vehicleId}")
-    public ResponseEntity<List<VehicleDocument>> obtenerPorVehiculo(
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerPorVehiculo(
             @PathVariable Long vehicleId) {
-        return ResponseEntity.ok(
-                documentService.obtenerPorVehiculo(vehicleId));
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerPorVehiculo(vehicleId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorVehiculo(vehicleId)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/vehiculo/1/vigentes
@@ -122,10 +145,14 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/vehiculo/{vehicleId}/vigentes")
-    public ResponseEntity<List<VehicleDocument>> obtenerVigentesPorVehiculo(
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerVigentesPorVehiculo(
             @PathVariable Long vehicleId) {
-        return ResponseEntity.ok(
-                documentService.obtenerVigentesPorVehiculo(vehicleId));
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerVigentesPorVehiculo(vehicleId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerVigentesPorVehiculo(vehicleId)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/proximos-a-vencer : Lista los documentos cuya fecha de expiración se acerca al límite de alerta
@@ -135,8 +162,13 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/proximos-a-vencer")
-    public ResponseEntity<List<VehicleDocument>> obtenerProximosAVencer() {
-        return ResponseEntity.ok(documentService.obtenerProximosAVencer());
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerProximosAVencer() {
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerProximosAVencer().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerProximosAVencer()).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/vencidos : Lista todos los registros cuya fecha de expiración es inferior a la actual
@@ -146,8 +178,13 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/vencidos")
-    public ResponseEntity<List<VehicleDocument>> obtenerVencidos() {
-        return ResponseEntity.ok(documentService.obtenerVencidos());
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerVencidos() {
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerVencidos().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerVencidos()).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/vehiculo/1/ordenados
@@ -157,10 +194,14 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/vehiculo/{vehicleId}/ordenados")
-    public ResponseEntity<List<VehicleDocument>> obtenerPorVehiculoOrdenados(
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerPorVehiculoOrdenados(
             @PathVariable Long vehicleId) {
-        return ResponseEntity.ok(
-                documentService.obtenerPorVehiculoOrdenados(vehicleId));
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerPorVehiculoOrdenados(vehicleId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerPorVehiculoOrdenados(vehicleId)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/documentos/ultimos : Devuelve las últimas 10 inserciones documentales del sistema global
@@ -170,7 +211,12 @@ public class VehicleDocumentController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<VehicleDocument>> obtenerUltimosRegistrados() {
-        return ResponseEntity.ok(documentService.obtenerUltimosRegistrados());
+    public ResponseEntity<CollectionModel<EntityModel<VehicleDocument>>> obtenerUltimosRegistrados() {
+        List<EntityModel<VehicleDocument>> documentModels = documentService.obtenerUltimosRegistrados().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(VehicleDocumentController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(documentModels,
+                linkTo(methodOn(VehicleDocumentController.class).obtenerUltimosRegistrados()).withSelfRel()));
     }
 }

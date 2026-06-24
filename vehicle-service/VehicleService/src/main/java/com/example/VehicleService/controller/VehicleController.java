@@ -5,6 +5,9 @@ import com.example.VehicleService.model.Vehicle;
 import com.example.VehicleService.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +34,20 @@ public class VehicleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Rol no autorizado")
     })
     @GetMapping
-    public ResponseEntity<List<Vehicle>> obtenerTodos(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerTodos(
             @RequestParam(required = false) String rutPropietario) {
+        List<Vehicle> vehicles;
         if (rutPropietario != null) {
-            return ResponseEntity.ok(vehicleService.obtenerPorPropietario(rutPropietario));
+            vehicles = vehicleService.obtenerPorPropietario(rutPropietario);
+        } else {
+            vehicles = vehicleService.obtenerTodos();
         }
-        return ResponseEntity.ok(vehicleService.obtenerTodos());
+        List<EntityModel<Vehicle>> vehicleModels = vehicles.stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/1 : Busca un vehículo por su identificador primario
@@ -47,8 +58,11 @@ public class VehicleController {
             @ApiResponse(responseCode = "404", description = "El ID del vehículo solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Vehicle> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(vehicleService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<Vehicle>> obtenerPorId(@PathVariable Long id) {
+        Vehicle vehicle = vehicleService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(vehicle,
+                linkTo(methodOn(VehicleController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withRel("vehiculos")));
     }
 
     // GET /api/v1/vehicles/patente/ABC123
@@ -59,9 +73,12 @@ public class VehicleController {
             @ApiResponse(responseCode = "404", description = "La patente ingresada no se encuentra registrada")
     })
     @GetMapping("/patente/{patente}")
-    public ResponseEntity<Vehicle> obtenerPorPatente(
+    public ResponseEntity<EntityModel<Vehicle>> obtenerPorPatente(
             @PathVariable String patente) {
-        return ResponseEntity.ok(vehicleService.obtenerPorPatente(patente));
+        Vehicle vehicle = vehicleService.obtenerPorPatente(patente);
+        return ResponseEntity.ok(EntityModel.of(vehicle,
+                linkTo(methodOn(VehicleController.class).obtenerPorPatente(patente)).withSelfRel(),
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withRel("vehiculos")));
     }
 
     // POST /api/v1/vehicles : Registra un nuevo parque automotor aplicando reglas de validación
@@ -72,10 +89,12 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PostMapping
-    public ResponseEntity<Vehicle> registrar(
+    public ResponseEntity<EntityModel<Vehicle>> registrar(
             @Valid @RequestBody VehicleDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(vehicleService.registrar(dto));
+        Vehicle vehicle = vehicleService.registrar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(vehicle,
+                linkTo(methodOn(VehicleController.class).obtenerPorId(vehicle.getId())).withSelfRel(),
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withRel("vehiculos")));
     }
 
     // PUT /api/v1/vehicles/1 : Modifica los valores de un vehículo existente mediante su ID
@@ -87,10 +106,13 @@ public class VehicleController {
             @ApiResponse(responseCode = "404", description = "El vehículo a modificar no fue localizado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Vehicle> actualizar(
+    public ResponseEntity<EntityModel<Vehicle>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody VehicleDTO dto) {
-        return ResponseEntity.ok(vehicleService.actualizar(id, dto));
+        Vehicle vehicle = vehicleService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(vehicle,
+                linkTo(methodOn(VehicleController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withRel("vehiculos")));
     }
 
     // PATCH /api/v1/vehicles/patente/ABC123/estado?nuevoEstado=FUERA_DEL_PAIS
@@ -101,11 +123,13 @@ public class VehicleController {
             @ApiResponse(responseCode = "404", description = "Vehículo no encontrado")
     })
     @PatchMapping("/patente/{patente}/estado")
-    public ResponseEntity<Vehicle> actualizarEstado(
+    public ResponseEntity<EntityModel<Vehicle>> actualizarEstado(
             @PathVariable String patente,
             @RequestParam String nuevoEstado) {
-        return ResponseEntity.ok(
-                vehicleService.actualizarEstado(patente, nuevoEstado));
+        Vehicle vehicle = vehicleService.actualizarEstado(patente, nuevoEstado);
+        return ResponseEntity.ok(EntityModel.of(vehicle,
+                linkTo(methodOn(VehicleController.class).obtenerPorPatente(patente)).withSelfRel(),
+                linkTo(methodOn(VehicleController.class).obtenerTodos(null)).withRel("vehiculos")));
     }
 
     // DELETE /api/v1/vehicles/1 : Remueve físicamente el registro de la base de datos según ID
@@ -128,9 +152,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/propietario/{rut}")
-    public ResponseEntity<List<Vehicle>> obtenerPorPropietario(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorPropietario(
             @PathVariable String rut) {
-        return ResponseEntity.ok(vehicleService.obtenerPorPropietario(rut));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorPropietario(rut).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorPropietario(rut)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/estado/FUERA_DEL_PAIS : Lista unidades según su ubicación actual
@@ -140,9 +169,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Vehicle>> obtenerPorEstado(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorEstado(
             @PathVariable String estado) {
-        return ResponseEntity.ok(vehicleService.obtenerPorEstado(estado));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorEstado(estado).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorEstado(estado)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/tipo/PARTICULAR : Clasifica los vehículos según su categoría de uso registrado
@@ -152,9 +186,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<Vehicle>> obtenerPorTipo(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorTipo(
             @PathVariable String tipo) {
-        return ResponseEntity.ok(vehicleService.obtenerPorTipo(tipo));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorTipo(tipo).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorTipo(tipo)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/propietario/12345678-9/estado/FUERA_DEL_PAIS
@@ -164,11 +203,15 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/propietario/{rut}/estado/{estado}")
-    public ResponseEntity<List<Vehicle>> obtenerPorPropietarioYEstado(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorPropietarioYEstado(
             @PathVariable String rut,
             @PathVariable String estado) {
-        return ResponseEntity.ok(
-                vehicleService.obtenerPorPropietarioYEstado(rut, estado));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorPropietarioYEstado(rut, estado).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorPropietarioYEstado(rut, estado)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/anio/desde/2020 : Filtra unidades cuyo año de fabricación sea igual o superior al parámetro
@@ -178,9 +221,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/anio/desde/{anio}")
-    public ResponseEntity<List<Vehicle>> obtenerPorAnioDesde(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorAnioDesde(
             @PathVariable Integer anio) {
-        return ResponseEntity.ok(vehicleService.obtenerPorAnioDesde(anio));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorAnioDesde(anio).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorAnioDesde(anio)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/anio/rango?desde=2018&hasta=2022
@@ -191,11 +239,15 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/anio/rango")
-    public ResponseEntity<List<Vehicle>> obtenerPorRangoAnio(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorRangoAnio(
             @RequestParam Integer desde,
             @RequestParam Integer hasta) {
-        return ResponseEntity.ok(
-                vehicleService.obtenerPorRangoAnio(desde, hasta));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorRangoAnio(desde, hasta).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorRangoAnio(desde, hasta)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/buscar?marca=toyota
@@ -205,9 +257,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Vehicle>> buscarPorMarca(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> buscarPorMarca(
             @RequestParam String marca) {
-        return ResponseEntity.ok(vehicleService.buscarPorMarca(marca));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.buscarPorMarca(marca).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).buscarPorMarca(marca)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/propietario/12345678-9/ordenado
@@ -217,10 +274,14 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/propietario/{rut}/ordenado")
-    public ResponseEntity<List<Vehicle>> obtenerPorPropietarioOrdenado(
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerPorPropietarioOrdenado(
             @PathVariable String rut) {
-        return ResponseEntity.ok(
-                vehicleService.obtenerPorPropietarioOrdenadoPorAnio(rut));
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerPorPropietarioOrdenadoPorAnio(rut).stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerPorPropietarioOrdenado(rut)).withSelfRel()));
     }
 
     // GET /api/v1/vehicles/ultimos : Devuelve las últimas 10 inserciones de vehículos en el sistema
@@ -230,7 +291,12 @@ public class VehicleController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<Vehicle>> obtenerUltimosRegistrados() {
-        return ResponseEntity.ok(vehicleService.obtenerUltimosRegistrados());
+    public ResponseEntity<CollectionModel<EntityModel<Vehicle>>> obtenerUltimosRegistrados() {
+        List<EntityModel<Vehicle>> vehicleModels = vehicleService.obtenerUltimosRegistrados().stream()
+                .map(v -> EntityModel.of(v,
+                        linkTo(methodOn(VehicleController.class).obtenerPorId(v.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(vehicleModels,
+                linkTo(methodOn(VehicleController.class).obtenerUltimosRegistrados()).withSelfRel()));
     }
 }

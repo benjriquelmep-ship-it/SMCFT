@@ -5,6 +5,9 @@ import com.example.UserService.model.User;
 import com.example.UserService.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Rol no autorizado")
     })
     @GetMapping
-    public ResponseEntity<List<User>> obtenerTodos() {
-        return ResponseEntity.ok(userService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerTodos() {
+        List<EntityModel<User>> usuarios = userService.obtenerTodos().stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/users/1 : Busca un usuario por su ID primario
@@ -44,8 +52,11 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "El ID de usuario solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<User> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<User>> obtenerPorId(@PathVariable Long id) {
+        User user = userService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(user,
+                linkTo(methodOn(UserController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(UserController.class).obtenerTodos()).withRel("usuarios")));
     }
 
     // GET /api/v1/users/email/juan@gmail.com : Obtiene un usuario mediante su correo electrónico institucional
@@ -56,8 +67,11 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "No existe ninguna cuenta asociada a este correo")
     })
     @GetMapping("/email/{email}")
-    public ResponseEntity<User> obtenerPorEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.obtenerPorEmail(email));
+    public ResponseEntity<EntityModel<User>> obtenerPorEmail(@PathVariable String email) {
+        User user = userService.obtenerPorEmail(email);
+        return ResponseEntity.ok(EntityModel.of(user,
+                linkTo(methodOn(UserController.class).obtenerPorEmail(email)).withSelfRel(),
+                linkTo(methodOn(UserController.class).obtenerTodos()).withRel("usuarios")));
     }
 
     // GET /api/v1/users/rut/12345678-9 : Obtiene un usuario mediante su RUN/RUT de identidad chileno
@@ -68,8 +82,11 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "El RUN ingresado no pertenece a ningún usuario registrado")
     })
     @GetMapping("/rut/{rut}")
-    public ResponseEntity<User> obtenerPorRut(@PathVariable String rut) {
-        return ResponseEntity.ok(userService.obtenerPorRut(rut));
+    public ResponseEntity<EntityModel<User>> obtenerPorRut(@PathVariable String rut) {
+        User user = userService.obtenerPorRut(rut);
+        return ResponseEntity.ok(EntityModel.of(user,
+                linkTo(methodOn(UserController.class).obtenerPorRut(rut)).withSelfRel(),
+                linkTo(methodOn(UserController.class).obtenerTodos()).withRel("usuarios")));
     }
 
     // POST /api/v1/users → crear nuevo usuario : Registra un nuevo usuario aplicando reglas de validación
@@ -80,9 +97,11 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PostMapping
-    public ResponseEntity<User> crear(@Valid @RequestBody UserDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.crear(dto));
+    public ResponseEntity<EntityModel<User>> crear(@Valid @RequestBody UserDTO dto) {
+        User user = userService.crear(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(user,
+                linkTo(methodOn(UserController.class).obtenerPorId(user.getId())).withSelfRel(),
+                linkTo(methodOn(UserController.class).obtenerTodos()).withRel("usuarios")));
     }
 
     // PUT /api/v1/users/1 → actualizar usuario existente : Reemplaza los datos de un usuario por su ID
@@ -94,10 +113,13 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "El usuario a modificar no fue localizado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<User> actualizar(
+    public ResponseEntity<EntityModel<User>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody UserDTO dto) {
-        return ResponseEntity.ok(userService.actualizar(id, dto));
+        User user = userService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(user,
+                linkTo(methodOn(UserController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(UserController.class).obtenerTodos()).withRel("usuarios")));
     }
 
     // DELETE /api/v1/users/1 → desactivar usuario (soft delete) : Desactiva lógicamente el flag de vigencia
@@ -120,8 +142,13 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/activos")
-    public ResponseEntity<List<User>> obtenerActivos() {
-        return ResponseEntity.ok(userService.obtenerActivos());
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerActivos() {
+        List<EntityModel<User>> usuarios = userService.obtenerActivos().stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerActivos()).withSelfRel()));
     }
 
     // GET /api/v1/users/inactivos : Filtra cuentas que sufrieron soft delete o están deshabilitadas
@@ -131,8 +158,13 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/inactivos")
-    public ResponseEntity<List<User>> obtenerInactivos() {
-        return ResponseEntity.ok(userService.obtenerInactivos());
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerInactivos() {
+        List<EntityModel<User>> usuarios = userService.obtenerInactivos().stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerInactivos()).withSelfRel()));
     }
 
     // GET /api/v1/users/rol/FISCALIZADOR : Lista usuarios pertenecientes a un perfil de accesos específico
@@ -142,8 +174,13 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/rol/{rol}")
-    public ResponseEntity<List<User>> obtenerPorRol(@PathVariable String rol) {
-        return ResponseEntity.ok(userService.obtenerPorRol(rol));
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerPorRol(@PathVariable String rol) {
+        List<EntityModel<User>> usuarios = userService.obtenerPorRol(rol).stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerPorRol(rol)).withSelfRel()));
     }
 
     // GET /api/v1/users/rol/FISCALIZADOR/activos : Cruza filtros para obtener usuarios vigentes de un perfil determinado
@@ -153,9 +190,14 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/rol/{rol}/activos")
-    public ResponseEntity<List<User>> obtenerActivosPorRol(
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerActivosPorRol(
             @PathVariable String rol) {
-        return ResponseEntity.ok(userService.obtenerActivosPorRol(rol));
+        List<EntityModel<User>> usuarios = userService.obtenerActivosPorRol(rol).stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerActivosPorRol(rol)).withSelfRel()));
     }
 
     // GET /api/v1/users/buscar?nombre=juan : Busca coincidencias parciales por texto en la cadena de nombres
@@ -165,9 +207,14 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<User>> buscarPorNombre(
+    public ResponseEntity<CollectionModel<EntityModel<User>>> buscarPorNombre(
             @RequestParam String nombre) {
-        return ResponseEntity.ok(userService.buscarPorNombre(nombre));
+        List<EntityModel<User>> usuarios = userService.buscarPorNombre(nombre).stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).buscarPorNombre(nombre)).withSelfRel()));
     }
 
     // GET /api/v1/users/activos/ordenados : Lista cuentas vigentes ordenadas alfabéticamente por nombre
@@ -177,7 +224,12 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/activos/ordenados")
-    public ResponseEntity<List<User>> obtenerActivosOrdenados() {
-        return ResponseEntity.ok(userService.obtenerActivosOrdenados());
+    public ResponseEntity<CollectionModel<EntityModel<User>>> obtenerActivosOrdenados() {
+        List<EntityModel<User>> usuarios = userService.obtenerActivosOrdenados().stream()
+                .map(u -> EntityModel.of(u,
+                        linkTo(methodOn(UserController.class).obtenerPorId(u.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(usuarios,
+                linkTo(methodOn(UserController.class).obtenerActivosOrdenados()).withSelfRel()));
     }
 }

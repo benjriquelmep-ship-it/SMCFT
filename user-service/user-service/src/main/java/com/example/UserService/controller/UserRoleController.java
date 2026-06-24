@@ -5,6 +5,9 @@ import com.example.UserService.model.UserRole;
 import com.example.UserService.service.UserRoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos de administrador")
     })
     @GetMapping
-    public ResponseEntity<List<UserRole>> obtenerTodos() {
-        return ResponseEntity.ok(userRoleService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerTodos() {
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerTodos().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/users/roles/1 → rol por id : Busca una asignación específica mediante su clave primaria
@@ -44,8 +52,11 @@ public class UserRoleController {
             @ApiResponse(responseCode = "404", description = "El ID del registro de rol solicitado no fue encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserRole> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(userRoleService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<UserRole>> obtenerPorId(@PathVariable Long id) {
+        UserRole role = userRoleService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(role,
+                linkTo(methodOn(UserRoleController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(UserRoleController.class).obtenerTodos()).withRel("roles")));
     }
 
     // POST /api/v1/users/roles → asignar nuevo rol a un usuario : Registra una nueva vinculación de perfil para un usuario
@@ -57,10 +68,12 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @PostMapping
-    public ResponseEntity<UserRole> asignar(
+    public ResponseEntity<EntityModel<UserRole>> asignar(
             @Valid @RequestBody UserRoleDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userRoleService.asignar(dto));
+        UserRole role = userRoleService.asignar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(role,
+                linkTo(methodOn(UserRoleController.class).obtenerPorId(role.getId())).withSelfRel(),
+                linkTo(methodOn(UserRoleController.class).obtenerTodos()).withRel("roles")));
     }
 
     // DELETE /api/v1/users/roles/1 → eliminar un rol del historial : Remueve físicamente una asignación por su ID
@@ -85,9 +98,14 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping("/usuario/{userId}")
-    public ResponseEntity<List<UserRole>> obtenerPorUsuario(
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerPorUsuario(
             @PathVariable Long userId) {
-        return ResponseEntity.ok(userRoleService.obtenerPorUsuario(userId));
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerPorUsuario(userId).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerPorUsuario(userId)).withSelfRel()));
     }
 
     // GET /api/v1/users/roles/usuario/1/activos : Obtiene la asignación que se encuentra vigente para el usuario
@@ -99,10 +117,14 @@ public class UserRoleController {
             @ApiResponse(responseCode = "404", description = "El usuario no cuenta con un perfil activo asignado")
     })
     @GetMapping("/usuario/{userId}/activos")
-    public ResponseEntity<List<UserRole>> obtenerActivosPorUsuario(
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerActivosPorUsuario(
             @PathVariable Long userId) {
-        return ResponseEntity.ok(
-                userRoleService.obtenerActivosPorUsuario(userId));
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerActivosPorUsuario(userId).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerActivosPorUsuario(userId)).withSelfRel()));
     }
 
     // GET /api/v1/users/roles/tipo/FISCALIZADOR : Lista todas las asignaciones históricas de un tipo de perfil
@@ -113,9 +135,14 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping("/tipo/{rol}")
-    public ResponseEntity<List<UserRole>> obtenerPorRol(
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerPorRol(
             @PathVariable String rol) {
-        return ResponseEntity.ok(userRoleService.obtenerPorRol(rol));
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerPorRol(rol).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerPorRol(rol)).withSelfRel()));
     }
 
     // GET /api/v1/users/roles/tipo/FISCALIZADOR/activos : Filtra usuarios que tienen el perfil indicado vigente actualmente
@@ -126,9 +153,14 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping("/tipo/{rol}/activos")
-    public ResponseEntity<List<UserRole>> obtenerActivosPorRol(
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerActivosPorRol(
             @PathVariable String rol) {
-        return ResponseEntity.ok(userRoleService.obtenerActivosPorRol(rol));
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerActivosPorRol(rol).stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerActivosPorRol(rol)).withSelfRel()));
     }
 
     // GET /api/v1/users/roles/ultimos : Devuelve los últimos 10 cambios de perfil registrados globalmente
@@ -139,7 +171,12 @@ public class UserRoleController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<UserRole>> obtenerUltimosAsignados() {
-        return ResponseEntity.ok(userRoleService.obtenerUltimosAsignados());
+    public ResponseEntity<CollectionModel<EntityModel<UserRole>>> obtenerUltimosAsignados() {
+        List<EntityModel<UserRole>> roles = userRoleService.obtenerUltimosAsignados().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(UserRoleController.class).obtenerPorId(r.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(roles,
+                linkTo(methodOn(UserRoleController.class).obtenerUltimosAsignados()).withSelfRel()));
     }
 }

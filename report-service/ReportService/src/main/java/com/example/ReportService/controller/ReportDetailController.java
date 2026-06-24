@@ -5,6 +5,9 @@ import com.example.ReportService.model.ReportDetail;
 import com.example.ReportService.service.ReportDetailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "403", description = "Sin permisos requeridos")
     })
     @GetMapping
-    public ResponseEntity<List<ReportDetail>> obtenerTodos() {
-        return ResponseEntity.ok(detailService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerTodos() {
+        List<EntityModel<ReportDetail>> details = detailService.obtenerTodos().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/report-details/1 : Busca un detalle específico por su ID
@@ -43,8 +51,11 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "404", description = "El ID de la variable solicitado no existe en los registros")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ReportDetail> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(detailService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<ReportDetail>> obtenerPorId(@PathVariable Long id) {
+        ReportDetail detail = detailService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(detail,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ReportDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // POST /api/v1/report-details : Agrega una nueva línea de detalle a un reporte
@@ -54,9 +65,11 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "400", description = "Payload inválido o ID de cabecera inexistente")
     })
     @PostMapping
-    public ResponseEntity<ReportDetail> agregar(@Valid @RequestBody ReportDetailDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(detailService.agregar(dto));
+    public ResponseEntity<EntityModel<ReportDetail>> agregar(@Valid @RequestBody ReportDetailDTO dto) {
+        ReportDetail detail = detailService.agregar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(detail,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorId(detail.getId())).withSelfRel(),
+                linkTo(methodOn(ReportDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // PUT /api/v1/report-details/1 : Actualiza por completo un detalle existente por su ID
@@ -68,10 +81,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "404", description = "La línea métrica a modificar no fue localizada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ReportDetail> actualizar(
+    public ResponseEntity<EntityModel<ReportDetail>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody ReportDetailDTO dto) {
-        return ResponseEntity.ok(detailService.actualizar(id, dto));
+        ReportDetail detail = detailService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(detail,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ReportDetailController.class).obtenerTodos()).withRel("detalles")));
     }
 
     // DELETE /api/v1/report-details/1 : Elimina un detalle físico por su ID
@@ -93,8 +109,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/reporte/{reportId}")
-    public ResponseEntity<List<ReportDetail>> obtenerPorReporte(@PathVariable Long reportId) {
-        return ResponseEntity.ok(detailService.obtenerPorReporte(reportId));
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerPorReporte(@PathVariable Long reportId) {
+        List<EntityModel<ReportDetail>> details = detailService.obtenerPorReporte(reportId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorReporte(reportId)).withSelfRel()));
     }
 
     // GET /api/v1/report-details/categoria/AUTORIZADOS : Filtra detalles por categoría o etiqueta
@@ -104,8 +125,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<ReportDetail>> obtenerPorCategoria(@PathVariable String categoria) {
-        return ResponseEntity.ok(detailService.obtenerPorCategoria(categoria));
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerPorCategoria(@PathVariable String categoria) {
+        List<EntityModel<ReportDetail>> details = detailService.obtenerPorCategoria(categoria).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorCategoria(categoria)).withSelfRel()));
     }
 
     // GET /api/v1/report-details/reporte/1/categoria/AUTORIZADOS : Combina filtros
@@ -115,11 +141,15 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/reporte/{reportId}/categoria/{categoria}")
-    public ResponseEntity<List<ReportDetail>> obtenerPorReporteYCategoria(
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerPorReporteYCategoria(
             @PathVariable Long reportId,
             @PathVariable String categoria) {
-        return ResponseEntity.ok(
-                detailService.obtenerPorReporteYCategoria(reportId, categoria));
+        List<EntityModel<ReportDetail>> details = detailService.obtenerPorReporteYCategoria(reportId, categoria).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerPorReporteYCategoria(reportId, categoria)).withSelfRel()));
     }
 
     // GET /api/v1/report-details/buscar?descripcion=cruces : Busca detalles que contengan el texto en su descripción
@@ -129,8 +159,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<ReportDetail>> buscarPorDescripcion(@RequestParam String descripcion) {
-        return ResponseEntity.ok(detailService.buscarPorDescripcion(descripcion));
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> buscarPorDescripcion(@RequestParam String descripcion) {
+        List<EntityModel<ReportDetail>> details = detailService.buscarPorDescripcion(descripcion).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).buscarPorDescripcion(descripcion)).withSelfRel()));
     }
 
     // GET /api/v1/report-details/reporte/1/ordenados : Lista los detalles de un reporte de forma secuencial u ordenada
@@ -140,8 +175,13 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/reporte/{reportId}/ordenados")
-    public ResponseEntity<List<ReportDetail>> obtenerOrdenados(@PathVariable Long reportId) {
-        return ResponseEntity.ok(detailService.obtenerPorReporteOrdenados(reportId));
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerOrdenados(@PathVariable Long reportId) {
+        List<EntityModel<ReportDetail>> details = detailService.obtenerPorReporteOrdenados(reportId).stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerOrdenados(reportId)).withSelfRel()));
     }
 
     // GET /api/v1/report-details/ultimos : Devuelve los últimos 10 detalles registrados en la base de datos
@@ -151,7 +191,12 @@ public class ReportDetailController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<ReportDetail>> obtenerUltimos() {
-        return ResponseEntity.ok(detailService.obtenerUltimosDetalles());
+    public ResponseEntity<CollectionModel<EntityModel<ReportDetail>>> obtenerUltimos() {
+        List<EntityModel<ReportDetail>> details = detailService.obtenerUltimosDetalles().stream()
+                .map(d -> EntityModel.of(d,
+                        linkTo(methodOn(ReportDetailController.class).obtenerPorId(d.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(details,
+                linkTo(methodOn(ReportDetailController.class).obtenerUltimos()).withSelfRel()));
     }
 }

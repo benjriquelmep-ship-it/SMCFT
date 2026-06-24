@@ -17,6 +17,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
@@ -34,8 +37,13 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Rol operativo insuficiente")
     })
     @GetMapping
-    public ResponseEntity<List<Transaction>> obtenerTodas() {
-        return ResponseEntity.ok(transactionService.obtenerTodas());
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerTodas() {
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerTodas().stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withSelfRel()));
     }
 
     // GET /api/v1/transactions/1 : Busca una transacción por ID
@@ -46,8 +54,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "404", description = "El ID de transacción solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(transactionService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<Transaction>> obtenerPorId(@PathVariable Long id) {
+        Transaction transaction = transactionService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(transaction,
+                linkTo(methodOn(TransactionController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withRel("transacciones")));
     }
 
     // POST /api/v1/transactions : Registra una nueva transacción
@@ -57,10 +68,12 @@ public class TransactionController {
             @ApiResponse(responseCode = "400", description = "Estructura de datos errónea o montos fuera de rango reglamentario")
     })
     @PostMapping
-    public ResponseEntity<Transaction> registrar(
+    public ResponseEntity<EntityModel<Transaction>> registrar(
             @Valid @RequestBody TransactionDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(transactionService.registrar(dto));
+        Transaction transaction = transactionService.registrar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(transaction,
+                linkTo(methodOn(TransactionController.class).obtenerPorId(transaction.getId())).withSelfRel(),
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withRel("transacciones")));
     }
 
     // PATCH /api/v1/transactions/1/completar : Cambia el estado a COMPLETADA
@@ -71,8 +84,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "404", description = "El registro a completar no fue localizado")
     })
     @PatchMapping("/{id}/completar")
-    public ResponseEntity<Transaction> completar(@PathVariable Long id) {
-        return ResponseEntity.ok(transactionService.completar(id));
+    public ResponseEntity<EntityModel<Transaction>> completar(@PathVariable Long id) {
+        Transaction transaction = transactionService.completar(id);
+        return ResponseEntity.ok(EntityModel.of(transaction,
+                linkTo(methodOn(TransactionController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withRel("transacciones")));
     }
 
     // PATCH /api/v1/transactions/1/rechazar : Cambia el estado a RECHAZADA
@@ -82,8 +98,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PatchMapping("/{id}/rechazar")
-    public ResponseEntity<Transaction> rechazar(@PathVariable Long id) {
-        return ResponseEntity.ok(transactionService.rechazar(id));
+    public ResponseEntity<EntityModel<Transaction>> rechazar(@PathVariable Long id) {
+        Transaction transaction = transactionService.rechazar(id);
+        return ResponseEntity.ok(EntityModel.of(transaction,
+                linkTo(methodOn(TransactionController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withRel("transacciones")));
     }
 
     // PATCH /api/v1/transactions/1/anular : Cambia el estado a ANULADA
@@ -93,8 +112,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PatchMapping("/{id}/anular")
-    public ResponseEntity<Transaction> anular(@PathVariable Long id) {
-        return ResponseEntity.ok(transactionService.anular(id));
+    public ResponseEntity<EntityModel<Transaction>> anular(@PathVariable Long id) {
+        Transaction transaction = transactionService.anular(id);
+        return ResponseEntity.ok(EntityModel.of(transaction,
+                linkTo(methodOn(TransactionController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(TransactionController.class).obtenerTodas()).withRel("transacciones")));
     }
 
     // DELETE /api/v1/transactions/1 : Elimina físicamente una transacción por ID
@@ -116,9 +138,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/usuario/{rut}")
-    public ResponseEntity<List<Transaction>> obtenerPorUsuario(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorUsuario(
             @PathVariable String rut) {
-        return ResponseEntity.ok(transactionService.obtenerPorUsuario(rut));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorUsuario(rut).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorUsuario(rut)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/tipo/PAGO_MULTA : Filtra transacciones por tipo
@@ -128,9 +155,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<Transaction>> obtenerPorTipo(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorTipo(
             @PathVariable String tipo) {
-        return ResponseEntity.ok(transactionService.obtenerPorTipo(tipo));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorTipo(tipo).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorTipo(tipo)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/estado/PENDIENTE : Filtra transacciones por estado
@@ -140,9 +172,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Transaction>> obtenerPorEstado(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorEstado(
             @PathVariable String estado) {
-        return ResponseEntity.ok(transactionService.obtenerPorEstado(estado));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorEstado(estado).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorEstado(estado)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/usuario/12345678-9/estado/COMPLETADA : Filtra transacciones combinando RUT y Estado
@@ -152,11 +189,15 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/usuario/{rut}/estado/{estado}")
-    public ResponseEntity<List<Transaction>> obtenerPorUsuarioYEstado(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorUsuarioYEstado(
             @PathVariable String rut,
             @PathVariable String estado) {
-        return ResponseEntity.ok(
-                transactionService.obtenerPorUsuarioYEstado(rut, estado));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorUsuarioYEstado(rut, estado).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorUsuarioYEstado(rut, estado)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/fechas?desde=...&hasta=... : Filtra transacciones en un rango de fechas
@@ -166,13 +207,17 @@ public class TransactionController {
             @ApiResponse(responseCode = "400", description = "Formato de fecha ISO inválido")
     })
     @GetMapping("/fechas")
-    public ResponseEntity<List<Transaction>> obtenerPorFechas(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorFechas(
             @RequestParam String desde,
             @RequestParam String hasta) {
         LocalDateTime fechaDesde = LocalDateTime.parse(desde);
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta);
-        return ResponseEntity.ok(
-                transactionService.obtenerPorRangoFechas(fechaDesde, fechaHasta));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorRangoFechas(fechaDesde, fechaHasta).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorFechas(desde, hasta)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/monto/mayor?valor=10000 : Filtra transacciones con monto superior al valor enviado
@@ -182,9 +227,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/monto/mayor")
-    public ResponseEntity<List<Transaction>> obtenerPorMontoMayorA(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorMontoMayorA(
             @RequestParam BigDecimal valor) {
-        return ResponseEntity.ok(transactionService.obtenerPorMontoMayorA(valor));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorMontoMayorA(valor).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorMontoMayorA(valor)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/buscar?descripcion=multa : Busca transacciones por coincidencia en la descripción
@@ -194,9 +244,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Transaction>> buscarPorDescripcion(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> buscarPorDescripcion(
             @RequestParam String descripcion) {
-        return ResponseEntity.ok(transactionService.buscarPorDescripcion(descripcion));
+        List<EntityModel<Transaction>> transactions = transactionService.buscarPorDescripcion(descripcion).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).buscarPorDescripcion(descripcion)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/usuario/12345678-9/ordenadas : Obtiene transacciones del usuario de la más reciente a la más antigua
@@ -206,9 +261,14 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/usuario/{rut}/ordenadas")
-    public ResponseEntity<List<Transaction>> obtenerPorUsuarioOrdenadas(
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerPorUsuarioOrdenadas(
             @PathVariable String rut) {
-        return ResponseEntity.ok(transactionService.obtenerPorUsuarioOrdenadas(rut));
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerPorUsuarioOrdenadas(rut).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerPorUsuarioOrdenadas(rut)).withSelfRel()));
     }
 
     // GET /api/v1/transactions/ultimas : Devuelve las últimas 10 transacciones del sistema
@@ -218,8 +278,13 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @GetMapping("/ultimas")
-    public ResponseEntity<List<Transaction>> obtenerUltimas() {
-        return ResponseEntity.ok(transactionService.obtenerUltimasTransacciones());
+    public ResponseEntity<CollectionModel<EntityModel<Transaction>>> obtenerUltimas() {
+        List<EntityModel<Transaction>> transactions = transactionService.obtenerUltimasTransacciones().stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(TransactionController.class).obtenerPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(transactions,
+                linkTo(methodOn(TransactionController.class).obtenerUltimas()).withSelfRel()));
     }
 
     // GET /api/v1/transactions/estadisticas/estado/COMPLETADA

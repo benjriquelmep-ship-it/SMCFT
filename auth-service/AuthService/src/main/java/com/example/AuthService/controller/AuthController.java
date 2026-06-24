@@ -7,6 +7,9 @@ import com.example.AuthService.model.TokenBlacklist;
 import com.example.AuthService.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
@@ -90,8 +93,13 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/blacklist")
-    public ResponseEntity<List<TokenBlacklist>> obtenerTodaLaBlacklist() {
-        return ResponseEntity.ok(authService.obtenerTodaLaBlacklist());
+    public ResponseEntity<CollectionModel<EntityModel<TokenBlacklist>>> obtenerTodaLaBlacklist() {
+        List<EntityModel<TokenBlacklist>> tokens = authService.obtenerTodaLaBlacklist().stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(AuthController.class).obtenerBlacklistPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(tokens,
+                linkTo(methodOn(AuthController.class).obtenerTodaLaBlacklist()).withSelfRel()));
     }
 
     @Operation(summary = "Obtener Registro de Revocación Específico", description = "Busca los metadatos de un token en lista negra (usuario titular, fecha de baja) utilizando su clave primaria.")
@@ -101,9 +109,12 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/blacklist/{id}")
-    public ResponseEntity<TokenBlacklist> obtenerBlacklistPorId(
+    public ResponseEntity<EntityModel<TokenBlacklist>> obtenerBlacklistPorId(
             @PathVariable Long id) {
-        return ResponseEntity.ok(authService.obtenerBlacklistPorId(id));
+        TokenBlacklist token = authService.obtenerBlacklistPorId(id);
+        return ResponseEntity.ok(EntityModel.of(token,
+                linkTo(methodOn(AuthController.class).obtenerBlacklistPorId(id)).withSelfRel(),
+                linkTo(methodOn(AuthController.class).obtenerTodaLaBlacklist()).withRel("tokens")));
     }
 
     @Operation(summary = "Remover Token de Blacklist / Rehabilitación", description = "Elimina físicamente el registro de la lista negra por su ID, permitiendo que el token recupere vigencia remota (si no ha expirado cronológicamente).")
@@ -124,9 +135,14 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/blacklist/historial/{email}")
-    public ResponseEntity<List<TokenBlacklist>> obtenerHistorialLogout(
+    public ResponseEntity<CollectionModel<EntityModel<TokenBlacklist>>> obtenerHistorialLogout(
             @PathVariable String email) {
-        return ResponseEntity.ok(authService.obtenerHistorialLogout(email));
+        List<EntityModel<TokenBlacklist>> tokens = authService.obtenerHistorialLogout(email).stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(AuthController.class).obtenerBlacklistPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(tokens,
+                linkTo(methodOn(AuthController.class).obtenerHistorialLogout(email)).withSelfRel()));
     }
 
     @Operation(summary = "Monitorear Últimas Revocaciones de Sesión", description = "Endpoint administrativo orientado a paneles de control en tiempo real para observar las últimas 10 bajas del sistema.")
@@ -135,8 +151,13 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/blacklist/ultimos")
-    public ResponseEntity<List<TokenBlacklist>> obtenerUltimosLogouts() {
-        return ResponseEntity.ok(authService.obtenerUltimosLogouts());
+    public ResponseEntity<CollectionModel<EntityModel<TokenBlacklist>>> obtenerUltimosLogouts() {
+        List<EntityModel<TokenBlacklist>> tokens = authService.obtenerUltimosLogouts().stream()
+                .map(t -> EntityModel.of(t,
+                        linkTo(methodOn(AuthController.class).obtenerBlacklistPorId(t.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(tokens,
+                linkTo(methodOn(AuthController.class).obtenerUltimosLogouts()).withSelfRel()));
     }
 
     @Operation(summary = "Listar Historial de Intentos de Acceso", description = "Expone el registro consolidado global de todos los accesos solicitados al microservicio, permitiendo auditorías forenses.")
@@ -145,8 +166,13 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos")
-    public ResponseEntity<List<LoginAttempt>> obtenerTodosLosIntentos() {
-        return ResponseEntity.ok(authService.obtenerTodosLosIntentos());
+    public ResponseEntity<CollectionModel<EntityModel<LoginAttempt>>> obtenerTodosLosIntentos() {
+        List<EntityModel<LoginAttempt>> intentos = authService.obtenerTodosLosIntentos().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(AuthController.class).obtenerIntentoPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(intentos,
+                linkTo(methodOn(AuthController.class).obtenerTodosLosIntentos()).withSelfRel()));
     }
 
     @Operation(summary = "Obtener Traza de Intento por ID", description = "Recupera la glosa técnica de un intento de autenticación (IP de origen, estado, marca de tiempo) por su identificador primario.")
@@ -156,9 +182,12 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos/{id}")
-    public ResponseEntity<LoginAttempt> obtenerIntentoPorId(
+    public ResponseEntity<EntityModel<LoginAttempt>> obtenerIntentoPorId(
             @PathVariable Long id) {
-        return ResponseEntity.ok(authService.obtenerIntentoPorId(id));
+        LoginAttempt intento = authService.obtenerIntentoPorId(id);
+        return ResponseEntity.ok(EntityModel.of(intento,
+                linkTo(methodOn(AuthController.class).obtenerIntentoPorId(id)).withSelfRel(),
+                linkTo(methodOn(AuthController.class).obtenerTodosLosIntentos()).withRel("intentos")));
     }
 
     @Operation(summary = "Remover Registro de Intento del Sistema", description = "Elimina físicamente el log de auditoría de un intento de autenticación individual.")
@@ -178,9 +207,14 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos/email/{email}")
-    public ResponseEntity<List<LoginAttempt>> obtenerIntentosPorEmail(
+    public ResponseEntity<CollectionModel<EntityModel<LoginAttempt>>> obtenerIntentosPorEmail(
             @PathVariable String email) {
-        return ResponseEntity.ok(authService.obtenerIntentosPorEmail(email));
+        List<EntityModel<LoginAttempt>> intentos = authService.obtenerIntentosPorEmail(email).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(AuthController.class).obtenerIntentoPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(intentos,
+                linkTo(methodOn(AuthController.class).obtenerIntentosPorEmail(email)).withSelfRel()));
     }
 
     @Operation(summary = "Detectar Intentos Denegados (Mitigación de Fuerza Bruta)", description = "Aísla y entrega exclusivamente los registros de autenticación rechazados para un usuario, útil para activar políticas de bloqueo preventivo.")
@@ -189,9 +223,14 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos/fallidos/{email}")
-    public ResponseEntity<List<LoginAttempt>> obtenerIntentosFallidos(
+    public ResponseEntity<CollectionModel<EntityModel<LoginAttempt>>> obtenerIntentosFallidos(
             @PathVariable String email) {
-        return ResponseEntity.ok(authService.obtenerIntentosFallidos(email));
+        List<EntityModel<LoginAttempt>> intentos = authService.obtenerIntentosFallidos(email).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(AuthController.class).obtenerIntentoPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(intentos,
+                linkTo(methodOn(AuthController.class).obtenerIntentosFallidos(email)).withSelfRel()));
     }
 
     @Operation(summary = "Monitorear Últimos Intentos de Acceso Perimetral", description = "Muestra de manera segregada los últimos 10 logs de inicio de sesión registrados en el servidor en tiempo real.")
@@ -200,8 +239,13 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos/ultimos")
-    public ResponseEntity<List<LoginAttempt>> obtenerUltimosIntentos() {
-        return ResponseEntity.ok(authService.obtenerUltimosIntentos());
+    public ResponseEntity<CollectionModel<EntityModel<LoginAttempt>>> obtenerUltimosIntentos() {
+        List<EntityModel<LoginAttempt>> intentos = authService.obtenerUltimosIntentos().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(AuthController.class).obtenerIntentoPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(intentos,
+                linkTo(methodOn(AuthController.class).obtenerUltimosIntentos()).withSelfRel()));
     }
 
     @Operation(summary = "Filtrar Intentos de Acceso por Rango Cronológico", description = "Permite extraer la traza forense de autenticaciones delimitando una fecha y hora inicial (desde) y una fecha y hora final (hasta).")
@@ -211,12 +255,16 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/intentos/rango")
-    public ResponseEntity<List<LoginAttempt>> obtenerIntentosPorFechas(
+    public ResponseEntity<CollectionModel<EntityModel<LoginAttempt>>> obtenerIntentosPorFechas(
             @RequestParam String desde,
             @RequestParam String hasta) {
         LocalDateTime fechaDesde = LocalDateTime.parse(desde);
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta);
-        return ResponseEntity.ok(
-                authService.obtenerIntentosPorFechas(fechaDesde, fechaHasta));
+        List<EntityModel<LoginAttempt>> intentos = authService.obtenerIntentosPorFechas(fechaDesde, fechaHasta).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(AuthController.class).obtenerIntentoPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(intentos,
+                linkTo(methodOn(AuthController.class).obtenerIntentosPorFechas(desde, hasta)).withSelfRel()));
     }
 }

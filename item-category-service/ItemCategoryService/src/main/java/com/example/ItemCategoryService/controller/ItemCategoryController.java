@@ -5,6 +5,9 @@ import com.example.ItemCategoryService.model.ItemCategory;
 import com.example.ItemCategoryService.service.ItemCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +35,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "403", description = "Sin permisos - Privilegios insuficientes")
     })
     @GetMapping
-    public ResponseEntity<List<ItemCategory>> obtenerTodas() {
-        return ResponseEntity.ok(categoryService.obtenerTodas());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerTodas() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerTodas().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerTodas()).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/1
@@ -44,8 +52,11 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "404", description = "El ID de categoría solicitado no existe")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ItemCategory> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<ItemCategory>> obtenerPorId(@PathVariable Long id) {
+        ItemCategory category = categoryService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(category,
+                linkTo(methodOn(ItemCategoryController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ItemCategoryController.class).obtenerTodas()).withRel("categorias")));
     }
 
     // POST /api/v1/item-categories
@@ -55,9 +66,11 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "400", description = "Payload inválido o restricciones de validación del DTO infringidas")
     })
     @PostMapping
-    public ResponseEntity<ItemCategory> crear(@Valid @RequestBody ItemCategoryDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(categoryService.crear(dto));
+    public ResponseEntity<EntityModel<ItemCategory>> crear(@Valid @RequestBody ItemCategoryDTO dto) {
+        ItemCategory category = categoryService.crear(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(category,
+                linkTo(methodOn(ItemCategoryController.class).obtenerPorId(category.getId())).withSelfRel(),
+                linkTo(methodOn(ItemCategoryController.class).obtenerTodas()).withRel("categorias")));
     }
 
     // PUT /api/v1/item-categories/1
@@ -68,10 +81,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "404", description = "La categoría solicitada no se encuentra registrada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ItemCategory> actualizar(
+    public ResponseEntity<EntityModel<ItemCategory>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody ItemCategoryDTO dto) {
-        return ResponseEntity.ok(categoryService.actualizar(id, dto));
+        ItemCategory category = categoryService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(category,
+                linkTo(methodOn(ItemCategoryController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ItemCategoryController.class).obtenerTodas()).withRel("categorias")));
     }
 
     // PATCH /api/v1/item-categories/1/desactivar
@@ -105,8 +121,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Nómina de categorías activas recuperada con éxito")
     })
     @GetMapping("/activas")
-    public ResponseEntity<List<ItemCategory>> obtenerActivas() {
-        return ResponseEntity.ok(categoryService.obtenerActivas());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerActivas() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerActivas().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerActivas()).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/inactivas
@@ -115,8 +136,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Nómina de categorías inactivas devuelta correctamente")
     })
     @GetMapping("/inactivas")
-    public ResponseEntity<List<ItemCategory>> obtenerInactivas() {
-        return ResponseEntity.ok(categoryService.obtenerInactivas());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerInactivas() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerInactivas().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerInactivas()).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/requieren-declaracion
@@ -125,8 +151,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Listado prioritario de control aduanero extraído con éxito")
     })
     @GetMapping("/requieren-declaracion")
-    public ResponseEntity<List<ItemCategory>> obtenerConDeclaracion() {
-        return ResponseEntity.ok(categoryService.obtenerRequierenDeclaracion());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerConDeclaracion() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerRequierenDeclaracion().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerConDeclaracion()).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/sin-declaracion
@@ -135,8 +166,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Listado de libre internación obtenido correctamente")
     })
     @GetMapping("/sin-declaracion")
-    public ResponseEntity<List<ItemCategory>> obtenerSinDeclaracion() {
-        return ResponseEntity.ok(categoryService.obtenerSinDeclaracion());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerSinDeclaracion() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerSinDeclaracion().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerSinDeclaracion()).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/buscar?nombre=electro
@@ -145,8 +181,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Coincidencias arancelarias devueltas de manera exitosa")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<ItemCategory>> buscarPorNombre(@RequestParam String nombre) {
-        return ResponseEntity.ok(categoryService.buscarPorNombre(nombre));
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> buscarPorNombre(@RequestParam String nombre) {
+        List<EntityModel<ItemCategory>> categories = categoryService.buscarPorNombre(nombre).stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).buscarPorNombre(nombre)).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/limite?valor=300
@@ -155,8 +196,13 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Filtro volumétrico de franquicias ejecutado con éxito")
     })
     @GetMapping("/limite")
-    public ResponseEntity<List<ItemCategory>> obtenerPorLimite(@RequestParam BigDecimal valor) {
-        return ResponseEntity.ok(categoryService.obtenerPorLimiteValor(valor));
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerPorLimite(@RequestParam BigDecimal valor) {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerPorLimiteValor(valor).stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerPorLimite(valor)).withSelfRel()));
     }
 
     // GET /api/v1/item-categories/activas/ordenadas
@@ -165,7 +211,12 @@ public class ItemCategoryController {
             @ApiResponse(responseCode = "200", description = "Catálogo ordenado secuencialmente recuperado con éxito")
     })
     @GetMapping("/activas/ordenadas")
-    public ResponseEntity<List<ItemCategory>> obtenerActivasOrdenadas() {
-        return ResponseEntity.ok(categoryService.obtenerActivasOrdenadas());
+    public ResponseEntity<CollectionModel<EntityModel<ItemCategory>>> obtenerActivasOrdenadas() {
+        List<EntityModel<ItemCategory>> categories = categoryService.obtenerActivasOrdenadas().stream()
+                .map(c -> EntityModel.of(c,
+                        linkTo(methodOn(ItemCategoryController.class).obtenerPorId(c.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(categories,
+                linkTo(methodOn(ItemCategoryController.class).obtenerActivasOrdenadas()).withSelfRel()));
     }
 }

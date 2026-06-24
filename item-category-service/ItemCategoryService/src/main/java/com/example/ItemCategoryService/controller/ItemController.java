@@ -5,6 +5,9 @@ import com.example.ItemCategoryService.model.Item;
 import com.example.ItemCategoryService.service.ItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,13 @@ public class ItemController {
             @ApiResponse(responseCode = "403", description = "Sin privilegios requeridos")
     })
     @GetMapping
-    public ResponseEntity<List<Item>> obtenerTodos() {
-        return ResponseEntity.ok(itemService.obtenerTodos());
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerTodos() {
+        List<EntityModel<Item>> items = itemService.obtenerTodos().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerTodos()).withSelfRel()));
     }
 
     // GET /api/v1/items/1
@@ -42,8 +50,11 @@ public class ItemController {
             @ApiResponse(responseCode = "404", description = "El ID del artículo solicitado no se encuentra registrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Item> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<Item>> obtenerPorId(@PathVariable Long id) {
+        Item item = itemService.obtenerPorId(id);
+        return ResponseEntity.ok(EntityModel.of(item,
+                linkTo(methodOn(ItemController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // POST /api/v1/items
@@ -53,9 +64,11 @@ public class ItemController {
             @ApiResponse(responseCode = "400", description = "Payload DTO con campos vacíos o inconsistencias de tipo")
     })
     @PostMapping
-    public ResponseEntity<Item> crear(@Valid @RequestBody ItemDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(itemService.crear(dto));
+    public ResponseEntity<EntityModel<Item>> crear(@Valid @RequestBody ItemDTO dto) {
+        Item item = itemService.crear(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(item,
+                linkTo(methodOn(ItemController.class).obtenerPorId(item.getId())).withSelfRel(),
+                linkTo(methodOn(ItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // PUT /api/v1/items/1
@@ -66,10 +79,13 @@ public class ItemController {
             @ApiResponse(responseCode = "404", description = "El artículo a modificar no fue localizado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Item> actualizar(
+    public ResponseEntity<EntityModel<Item>> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody ItemDTO dto) {
-        return ResponseEntity.ok(itemService.actualizar(id, dto));
+        Item item = itemService.actualizar(id, dto);
+        return ResponseEntity.ok(EntityModel.of(item,
+                linkTo(methodOn(ItemController.class).obtenerPorId(id)).withSelfRel(),
+                linkTo(methodOn(ItemController.class).obtenerTodos()).withRel("items")));
     }
 
     // PATCH /api/v1/items/1/desactivar
@@ -103,8 +119,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Colección de artículos de la categoría obtenida con éxito")
     })
     @GetMapping("/categoria/{categoryId}")
-    public ResponseEntity<List<Item>> obtenerPorCategoria(@PathVariable Long categoryId) {
-        return ResponseEntity.ok(itemService.obtenerPorCategoria(categoryId));
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerPorCategoria(@PathVariable Long categoryId) {
+        List<EntityModel<Item>> items = itemService.obtenerPorCategoria(categoryId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerPorCategoria(categoryId)).withSelfRel()));
     }
 
     // GET /api/v1/items/categoria/1/activos
@@ -113,8 +134,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Desglose operativo activo devuelto de forma conforme")
     })
     @GetMapping("/categoria/{categoryId}/activos")
-    public ResponseEntity<List<Item>> obtenerActivosPorCategoria(@PathVariable Long categoryId) {
-        return ResponseEntity.ok(itemService.obtenerActivosPorCategoria(categoryId));
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerActivosPorCategoria(@PathVariable Long categoryId) {
+        List<EntityModel<Item>> items = itemService.obtenerActivosPorCategoria(categoryId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerActivosPorCategoria(categoryId)).withSelfRel()));
     }
 
     // GET /api/v1/items/activos
@@ -123,8 +149,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Maestro de artículos vigentes leídos con éxito")
     })
     @GetMapping("/activos")
-    public ResponseEntity<List<Item>> obtenerActivos() {
-        return ResponseEntity.ok(itemService.obtenerActivos());
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerActivos() {
+        List<EntityModel<Item>> items = itemService.obtenerActivos().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerActivos()).withSelfRel()));
     }
 
     // GET /api/v1/items/buscar?nombre=laptop
@@ -133,8 +164,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Coincidencias de búsqueda leídas de forma conforme")
     })
     @GetMapping("/buscar")
-    public ResponseEntity<List<Item>> buscarPorNombre(@RequestParam String nombre) {
-        return ResponseEntity.ok(itemService.buscarPorNombre(nombre));
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> buscarPorNombre(@RequestParam String nombre) {
+        List<EntityModel<Item>> items = itemService.buscarPorNombre(nombre).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).buscarPorNombre(nombre)).withSelfRel()));
     }
 
     // GET /api/v1/items/unidad/kg
@@ -143,8 +179,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Registros agrupados por métrica devueltos con éxito")
     })
     @GetMapping("/unidad/{unidad}")
-    public ResponseEntity<List<Item>> obtenerPorUnidad(@PathVariable String unidad) {
-        return ResponseEntity.ok(itemService.obtenerPorUnidad(unidad));
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerPorUnidad(@PathVariable String unidad) {
+        List<EntityModel<Item>> items = itemService.obtenerPorUnidad(unidad).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerPorUnidad(unidad)).withSelfRel()));
     }
 
     // GET /api/v1/items/categoria/1/ordenados
@@ -153,8 +194,13 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Colección ordenada devuelta con éxito")
     })
     @GetMapping("/categoria/{categoryId}/ordenados")
-    public ResponseEntity<List<Item>> obtenerPorCategoriaOrdenados(@PathVariable Long categoryId) {
-        return ResponseEntity.ok(itemService.obtenerPorCategoriaOrdenados(categoryId));
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerPorCategoriaOrdenados(@PathVariable Long categoryId) {
+        List<EntityModel<Item>> items = itemService.obtenerPorCategoriaOrdenados(categoryId).stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerPorCategoriaOrdenados(categoryId)).withSelfRel()));
     }
 
     // GET /api/v1/items/ultimos
@@ -163,7 +209,12 @@ public class ItemController {
             @ApiResponse(responseCode = "200", description = "Últimas inserciones leídas de forma conforme")
     })
     @GetMapping("/ultimos")
-    public ResponseEntity<List<Item>> obtenerUltimos() {
-        return ResponseEntity.ok(itemService.obtenerUltimosItems());
+    public ResponseEntity<CollectionModel<EntityModel<Item>>> obtenerUltimos() {
+        List<EntityModel<Item>> items = itemService.obtenerUltimosItems().stream()
+                .map(i -> EntityModel.of(i,
+                        linkTo(methodOn(ItemController.class).obtenerPorId(i.getId())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(items,
+                linkTo(methodOn(ItemController.class).obtenerUltimos()).withSelfRel()));
     }
 }
