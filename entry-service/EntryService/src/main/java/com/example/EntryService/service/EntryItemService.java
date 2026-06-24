@@ -1,5 +1,3 @@
-// Lógica de negocio para los items declarados en cada ingreso al país
-// Un item = objeto o mercancía que el conductor declara al ingresar
 package com.example.EntryService.service;
 
 import com.example.EntryService.dto.EntryItemDTO;
@@ -18,21 +16,14 @@ import java.util.List;
 @Slf4j
 public class EntryItemService {
 
-    // Accede a la tabla entry_items en la BD
     private final EntryItemRepository itemRepository;
-
-    // Necesario para verificar que el ingreso existe
-    // antes de agregar un item
     private final EntryService entryService;
 
-    // Devuelve todos los items de la BD
     public List<EntryItem> obtenerTodos() {
         log.info("Obteniendo todos los items de ingreso");
         return itemRepository.findAll();
     }
 
-    // Busca un item por su id
-    // Si no existe lanza RuntimeException → HTTP 404
     public EntryItem obtenerPorId(Long id) {
         log.info("Buscando item con id: {}", id);
         return itemRepository.findById(id)
@@ -43,7 +34,6 @@ public class EntryItemService {
                 });
     }
 
-    // Agrega un nuevo item declarado a un ingreso existente
     public EntryItem agregar(EntryItemDTO dto) {
         log.info("Agregando item al ingreso id: {}", dto.getEntryId());
 
@@ -62,23 +52,17 @@ public class EntryItemService {
                             + "en estado PENDIENTE");
         }
 
-        // Mapeo DTO → Entidad
-        // Convierte el formulario que llegó en un objeto para guardar en la BD
         EntryItem item = new EntryItem();
-        item.setEntry(ingreso);                    // FK hacia el ingreso
-        item.setDescripcion(dto.getDescripcion()); // Ej: "laptop HP", "ropa"
-        item.setCantidad(dto.getCantidad());       // cuántas unidades
-        item.setValorUsd(dto.getValorUsd());       // valor en dólares
-        item.setAprobado(false);                   // inicia como no aprobado
-
-        // Guarda en la BD y retorna el item con su id generado
+        item.setEntry(ingreso);
+        item.setDescripcion(dto.getDescripcion());
+        item.setCantidad(dto.getCantidad());
+        item.setValorUsd(dto.getValorUsd());
+        item.setAprobado(false);
         EntryItem guardado = itemRepository.save(item);
         log.info("Item de ingreso agregado con id: {}", guardado.getId());
         return guardado;
     }
 
-    // Aprueba un item — el fiscalizador acepta que ese objeto ingrese
-    // Cambia aprobado de false a true
     public EntryItem aprobar(Long id) {
         log.info("Aprobando item con id: {}", id);
         EntryItem item = obtenerPorId(id);
@@ -88,8 +72,6 @@ public class EntryItemService {
         return actualizado;
     }
 
-    // Rechaza un item — el fiscalizador no acepta que ese objeto ingrese
-    // Cambia aprobado de true a false
     public EntryItem rechazar(Long id) {
         log.info("Rechazando item con id: {}", id);
         EntryItem item = obtenerPorId(id);
@@ -99,8 +81,6 @@ public class EntryItemService {
         return actualizado;
     }
 
-    // Elimina un item por su id
-    // existsById verifica si existe antes de intentar eliminar
     public void eliminar(Long id) {
         log.info("Eliminando item con id: {}", id);
         if (!itemRepository.existsById(id)) {
@@ -112,33 +92,28 @@ public class EntryItemService {
         log.info("Item {} eliminado correctamente", id);
     }
 
-    // Devuelve todos los items que pertenecen a un ingreso específico
     public List<EntryItem> obtenerPorIngreso(Long entryId) {
         log.info("Obteniendo items del ingreso: {}", entryId);
         return itemRepository.findByEntryId(entryId);
     }
 
-    // Devuelve solo los items APROBADOS de un ingreso específico
     public List<EntryItem> obtenerAprobadosPorIngreso(Long entryId) {
         log.info("Obteniendo items aprobados del ingreso: {}", entryId);
         return itemRepository.findByEntryIdAndAprobadoTrue(entryId);
     }
 
-    // Devuelve los items NO APROBADOS de un ingreso específico
     public List<EntryItem> obtenerNoAprobadosPorIngreso(Long entryId) {
         log.info("Obteniendo items no aprobados del ingreso: {}",
                 entryId);
         return itemRepository.findByEntryIdAndAprobadoFalse(entryId);
     }
 
-    // Busca items cuya descripción contenga el texto buscado
     public List<EntryItem> buscarPorDescripcion(String descripcion) {
         log.info("Buscando items con descripción: {}", descripcion);
         return itemRepository
                 .findByDescripcionContainingIgnoreCase(descripcion);
     }
 
-    // Devuelve items de un ingreso ordenados por valor del más caro al más barato
     public List<EntryItem> obtenerPorIngresoOrdenadosPorValor(
             Long entryId) {
         log.info("Obteniendo items del ingreso {} ordenados por valor",
@@ -146,7 +121,6 @@ public class EntryItemService {
         return itemRepository.findByEntryIdOrderByValorUsdDesc(entryId);
     }
 
-    // Devuelve los últimos 10 items registrados en el sistema
     public List<EntryItem> obtenerUltimosItems() {
         log.info("Obteniendo los últimos 10 items de ingreso");
         return itemRepository.findTop10ByOrderByIdDesc();

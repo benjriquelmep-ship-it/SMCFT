@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP del Border Crossing Service
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.BorderCrossingService.controller;
 
 import com.example.BorderCrossingService.dto.BorderCrossingDTO;
@@ -29,7 +26,6 @@ public class BorderCrossingController {
 
     private final BorderCrossingService crossingService;
 
-    // GET /api/v1/border-crossings
     @Operation(summary = "Listar todos los cruces fronterizos", description = "Recupera la nómina histórica consolidada de todas las solicitudes y registros de salida vehicular gestionados en frontera.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Bitácora de cruces fronterizos recuperada con éxito"),

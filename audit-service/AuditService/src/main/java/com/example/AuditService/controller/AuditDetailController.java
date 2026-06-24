@@ -1,7 +1,3 @@
-// Recibe las peticiones HTTP para los ítems de detalles de auditoría
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
-
 package com.example.AuditService.controller;
 
 import com.example.AuditService.dto.AuditDetailDTO;
@@ -30,7 +26,6 @@ public class AuditDetailController {
 
     private final AuditDetailService detailService;
 
-    // GET /api/v1/audit-details
     @Operation(summary = "Obtener total de logs y líneas de acción registradas", description = "Expone el listado consolidado global de la totalidad de trazas analíticas detalladas en los andenes del ecosistema.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de logs forenses expuesto de forma conforme"),

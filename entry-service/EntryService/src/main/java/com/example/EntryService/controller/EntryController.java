@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP del Entry Service
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.EntryService.controller;
 
 import com.example.EntryService.dto.EntryDTO;

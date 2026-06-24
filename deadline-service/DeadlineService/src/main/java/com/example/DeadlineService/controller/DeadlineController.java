@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP para los deadlines del sistema fronterizo
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.DeadlineService.controller;
 
 import com.example.DeadlineService.dto.DeadlineDTO;
@@ -28,7 +25,6 @@ public class DeadlineController {
 
     private final DeadlineService deadlineService;
 
-    // GET /api/v1/deadlines
     @Operation(summary = "Listar todos los plazos vigentes", description = "Expone el padrón maestro total con todos los controles cronológicos y estados situacionales registrados en el perímetro.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Padrón maestro de plazos temporales recuperado"),

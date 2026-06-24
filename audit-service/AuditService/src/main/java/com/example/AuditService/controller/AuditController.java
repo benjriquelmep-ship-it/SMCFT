@@ -1,7 +1,3 @@
-// Recibe las peticiones HTTP para las auditorías del sistema fronterizo
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
-
 package com.example.AuditService.controller;
 
 import com.example.AuditService.dto.AuditDTO;
@@ -30,7 +26,6 @@ public class AuditController {
 
     private final AuditService auditService;
 
-    // GET /api/v1/audits
     @Operation(summary = "Listar todos los expedientes de auditoría", description = "Recupera el padrón maestro unificado con todos los procesos de fiscalización y estados de revisión registrados en el ecosistema.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Padrón maestro de auditorías recuperado con éxito"),

@@ -1,4 +1,3 @@
-// Capa de servicio encargada de procesar las reglas de negocio de los ítems de transacciones
 package com.example.TransactionService.service;
 
 import com.example.TransactionService.dto.TransactionDetailDTO;
@@ -22,13 +21,11 @@ public class TransactionDetailService {
     private final TransactionService transactionService;
 
 
-    // Devuelve todos los registros guardados en la tabla de detalles
     public List<TransactionDetail> obtenerTodos() {
         log.info("Obteniendo todos los detalles de transacción");
         return detailRepository.findAll();
     }
 
-    // Busca una línea de detalle por su ID o lanza excepción si no existe
     public TransactionDetail obtenerPorId(Long id) {
         log.info("Buscando detalle con id: {}", id);
         return detailRepository.findById(id)
@@ -39,7 +36,6 @@ public class TransactionDetailService {
                 });
     }
 
-    // Agregar detalle a una transacción
     public TransactionDetail agregar(TransactionDetailDTO dto) {
         log.info("Agregando detalle a transacción: {}",
                 dto.getTransactionId());
@@ -57,7 +53,6 @@ public class TransactionDetailService {
                     "Solo se pueden agregar detalles a transacciones PENDIENTES");
         }
 
-        // Mapeo DTO → Entidad
         TransactionDetail detalle = new TransactionDetail();
         detalle.setTransaction(transaccion);
         detalle.setConcepto(dto.getConcepto());
@@ -70,7 +65,6 @@ public class TransactionDetailService {
         return guardado;
     }
 
-    // Actualizar detalle
     public TransactionDetail actualizar(Long id,
                                         TransactionDetailDTO dto) {
         log.info("Actualizando detalle con id: {}", id);
@@ -86,7 +80,6 @@ public class TransactionDetailService {
         return actualizado;
     }
 
-    // Eliminar detalle
     public void eliminar(Long id) {
         log.info("Eliminando detalle con id: {}", id);
         if (!detailRepository.existsById(id)) {
@@ -98,11 +91,6 @@ public class TransactionDetailService {
         log.info("Detalle {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
-
-    // Filtra todas las líneas pertenecientes a una misma transacción principal
     public List<TransactionDetail> obtenerPorTransaccion(
             Long transactionId) {
         log.info("Obteniendo detalles de transacción: {}",
@@ -110,14 +98,12 @@ public class TransactionDetailService {
         return detailRepository.findByTransactionId(transactionId);
     }
 
-    // Filtra detalles según su categoría (COBRO, DESCUENTO, IMPUESTO)
     public List<TransactionDetail> obtenerPorTipoDetalle(
             String tipoDetalle) {
         log.info("Obteniendo detalles de tipo: {}", tipoDetalle);
         return detailRepository.findByTipoDetalle(tipoDetalle);
     }
 
-    // Cruza filtros buscando líneas de una transacción específica y de un tipo determinado
     public List<TransactionDetail> obtenerPorTransaccionYTipo(
             Long transactionId, String tipoDetalle) {
         log.info("Obteniendo detalles de {} tipo {}",
@@ -126,14 +112,12 @@ public class TransactionDetailService {
                 transactionId, tipoDetalle);
     }
 
-    // Realiza búsquedas parciales por coincidencia de texto ignorando mayúsculas
     public List<TransactionDetail> buscarPorConcepto(String concepto) {
         log.info("Buscando detalles con concepto: {}", concepto);
         return detailRepository
                 .findByConceptoContainingIgnoreCase(concepto);
     }
 
-    // Obtiene los ítems asociados a una transacción ordenados de mayor a menor valor
     public List<TransactionDetail> obtenerPorTransaccionOrdenados(
             Long transactionId) {
         log.info("Obteniendo detalles de {} ordenados por monto",
@@ -142,7 +126,6 @@ public class TransactionDetailService {
                 .findByTransactionIdOrderByMontoDesc(transactionId);
     }
 
-    // Devuelve las últimas 10 inserciones realizadas en la tabla de detalles
     public List<TransactionDetail> obtenerUltimosDetalles() {
         log.info("Obteniendo los últimos 10 detalles");
         return detailRepository.findTop10ByOrderByIdDesc();

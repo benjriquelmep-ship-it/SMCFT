@@ -1,4 +1,3 @@
-// Capa de servicio principal encargada de procesar las reglas de negocio de vehículos y la comunicación reactiva entre servicios
 package com.example.VehicleService.service;
 
 import com.example.VehicleService.dto.UserResponseDTO;
@@ -22,20 +21,13 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
 
-    // WebClient para comunicarse con User Service
     private final WebClient webClient;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // Devuelve el listado completo de vehículos del parque automotor
     public List<Vehicle> obtenerTodos() {
         log.info("Obteniendo todos los vehículos");
         return vehicleRepository.findAll();
     }
 
-    // Busca un vehículo mediante su ID primario o lanza una excepción en caso de no existir
     public Vehicle obtenerPorId(Long id) {
         log.info("Buscando vehículo con id: {}", id);
         return vehicleRepository.findById(id)
@@ -46,7 +38,6 @@ public class VehicleService {
                 });
     }
 
-    // Entry Service y Border Crossing Service usan este método
     public Vehicle obtenerPorPatente(String patente) {
         log.info("Buscando vehículo con patente: {}", patente);
         return vehicleRepository.findByPatente(patente)
@@ -57,7 +48,6 @@ public class VehicleService {
                 });
     }
 
-    // Registra un nuevo vehículo en el sistema controlando duplicados y consultando de forma remota al dueño
     public Vehicle registrar(VehicleDTO dto) {
         log.info("Registrando vehículo con patente: {}", dto.getPatente());
 
@@ -79,20 +69,15 @@ public class VehicleService {
                             + anioActual);
         }
 
-        // REGLA DE NEGOCIO 3: el propietario debe existir en User Service
-        // Comunicación entre microservicios — IE 2.4.1 de la rúbrica
         verificarPropietarioEnUserService(dto.getRutPropietario());
 
-        // Mapeo DTO → Entidad
         Vehicle nuevo = new Vehicle();
-        // Siempre en mayúsculas para consistencia
         nuevo.setPatente(dto.getPatente().toUpperCase());
         nuevo.setMarca(dto.getMarca());
         nuevo.setModelo(dto.getModelo());
         nuevo.setAnio(dto.getAnio());
         nuevo.setTipoVehiculo(dto.getTipoVehiculo());
         nuevo.setRutPropietario(dto.getRutPropietario());
-        // Estado inicial siempre EN_TERRITORIO_NACIONAL
         nuevo.setEstado("EN_TERRITORIO_NACIONAL");
 
         Vehicle guardado = vehicleRepository.save(nuevo);
@@ -100,13 +85,10 @@ public class VehicleService {
         return guardado;
     }
 
-    // Actualiza las características mecánicas y comerciales básicas de un móvil
     public Vehicle actualizar(Long id, VehicleDTO dto) {
         log.info("Actualizando vehículo con id: {}", id);
         Vehicle existente = obtenerPorId(id);
 
-        // No actualizamos la patente — es el identificador único
-        // No actualizamos el propietario — es un cambio legal complejo
         existente.setMarca(dto.getMarca());
         existente.setModelo(dto.getModelo());
         existente.setAnio(dto.getAnio());
@@ -120,7 +102,6 @@ public class VehicleService {
         return actualizado;
     }
 
-    // Entry Service y Border Crossing Service llaman este método
     public Vehicle actualizarEstado(String patente, String nuevoEstado) {
         log.info("Actualizando estado del vehículo {} a {}", patente,
                 nuevoEstado);
@@ -144,7 +125,6 @@ public class VehicleService {
         return actualizado;
     }
 
-    // Remueve físicamente el registro automotor de la base de datos MySQL
     public void eliminar(Long id) {
         log.info("Eliminando vehículo con id: {}", id);
         Vehicle existente = obtenerPorId(id);
@@ -152,29 +132,21 @@ public class VehicleService {
         log.info("Vehículo {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
-
-    // Recupera la lista de vehículos vinculados al RUN de un propietario
     public List<Vehicle> obtenerPorPropietario(String rutPropietario) {
         log.info("Obteniendo vehículos del propietario: {}", rutPropietario);
         return vehicleRepository.findByRutPropietario(rutPropietario);
     }
 
-    // Recupera el conjunto de autos que comparten una misma situación aduanera
     public List<Vehicle> obtenerPorEstado(String estado) {
         log.info("Obteniendo vehículos con estado: {}", estado);
         return vehicleRepository.findByEstado(estado);
     }
 
-    // Filtra las unidades que corresponden a una categoría técnica o diplomática específica
     public List<Vehicle> obtenerPorTipo(String tipo) {
         log.info("Obteniendo vehículos de tipo: {}", tipo);
         return vehicleRepository.findByTipoVehiculo(tipo);
     }
 
-    // Cruza filtros para localizar los bienes de un dueño bajo una condición de tránsito exacta
     public List<Vehicle> obtenerPorPropietarioYEstado(
             String rut, String estado) {
         log.info("Obteniendo vehículos del propietario {} con estado {}",
@@ -182,19 +154,16 @@ public class VehicleService {
         return vehicleRepository.findByRutPropietarioAndEstado(rut, estado);
     }
 
-    // Devuelve los vehículos cuyo modelo sea igual o superior al año ingresado
     public List<Vehicle> obtenerPorAnioDesde(Integer anio) {
         log.info("Obteniendo vehículos desde el año: {}", anio);
         return vehicleRepository.findByAnioGreaterThanEqual(anio);
     }
 
-    // Obtiene las unidades automotrices construidas en un rango específico de años
     public List<Vehicle> obtenerPorRangoAnio(Integer desde, Integer hasta) {
         log.info("Obteniendo vehículos entre {} y {}", desde, hasta);
         return vehicleRepository.findByAnioBetween(desde, hasta);
     }
 
-    // Realiza búsquedas parciales ignorando diferencias entre mayúsculas y minúsculas por marca
     public List<Vehicle> buscarPorMarca(String marca) {
         log.info("Buscando vehículos con marca: {}", marca);
         return vehicleRepository.findByMarcaContainingIgnoreCase(marca);
@@ -206,14 +175,11 @@ public class VehicleService {
         return vehicleRepository.findByRutPropietarioOrderByAnioDesc(rut);
     }
 
-    // Devuelve los últimos 10 automóviles indexados cronológicamente por clave primaria
     public List<Vehicle> obtenerUltimosRegistrados() {
         log.info("Obteniendo los últimos 10 vehículos registrados");
         return vehicleRepository.findTop10ByOrderByIdDesc();
     }
 
-    // Verifica que el propietario existe en User Service
-    // Se llama antes de registrar un vehículo nuevo
     private void verificarPropietarioEnUserService(String rut) {
         try {
             log.info("Verificando propietario en User Service: {}", rut);

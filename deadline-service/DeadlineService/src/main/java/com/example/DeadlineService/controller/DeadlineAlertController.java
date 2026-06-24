@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP para las alertas de deadlines
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.DeadlineService.controller;
 
 import com.example.DeadlineService.dto.DeadlineAlertDTO;
@@ -28,7 +25,6 @@ public class DeadlineAlertController {
 
     private final DeadlineAlertService alertService;
 
-    // GET /api/v1/deadline-alerts
     @Operation(summary = "Listar todas las alertas del sistema", description = "Recupera la bitácora histórica unificada de todas las alertas gatilladas por proximidad o expiración de plazos.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Historial global de alertas obtenido con éxito"),

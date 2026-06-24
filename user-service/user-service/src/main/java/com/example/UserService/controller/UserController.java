@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de User Service y retorna ResponseEntity con JSON
 package com.example.UserService.controller;
 
 import com.example.UserService.dto.UserDTO;
@@ -25,7 +24,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // GET /api/v1/users → obtener todos los usuarios : Lista todos los usuarios registrados
     @Operation(summary = "Listar todos los usuarios", description = "Recupera la colección global de usuarios registrados en el sistema.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de usuarios recuperada con éxito"),

@@ -19,7 +19,6 @@ public class WebClientConfig {
     // Notification Service consulta alertas pendientes
     // y las marca como enviadas
     @Bean
-    @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
                 .baseUrl(deadlineServiceUrl)
@@ -30,7 +29,6 @@ public class WebClientConfig {
     // Notification Service consulta datos de usuarios (RUT, email, nombre)
     // para crear destinatarios de notificaciones
     @Bean
-    @LoadBalanced
     public WebClient userServiceWebClient() {
         return WebClient.builder()
                 .baseUrl(userServiceUrl)

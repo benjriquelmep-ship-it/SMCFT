@@ -1,4 +1,3 @@
-// Capa de servicio encargada de procesar las reglas de negocio del historial de perfiles de usuario
 package com.example.UserService.service;
 
 import com.example.UserService.dto.UserRoleDTO;
@@ -20,16 +19,13 @@ public class UserRoleService {
 
     private final UserRoleRepository userRoleRepository;
 
-    // Inyectamos UserService para verificar que el usuario existe
     private final UserService userService;
 
-    // Devuelve el listado completo de asignaciones de roles globales en el sistema
     public List<UserRole> obtenerTodos() {
         log.info("Obteniendo todos los roles");
         return userRoleRepository.findAll();
     }
 
-    // Busca un registro de rol específico por su ID o lanza una excepción si no existe
     public UserRole obtenerPorId(Long id) {
         log.info("Buscando rol con id: {}", id);
         return userRoleRepository.findById(id)
@@ -40,8 +36,6 @@ public class UserRoleService {
                 });
     }
 
-    // Asignar un nuevo rol a un usuario
-    // Desactiva el rol actual y crea uno nuevo
     public UserRole asignar(UserRoleDTO dto) {
         log.info("Asignando rol {} al usuario id: {}",
                 dto.getRol(), dto.getUserId());
@@ -60,7 +54,6 @@ public class UserRoleService {
                     r.getRol(), dto.getUserId());
         });
 
-        // Crear el nuevo rol histórico
         UserRole nuevoRol = new UserRole();
         nuevoRol.setUser(usuario);
         nuevoRol.setRol(dto.getRol());
@@ -72,7 +65,6 @@ public class UserRoleService {
         return guardado;
     }
 
-    // Remueve físicamente una asignación de rol del historial por su identificador primario
     public void eliminar(Long id) {
         log.info("Eliminando rol con id: {}", id);
         if (!userRoleRepository.existsById(id)) {
@@ -84,34 +76,26 @@ public class UserRoleService {
     }
 
 
-    // Historial completo de roles de un usuario
-    // Ordenado del más reciente al más antiguo
     public List<UserRole> obtenerPorUsuario(Long userId) {
         log.info("Obteniendo historial de roles del usuario: {}", userId);
         return userRoleRepository.findByUserIdOrderByAsignadoAtDesc(userId);
     }
 
-    // Solo el rol activo actual de un usuario
     public List<UserRole> obtenerActivosPorUsuario(Long userId) {
         log.info("Obteniendo roles activos del usuario: {}", userId);
         return userRoleRepository.findByUserIdAndActivoTrue(userId);
     }
 
-    // Roles por tipo específico
-    // Ej: todos los roles de tipo FISCALIZADOR en el historial
     public List<UserRole> obtenerPorRol(String rol) {
         log.info("Obteniendo roles de tipo: {}", rol);
         return userRoleRepository.findByRol(rol);
     }
 
-    // Roles activos por tipo
     public List<UserRole> obtenerActivosPorRol(String rol) {
         log.info("Obteniendo roles activos de tipo: {}", rol);
         return userRoleRepository.findByRolAndActivoTrue(rol);
     }
 
-    // Los últimos 10 roles asignados en todo el sistema
-    // Útil para auditoría y monitoreo
     public List<UserRole> obtenerUltimosAsignados() {
         log.info("Obteniendo los últimos 10 roles asignados");
         return userRoleRepository.findTop10ByOrderByAsignadoAtDesc();

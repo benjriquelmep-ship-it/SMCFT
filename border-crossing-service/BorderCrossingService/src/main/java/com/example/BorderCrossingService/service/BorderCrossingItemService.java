@@ -1,5 +1,3 @@
-// Lógica de negocio para los items de equipaje de cada cruce
-// Se comunica con Item Category Service para validar categorías
 package com.example.BorderCrossingService.service;
 
 import com.example.BorderCrossingService.dto.BorderCrossingItemDTO;
@@ -22,23 +20,16 @@ import java.util.List;
 @Slf4j
 public class BorderCrossingItemService {
 
-    // Accede a la tabla border_crossing_items en la BD
     private final BorderCrossingItemRepository itemRepository;
-
-    // Necesario para verificar que el cruce existe antes de agregar un item
     private final BorderCrossingService crossingService;
-
-    // WebClient para llamar a Item Category Service
     @Qualifier("itemCategoryWebClient")
     private final WebClient itemCategoryWebClient;
 
-    // Devuelve todos los items de la BD
     public List<BorderCrossingItem> obtenerTodos() {
         log.info("Obteniendo todos los items de equipaje");
         return itemRepository.findAll();
     }
 
-    // Busca un item por su id. Si no existe lanza RuntimeException → HTTP 404
     public BorderCrossingItem obtenerPorId(Long id) {
         log.info("Buscando item con id: {}", id);
         return itemRepository.findById(id)
@@ -49,18 +40,13 @@ public class BorderCrossingItemService {
                 });
     }
 
-    // Agrega un nuevo item de equipaje a un cruce existente
     public BorderCrossingItem agregar(BorderCrossingItemDTO dto) {
         log.info("Agregando item al cruce id: {}",
                 dto.getBorderCrossingId());
 
-        // REGLA 1: el cruce debe existir en la BD
-        // Si no existe → crossingService lanza RuntimeException → HTTP 404
         BorderCrossing cruce =
                 crossingService.obtenerPorId(dto.getBorderCrossingId());
 
-        // REGLA 2: solo se agregan items a cruces PENDIENTES
-        // Si el cruce ya fue AUTORIZADO o RECHAZADO → no se pueden agregar items
         if (!cruce.getEstado().equals("PENDIENTE")) {
             log.warn("No se pueden agregar items — cruce en estado: {}",
                     cruce.getEstado());
@@ -68,28 +54,20 @@ public class BorderCrossingItemService {
                     "Solo se pueden agregar items a cruces en estado PENDIENTE");
         }
 
-        // REGLA 3: la categoría del item debe existir en Item Category Service
-        // Llama al microservicio para verificar que la categoría es válida
         verificarCategoriaEnItemCategoryService(dto.getCategoriaId());
 
-        // Mapeo DTO → Entidad
-        // Convierte el formulario que llegó en un objeto para guardar en la BD
         BorderCrossingItem item = new BorderCrossingItem();
-        item.setBorderCrossing(cruce);              // FK hacia el cruce
-        item.setCategoriaId(dto.getCategoriaId());  // categoría del item
-        item.setDescripcion(dto.getDescripcion());  // Ej: "laptop HP", "ropa"
-        item.setCantidad(dto.getCantidad());        // cuántas unidades
-        item.setValorUsd(dto.getValorUsd());        // valor en dólares
-        item.setAprobado(false);                    // inicia como no aprobado
-
-        // Guarda en la BD y retorna el item con su id generado
+        item.setBorderCrossing(cruce);
+        item.setCategoriaId(dto.getCategoriaId());
+        item.setDescripcion(dto.getDescripcion());
+        item.setCantidad(dto.getCantidad());
+        item.setValorUsd(dto.getValorUsd());
+        item.setAprobado(false);
         BorderCrossingItem guardado = itemRepository.save(item);
         log.info("Item agregado con id: {}", guardado.getId());
         return guardado;
     }
 
-    // Aprueba un item — cambia aprobado a true
-    // El fiscalizador decide que ese objeto puede pasar la frontera
     public BorderCrossingItem aprobar(Long id) {
         log.info("Aprobando item con id: {}", id);
         BorderCrossingItem item = obtenerPorId(id);
@@ -99,8 +77,6 @@ public class BorderCrossingItemService {
         return actualizado;
     }
 
-    // Rechaza un item — cambia aprobado a false
-    // El fiscalizador decide que ese objeto NO puede pasar la frontera
     public BorderCrossingItem rechazar(Long id) {
         log.info("Rechazando item con id: {}", id);
         BorderCrossingItem item = obtenerPorId(id);
@@ -110,7 +86,6 @@ public class BorderCrossingItemService {
         return actualizado;
     }
 
-    // Elimina un item por su id
     public void eliminar(Long id) {
         log.info("Eliminando item con id: {}", id);
         if (!itemRepository.existsById(id)) {
@@ -122,14 +97,12 @@ public class BorderCrossingItemService {
         log.info("Item {} eliminado correctamente", id);
     }
 
-    // Devuelve todos los items que pertenecen a un cruce específico
     public List<BorderCrossingItem> obtenerPorCruce(
             Long borderCrossingId) {
         log.info("Obteniendo items del cruce: {}", borderCrossingId);
         return itemRepository.findByBorderCrossingId(borderCrossingId);
     }
 
-    // Devuelve solo los items APROBADOS de un cruce
     public List<BorderCrossingItem> obtenerAprobadosPorCruce(
             Long borderCrossingId) {
         log.info("Obteniendo items aprobados del cruce: {}",
@@ -138,7 +111,6 @@ public class BorderCrossingItemService {
                 .findByBorderCrossingIdAndAprobadoTrue(borderCrossingId);
     }
 
-    // Devuelve los items NO APROBADOS de un cruce
     public List<BorderCrossingItem> obtenerNoAprobadosPorCruce(
             Long borderCrossingId) {
         log.info("Obteniendo items no aprobados del cruce: {}",
@@ -147,13 +119,11 @@ public class BorderCrossingItemService {
                 .findByBorderCrossingIdAndAprobadoFalse(borderCrossingId);
     }
 
-    // Devuelve todos los items de una categoría específica
     public List<BorderCrossingItem> obtenerPorCategoria(Long categoriaId) {
         log.info("Obteniendo items de la categoría: {}", categoriaId);
         return itemRepository.findByCategoriaId(categoriaId);
     }
 
-    // Busca items cuya descripción contenga el texto buscado
     public List<BorderCrossingItem> buscarPorDescripcion(
             String descripcion) {
         log.info("Buscando items con descripción: {}", descripcion);
@@ -161,7 +131,6 @@ public class BorderCrossingItemService {
                 .findByDescripcionContainingIgnoreCase(descripcion);
     }
 
-    // Devuelve items de un cruce ordenados por valor del más caro al más barato
     public List<BorderCrossingItem> obtenerPorCruceOrdenadosPorValor(
             Long borderCrossingId) {
         log.info("Obteniendo items del cruce {} ordenados por valor",
@@ -170,14 +139,11 @@ public class BorderCrossingItemService {
                 .findByBorderCrossingIdOrderByValorUsdDesc(borderCrossingId);
     }
 
-    // Devuelve los últimos 10 items registrados en el sistema
     public List<BorderCrossingItem> obtenerUltimosItems() {
         log.info("Obteniendo los últimos 10 items");
         return itemRepository.findTop10ByOrderByIdDesc();
     }
 
-    // Verifica que la categoría existe y está activa en Item Category Service
-    // Se llama antes de agregar un item para validar su categoría
     private void verificarCategoriaEnItemCategoryService(Long categoriaId) {
         try {
             log.info("Verificando categoría {} en Item Category Service",

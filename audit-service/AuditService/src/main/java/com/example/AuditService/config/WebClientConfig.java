@@ -17,7 +17,6 @@ public class WebClientConfig {
 
 
     @Bean
-    @LoadBalanced
     public WebClient webClient() {
         //hace el llamado al user service
         return WebClient.builder()

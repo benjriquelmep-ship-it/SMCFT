@@ -1,13 +1,11 @@
 # SMCFT - Sistema de Monitoreo y Control Fronterizo Terrestre
 
-**Estudiantes:** (completar nombres)
+**Estudiantes:** Benjamin Riquelme, Aileen Oyaneder
 
-Sistema distribuido de microservicios para la gestión de control fronterizo, incluyendo registro de ingresos, inspecciones sanitarias, control vehicular, transacciones aduaneras, notificaciones y auditoría.
-
-## Microservicios Implementados
+## Microservicios
 
 | # | Servicio | Puerto | Descripción |
-|---|---------|--------|-------------|
+|---|----------|--------|-------------|
 | 1 | AuthService | 2022 | Autenticación y control de sesiones |
 | 2 | UserService | 2031 | Gestión de operadores e identidades |
 | 3 | VehicleService | 2032 | Parque vehicular y patentes |
@@ -40,49 +38,7 @@ Todas las rutas parten de `http://localhost:2020/api/v1/`:
 - `notifications/**` → NotificationService
 - `audits/**` → AuditService
 
-## Documentación Swagger
+## Documentación
 
-- **Gateway (centralizado):** http://localhost:2020/swagger-ui.html
+- **Swagger Gateway:** http://localhost:2020/swagger-ui.html
 - **Eureka Dashboard:** http://localhost:8760
-
-## Ejecución Local
-
-### Requisitos
-- Java 21+
-- Maven 3.9+
-- MySQL 8.0 (con bases de datos creadas para cada servicio)
-
-### Inicio manual
-```bash
-# Cada servicio
-cd <servicio>
-./mvnw spring-boot:run
-```
-
-### Inicio con Docker
-```bash
-# Construir imágenes
-docker compose build
-
-# Levantar todos los servicios
-docker compose up -d
-
-# Ver estado
-docker compose ps
-
-# Ver logs
-docker compose logs -f <servicio>
-
-# Detener
-docker compose down
-```
-
-## Pruebas Unitarias
-
-```bash
-# Ejecutar tests de un servicio
-cd <servicio>
-./mvnw test
-```
-
-Cobertura mínima requerida: 80% sobre servicios y lógica de negocio.

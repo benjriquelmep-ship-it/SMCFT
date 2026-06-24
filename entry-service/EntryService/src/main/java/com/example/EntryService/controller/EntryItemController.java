@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP para los items de ingresos al país
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.EntryService.controller;
 
 import com.example.EntryService.dto.EntryItemDTO;

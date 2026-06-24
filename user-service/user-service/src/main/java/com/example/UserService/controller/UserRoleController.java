@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de User Role Service y retorna ResponseEntity con JSON
 package com.example.UserService.controller;
 
 import com.example.UserService.dto.UserRoleDTO;
@@ -17,8 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-// Todas las rutas empiezan con /api/v1/users/roles
-@RequestMapping("/api/v1/users/roles")
+    @RequestMapping("/api/v1/users/roles")
 @RequiredArgsConstructor
 @Tag(name = "Roles de Usuario", description = "Endpoints para la asignación, revocación e historial de perfiles de acceso aduaneros")
 @SecurityRequirement(name = "bearerAuth")
@@ -26,7 +24,6 @@ public class UserRoleController {
 
     private final UserRoleService userRoleService;
 
-    // GET /api/v1/users/roles → todos los roles del sistema : Lista todas las asignaciones de roles globales
     @Operation(summary = "Listar todas las asignaciones de roles", description = "Muestra el registro completo de asignaciones de roles hechas en la plataforma.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Colección histórica de roles devuelta con éxito"),

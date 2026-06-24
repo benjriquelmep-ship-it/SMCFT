@@ -3,8 +3,8 @@ package com.example.NotificationService.config; // Valida que coincida con tu pa
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +16,7 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
+                .addServersItem(new Server().url("http://localhost:2020"))
                 .info(new Info()
                         .title("SMCFT - Notification Service API")
                         .version("1.0")
@@ -23,7 +24,6 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("Benjamin Riquelme")
                                 .email("benjamin@ejemplo.cl")))
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .schemaRequirement(securitySchemeName, new SecurityScheme()
                         .name(securitySchemeName)
                         .type(SecurityScheme.Type.HTTP)

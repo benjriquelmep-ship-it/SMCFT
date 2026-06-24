@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de Vehicle Document Service y retorna ResponseEntity con JSON
 package com.example.VehicleService.controller;
 
 import com.example.VehicleService.dto.VehicleDocumentDTO;
@@ -25,7 +24,6 @@ public class VehicleDocumentController {
 
     private final VehicleDocumentService documentService;
 
-    // GET /api/v1/vehicles/documentos : Lista de forma global todos los documentos vehiculares ingresados
     @Operation(summary = "Listar todas las credenciales documentales", description = "Muestra el registro global de la documentación vehicular ingresada en el sistema fronterizo.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Historial documental obtenido correctamente"),

@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de Vehicle Service y retorna ResponseEntity con JSON
 package com.example.VehicleService.controller;
 
 import com.example.VehicleService.dto.VehicleDTO;
@@ -25,7 +24,6 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    // GET /api/v1/vehicles?rutPropietario=12345678-9 : Lista todos los vehículos, opcionalmente filtrados por propietario
     @Operation(summary = "Listar vehículos", description = "Recupera la colección global de vehículos o filtra por el RUN del propietario aduanero.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de vehículos recuperada con éxito"),

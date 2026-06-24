@@ -1,4 +1,3 @@
-// controller/ReportController.java
 package com.example.ReportService.controller;
 
 import com.example.ReportService.dto.ReportDTO;
@@ -26,7 +25,6 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    // GET /api/v1/reports : Lista todos los reportes
     @Operation(summary = "Listar reportes consolidados", description = "Recupera el catálogo histórico de todos los informes analíticos solicitados en la plataforma.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Colección de reportes recuperada con éxito"),

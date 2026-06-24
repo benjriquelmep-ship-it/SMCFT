@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP del Item Category Service
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.ItemCategoryService.controller;
 
 import com.example.ItemCategoryService.dto.ItemCategoryDTO;
@@ -28,7 +25,6 @@ public class ItemCategoryController {
 
     private final ItemCategoryService categoryService;
 
-    // GET /api/v1/item-categories
     @Operation(summary = "Listar todas las categorías arancelarias", description = "Recupera el catálogo completo de subpartidas y clasificaciones de equipaje configuradas en la plataforma fronteriza.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Catálogo de categorías arancelarias recuperado con éxito"),

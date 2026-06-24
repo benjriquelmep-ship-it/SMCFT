@@ -18,7 +18,6 @@ public class WebClientConfig {
 
     //spring guarda este WebClient para inyectarlo automáticamente en DeadlineService cuando lo necesite
     @Bean
-    @LoadBalanced
     public WebClient webClient() {
 
         // Define la URL base de todas las peticiones

@@ -1,5 +1,3 @@
-// Lógica de negocio del Entry Service
-// Se comunica con Vehicle Service para verificar y actualizar el estado del vehículo
 package com.example.EntryService.service;
 
 import com.example.EntryService.dto.EntryDTO;
@@ -11,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;    // llama a otros microservicios
-import org.springframework.web.reactive.function.client.WebClientResponseException; // error HTTP
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,11 +19,7 @@ import java.util.List;
 @Slf4j
 public class EntryService {
 
-    // Accede a la tabla entries en la BD
     private final EntryRepository entryRepository;
-
-    // Cliente HTTP para llamar a Vehicle Service
-    // Se usa para verificar y actualizar el estado del vehículo
     private final WebClient webClient;
 
     public Entry actualizar(Long id, EntryDTO dto) {
@@ -43,15 +37,11 @@ public class EntryService {
         return entryRepository.save(entry);
     }
 
-    // Devuelve todos los ingresos de la BD
     public List<Entry> obtenerTodos() {
         log.info("Obteniendo todos los ingresos");
         return entryRepository.findAll();
     }
 
-    // Busca un ingreso por su id
-    // Si no existe lanza RuntimeException → HTTP 404
-    // Deadline Service llama a este método para verificar ingresos
     public Entry obtenerPorId(Long id) {
         log.info("Buscando ingreso con id: {}", id);
         return entryRepository.findById(id)
@@ -62,14 +52,10 @@ public class EntryService {
                 });
     }
 
-    // Registra un nuevo ingreso al país
-    // Son 2 pasos: verificar vehículo → registrar ingreso → actualizar vehículo
     public Entry registrar(EntryDTO dto) {
         log.info("Registrando ingreso para vehículo: {}",
                 dto.getPatente());
 
-        // PASO 1 — Llama a Vehicle Service para verificar el vehículo
-        // Si no existe → lanza error → no se registra el ingreso
         VehicleResponseDTO vehiculo =
                 verificarVehiculoEnVehicleService(dto.getPatente());
 
@@ -105,22 +91,16 @@ public class EntryService {
                     "La fecha de ingreso no puede ser futura");
         }
 
-        // Mapeo DTO → Entidad
         Entry nuevo = new Entry();
-        nuevo.setPatente(dto.getPatente().toUpperCase()); // patente en mayúsculas
-        nuevo.setRutConductor(dto.getRutConductor());     // quién conduce
-        nuevo.setPaisOrigen(dto.getPaisOrigen());         // de dónde viene
-        nuevo.setPasoFronterizo(dto.getPasoFronterizo()); // por dónde entró
-        nuevo.setFechaIngreso(dto.getFechaIngreso());     // cuándo ingresó
-        nuevo.setTipoIngreso(dto.getTipoIngreso());       // RETORNO o ADMISION_TEMPORAL
-        // Estado inicial siempre PENDIENTE — el fiscalizador lo procesará después
+        nuevo.setPatente(dto.getPatente().toUpperCase());
+        nuevo.setRutConductor(dto.getRutConductor());
+        nuevo.setPaisOrigen(dto.getPaisOrigen());
+        nuevo.setPasoFronterizo(dto.getPasoFronterizo());
+        nuevo.setFechaIngreso(dto.getFechaIngreso());
+        nuevo.setTipoIngreso(dto.getTipoIngreso());
         nuevo.setEstado("PENDIENTE");
-
-        // Guarda el ingreso en la BD
         Entry guardado = entryRepository.save(nuevo);
 
-        // PASO 2 — Actualiza el estado del vehículo en Vehicle Service
-        // El estado cambia según el tipo de ingreso
         if (dto.getTipoIngreso().equals("RETORNO")) {
             // Vehículo chileno que regresa → vuelve a EN_TERRITORIO_NACIONAL
             actualizarEstadoVehiculo(
@@ -135,8 +115,6 @@ public class EntryService {
         return guardado;
     }
 
-    // El fiscalizador autoriza el ingreso — cambia estado a AUTORIZADO
-    // Solo funciona si el ingreso está PENDIENTE
     public Entry autorizar(Long id, String rutFiscalizador,
                            String observaciones) {
         log.info("Autorizando ingreso id: {} por fiscalizador: {}",
@@ -154,16 +132,14 @@ public class EntryService {
         }
 
         ingreso.setEstado("AUTORIZADO");
-        ingreso.setRutFiscalizador(rutFiscalizador); // quién autorizó
-        ingreso.setObservaciones(observaciones);     // comentarios opcionales
+        ingreso.setRutFiscalizador(rutFiscalizador);
+        ingreso.setObservaciones(observaciones);
 
         Entry actualizado = entryRepository.save(ingreso);
         log.info("Ingreso {} autorizado por {}", id, rutFiscalizador);
         return actualizado;
     }
 
-    // El fiscalizador rechaza el ingreso — cambia estado a RECHAZADO
-    // Al rechazar el vehículo vuelve a su estado anterior
     public Entry rechazar(Long id, String rutFiscalizador,
                           String observaciones) {
         log.info("Rechazando ingreso id: {} por fiscalizador: {}",
@@ -181,8 +157,8 @@ public class EntryService {
         }
 
         ingreso.setEstado("RECHAZADO");
-        ingreso.setRutFiscalizador(rutFiscalizador); // quién rechazó
-        ingreso.setObservaciones(observaciones);     // motivo del rechazo
+        ingreso.setRutFiscalizador(rutFiscalizador);
+        ingreso.setObservaciones(observaciones);
 
         // Al rechazar el ingreso el vehículo vuelve a su estado anterior
         // RETORNO rechazado → el vehículo sigue FUERA_DEL_PAIS
@@ -200,8 +176,6 @@ public class EntryService {
         return actualizado;
     }
 
-    // Elimina un ingreso por su id
-    // existsById verifica si existe antes de intentar eliminar
     public void eliminar(Long id) {
         log.info("Eliminando ingreso con id: {}", id);
         if (!entryRepository.existsById(id)) {
@@ -213,44 +187,37 @@ public class EntryService {
         log.info("Ingreso {} eliminado correctamente", id);
     }
 
-    // Devuelve todos los ingresos de un vehículo específico
     public List<Entry> obtenerPorPatente(String patente) {
         log.info("Obteniendo ingresos de la patente: {}", patente);
         return entryRepository.findByPatente(patente);
     }
 
-    // Devuelve todos los ingresos de un conductor específico
     public List<Entry> obtenerPorConductor(String rutConductor) {
         log.info("Obteniendo ingresos del conductor: {}", rutConductor);
         return entryRepository.findByRutConductor(rutConductor);
     }
 
-    // Devuelve ingresos por estado (PENDIENTE, AUTORIZADO, RECHAZADO)
     public List<Entry> obtenerPorEstado(String estado) {
         log.info("Obteniendo ingresos con estado: {}", estado);
         return entryRepository.findByEstado(estado);
     }
 
-    // Devuelve ingresos por tipo (RETORNO o ADMISION_TEMPORAL)
     public List<Entry> obtenerPorTipoIngreso(String tipoIngreso) {
         log.info("Obteniendo ingresos de tipo: {}", tipoIngreso);
         return entryRepository.findByTipoIngreso(tipoIngreso);
     }
 
-    // Devuelve todos los ingresos de un paso fronterizo específico
     public List<Entry> obtenerPorPasoFronterizo(String pasoFronterizo) {
         log.info("Obteniendo ingresos del paso: {}", pasoFronterizo);
         return entryRepository.findByPasoFronterizo(pasoFronterizo);
     }
 
-    // Devuelve todos los ingresos procesados por un fiscalizador específico
     public List<Entry> obtenerPorFiscalizador(String rutFiscalizador) {
         log.info("Obteniendo ingresos del fiscalizador: {}",
                 rutFiscalizador);
         return entryRepository.findByRutFiscalizador(rutFiscalizador);
     }
 
-    // Devuelve ingresos de un vehículo con un estado específico
     public List<Entry> obtenerPorPatenteYEstado(
             String patente, String estado) {
         log.info("Obteniendo ingresos de {} con estado {}",
@@ -258,47 +225,39 @@ public class EntryService {
         return entryRepository.findByPatenteAndEstado(patente, estado);
     }
 
-    // Devuelve ingresos registrados en un rango de fechas
     public List<Entry> obtenerPorRangoFechas(
             LocalDateTime desde, LocalDateTime hasta) {
         log.info("Obteniendo ingresos entre {} y {}", desde, hasta);
         return entryRepository.findByFechaIngresoBetween(desde, hasta);
     }
 
-    // Busca ingresos cuyo país de origen contenga el texto buscado
     public List<Entry> buscarPorPaisOrigen(String pais) {
         log.info("Buscando ingresos desde: {}", pais);
         return entryRepository
                 .findByPaisOrigenContainingIgnoreCase(pais);
     }
 
-    // Devuelve ingresos de un vehículo del más reciente al más antiguo
     public List<Entry> obtenerPorPatenteOrdenados(String patente) {
         log.info("Obteniendo ingresos de {} ordenados", patente);
         return entryRepository
                 .findByPatenteOrderByFechaIngresoDesc(patente);
     }
 
-    // Devuelve los últimos 10 ingresos del sistema
     public List<Entry> obtenerUltimosIngresos() {
         log.info("Obteniendo los últimos 10 ingresos");
         return entryRepository.findTop10ByOrderByFechaIngresoDesc();
     }
 
-    // Cuenta cuántos ingresos hay con un estado específico
     public long contarPorEstado(String estado) {
         log.info("Contando ingresos con estado: {}", estado);
         return entryRepository.countByEstado(estado);
     }
 
-    // Cuenta cuántos ingresos hay de un tipo específico
     public long contarPorTipo(String tipoIngreso) {
         log.info("Contando ingresos de tipo: {}", tipoIngreso);
         return entryRepository.countByTipoIngreso(tipoIngreso);
     }
 
-    // Consulta a Vehicle Service el estado actual del vehículo
-    // Si no existe → lanza error con mensaje claro
     private VehicleResponseDTO verificarVehiculoEnVehicleService(
             String patente) {
         try {
@@ -329,11 +288,6 @@ public class EntryService {
         }
     }
 
-    // Actualiza el estado del vehículo en Vehicle Service
-    // Se llama en 3 momentos:
-    // → registrar RETORNO           → vehículo pasa a EN_TERRITORIO_NACIONAL
-    // → registrar ADMISION_TEMPORAL → vehículo pasa a ADMISION_TEMPORAL
-    // → rechazar ingreso            → vehículo vuelve a su estado anterior
     private void actualizarEstadoVehiculo(String patente,
                                           String nuevoEstado) {
         try {

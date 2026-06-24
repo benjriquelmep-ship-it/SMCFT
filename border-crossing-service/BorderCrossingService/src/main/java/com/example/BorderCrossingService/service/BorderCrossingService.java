@@ -1,7 +1,3 @@
-// service/BorderCrossingService.java
-// Lógica de negocio del Border Crossing Service
-// Se comunica con Vehicle Service e Item Category Service
-
 package com.example.BorderCrossingService.service;
 
 import com.example.BorderCrossingService.dto.BorderCrossingDTO;
@@ -27,22 +23,14 @@ public class BorderCrossingService {
 
     private final BorderCrossingRepository crossingRepository;
 
-    // WebClient para Vehicle Service
-    // @Qualifier especifica cuál bean usar cuando hay varios WebClient
     @Qualifier("vehicleWebClient")
     private final WebClient vehicleWebClient;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // Obtener todos los cruces
     public List<BorderCrossing> obtenerTodos() {
         log.info("Obteniendo todos los cruces fronterizos");
         return crossingRepository.findAll();
     }
 
-    // Obtener cruce por id
     public BorderCrossing obtenerPorId(Long id) {
         log.info("Buscando cruce con id: {}", id);
         return crossingRepository.findById(id)
@@ -57,8 +45,6 @@ public class BorderCrossingService {
     public BorderCrossing registrar(BorderCrossingDTO dto) {
         log.info("Registrando cruce para vehículo: {}", dto.getPatente());
 
-        // PASO 1 — Comunicación con Vehicle Service
-        // Verificar que el vehículo existe y está en territorio nacional
         VehicleResponseDTO vehiculo =
                 verificarVehiculoEnVehicleService(dto.getPatente());
 
@@ -80,20 +66,16 @@ public class BorderCrossingService {
                     "La fecha del cruce no puede ser futura");
         }
 
-        // Mapeo DTO → Entidad
         BorderCrossing nuevo = new BorderCrossing();
         nuevo.setPatente(dto.getPatente().toUpperCase());
         nuevo.setRutConductor(dto.getRutConductor());
         nuevo.setPaisDestino(dto.getPaisDestino());
         nuevo.setPasoFronterizo(dto.getPasoFronterizo());
         nuevo.setFechaCruce(dto.getFechaCruce());
-        // Estado inicial siempre PENDIENTE hasta que el fiscalizador lo procese
         nuevo.setEstado("PENDIENTE");
 
         BorderCrossing guardado = crossingRepository.save(nuevo);
 
-        // PASO 2 — Actualizar estado del vehículo en Vehicle Service
-        // El vehículo pasa a FUERA_DEL_PAIS después de registrar el cruce
         actualizarEstadoVehiculo(dto.getPatente(), "FUERA_DEL_PAIS");
 
         log.info("Cruce registrado con id: {}", guardado.getId());
@@ -147,7 +129,6 @@ public class BorderCrossingService {
         cruce.setRutFiscalizador(rutFiscalizador);
         cruce.setObservaciones(observaciones);
 
-        // Si se rechaza el cruce el vehículo vuelve a EN_TERRITORIO_NACIONAL
         actualizarEstadoVehiculo(
                 cruce.getPatente(), "EN_TERRITORIO_NACIONAL");
 
@@ -156,7 +137,6 @@ public class BorderCrossingService {
         return actualizado;
     }
 
-    // Eliminar cruce
     public void eliminar(Long id) {
         log.info("Eliminando cruce con id: {}", id);
         if (!crossingRepository.existsById(id)) {
@@ -168,36 +148,27 @@ public class BorderCrossingService {
         log.info("Cruce {} eliminado correctamente", id);
     }
 
-    // -------------------------------------------------------
-    // CONSULTAS DERIVADAS
-    // -------------------------------------------------------
-
-    // Todos los cruces de una patente
     public List<BorderCrossing> obtenerPorPatente(String patente) {
         log.info("Obteniendo cruces de la patente: {}", patente);
         return crossingRepository.findByPatente(patente);
     }
 
-    // Todos los cruces de un conductor
     public List<BorderCrossing> obtenerPorConductor(String rutConductor) {
         log.info("Obteniendo cruces del conductor: {}", rutConductor);
         return crossingRepository.findByRutConductor(rutConductor);
     }
 
-    // Cruces por estado
     public List<BorderCrossing> obtenerPorEstado(String estado) {
         log.info("Obteniendo cruces con estado: {}", estado);
         return crossingRepository.findByEstado(estado);
     }
 
-    // Cruces por paso fronterizo
     public List<BorderCrossing> obtenerPorPasoFronterizo(
             String pasoFronterizo) {
         log.info("Obteniendo cruces del paso: {}", pasoFronterizo);
         return crossingRepository.findByPasoFronterizo(pasoFronterizo);
     }
 
-    // Cruces autorizados por un fiscalizador
     public List<BorderCrossing> obtenerPorFiscalizador(
             String rutFiscalizador) {
         log.info("Obteniendo cruces del fiscalizador: {}",
@@ -205,47 +176,40 @@ public class BorderCrossingService {
         return crossingRepository.findByRutFiscalizador(rutFiscalizador);
     }
 
-    // Cruces de una patente con estado específico
     public List<BorderCrossing> obtenerPorPatenteYEstado(
             String patente, String estado) {
         log.info("Obteniendo cruces de {} con estado {}", patente, estado);
         return crossingRepository.findByPatenteAndEstado(patente, estado);
     }
 
-    // Cruces en un rango de fechas
     public List<BorderCrossing> obtenerPorRangoFechas(
             LocalDateTime desde, LocalDateTime hasta) {
         log.info("Obteniendo cruces entre {} y {}", desde, hasta);
         return crossingRepository.findByFechaCruceBetween(desde, hasta);
     }
 
-    // Búsqueda parcial por país de destino
     public List<BorderCrossing> buscarPorPaisDestino(String pais) {
         log.info("Buscando cruces hacia: {}", pais);
         return crossingRepository
                 .findByPaisDestinoContainingIgnoreCase(pais);
     }
 
-    // Cruces de una patente ordenados del más reciente al más antiguo
     public List<BorderCrossing> obtenerPorPatenteOrdenados(String patente) {
         log.info("Obteniendo cruces de {} ordenados por fecha", patente);
         return crossingRepository
                 .findByPatenteOrderByFechaCruceDesc(patente);
     }
 
-    // Los últimos 10 cruces del sistema
     public List<BorderCrossing> obtenerUltimosCruces() {
         log.info("Obteniendo los últimos 10 cruces");
         return crossingRepository.findTop10ByOrderByFechaCruceDesc();
     }
 
-    // Contar cruces por estado — para estadísticas
     public long contarPorEstado(String estado) {
         log.info("Contando cruces con estado: {}", estado);
         return crossingRepository.countByEstado(estado);
     }
 
-    // Contar cruces por paso fronterizo
     public long contarPorPasoFronterizo(String pasoFronterizo) {
         log.info("Contando cruces del paso: {}", pasoFronterizo);
         return crossingRepository.countByPasoFronterizo(pasoFronterizo);
@@ -255,7 +219,6 @@ public class BorderCrossingService {
     // COMUNICACIÓN CON VEHICLE SERVICE — WebClient
     // -------------------------------------------------------
 
-    // Verifica que el vehículo existe y obtiene su estado actual
     private VehicleResponseDTO verificarVehiculoEnVehicleService(
             String patente) {
         try {
@@ -286,8 +249,6 @@ public class BorderCrossingService {
         }
     }
 
-    // Actualiza el estado del vehículo en Vehicle Service
-    // Se llama después de registrar o rechazar un cruce
     private void actualizarEstadoVehiculo(String patente,
                                           String nuevoEstado) {
         try {

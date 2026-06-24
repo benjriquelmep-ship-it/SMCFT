@@ -62,6 +62,7 @@ services:
       SPRING_DATASOURCE_USERNAME: smcft
       SPRING_DATASOURCE_PASSWORD: smcft_pass
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8760/eureka
+      USERSERVICE_URL: http://user-service:2031
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -210,6 +211,17 @@ services:
       mysql-db:
         condition: service_healthy
       eureka-server:
+        condition: service_started
+    networks:
+      - smcft-network
+
+  frontend:
+    build: ./frontend
+    container_name: smcft-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      gateway:
         condition: service_started
     networks:
       - smcft-network

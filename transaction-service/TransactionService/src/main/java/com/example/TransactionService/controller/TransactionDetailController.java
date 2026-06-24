@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de Transaction Detail Service y retorna ResponseEntity con JSON
 package com.example.TransactionService.controller;
 
 import com.example.TransactionService.dto.TransactionDetailDTO;
@@ -25,7 +24,6 @@ public class TransactionDetailController {
 
     private final TransactionDetailService detailService;
 
-    // GET /api/v1/transaction-details : Lista todos los detalles de transacciones del sistema
     @Operation(summary = "Listar todas las líneas de detalle", description = "Expone el registro global de desgloses e ítems facturados de forma global en la aduana.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Colección de detalles obtenida correctamente"),

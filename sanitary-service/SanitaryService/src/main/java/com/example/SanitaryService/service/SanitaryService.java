@@ -1,6 +1,3 @@
-// Lógica de negocio del Sanitary Service
-// Se comunica con Vehicle Service para verificar que el vehículo existe
-// antes de registrar una inspección sanitaria
 package com.example.SanitaryService.service;
 
 import com.example.SanitaryService.dto.SanitaryDTO;
@@ -22,23 +19,14 @@ import java.util.List;
 @Slf4j
 public class SanitaryService {
 
-    // Accede a la tabla sanitary_inspections en la BD
     private final SanitaryRepository sanitaryRepository;
-
-    // Cliente HTTP para llamar a Vehicle Service
-    // Se usa para verificar que el vehículo existe
-    // antes de registrar la inspección
     private final WebClient webClient;
 
-    // Devuelve todas las inspecciones sanitarias de la BD
     public List<Sanitary> obtenerTodas() {
         log.info("Obteniendo todas las inspecciones sanitarias");
         return sanitaryRepository.findAll();
     }
 
-    // Busca una inspección por su id
-    // Si no existe lanza RuntimeException → HTTP 404
-    // SanitaryItemService llama a este método para verificar inspecciones
     public Sanitary obtenerPorId(Long id) {
         log.info("Buscando inspección con id: {}", id);
         return sanitaryRepository.findById(id)
@@ -49,14 +37,10 @@ public class SanitaryService {
                 });
     }
 
-    // Registra una nueva inspección sanitaria para un vehículo
     public Sanitary registrar(SanitaryDTO dto) {
         log.info("Registrando inspección para vehículo: {}",
                 dto.getPatente());
 
-        // Llama a Vehicle Service para verificar que el vehículo existe
-        // A diferencia de Entry Service, Sanitary Service NO verifica el estado
-        // del vehículo — solo verifica que exista en el sistema
         verificarVehiculoEnVehicleService(dto.getPatente());
 
         // REGLA: la fecha de inspección no puede ser futura
@@ -68,26 +52,19 @@ public class SanitaryService {
                     "La fecha de inspección no puede ser futura");
         }
 
-        // Mapeo DTO → Entidad
-        // Convierte el formulario que llegó en un objeto para guardar en la BD
         Sanitary nueva = new Sanitary();
-        nueva.setPatente(dto.getPatente().toUpperCase()); // patente en mayúsculas
-        nueva.setRutConductor(dto.getRutConductor());     // quién conduce
-        nueva.setRutInspector(dto.getRutInspector());     // inspector del SAG
-        nueva.setPasoFronterizo(dto.getPasoFronterizo()); // dónde se realiza
-        nueva.setFechaInspeccion(dto.getFechaInspeccion()); // cuándo se hizo
-        // Resultado inicial siempre PENDIENTE — el inspector lo procesará después
+        nueva.setPatente(dto.getPatente().toUpperCase());
+        nueva.setRutConductor(dto.getRutConductor());
+        nueva.setRutInspector(dto.getRutInspector());
+        nueva.setPasoFronterizo(dto.getPasoFronterizo());
+        nueva.setFechaInspeccion(dto.getFechaInspeccion());
         nueva.setResultado("PENDIENTE");
-        nueva.setObservaciones(dto.getObservaciones());   // comentarios opcionales
-
-        // Guarda en la BD y retorna la inspección con su id generado
+        nueva.setObservaciones(dto.getObservaciones());
         Sanitary guardada = sanitaryRepository.save(nueva);
         log.info("Inspección registrada con id: {}", guardada.getId());
         return guardada;
     }
 
-    // El inspector aprueba la inspección — resultado APROBADO
-    // Solo funciona si la inspección está PENDIENTE
     public Sanitary aprobar(Long id, String observaciones) {
         log.info("Aprobando inspección con id: {}", id);
         Sanitary inspeccion = obtenerPorId(id);
@@ -103,16 +80,13 @@ public class SanitaryService {
         }
 
         inspeccion.setResultado("APROBADO");
-        inspeccion.setObservaciones(observaciones); // motivo de la aprobación
+        inspeccion.setObservaciones(observaciones);
 
         Sanitary actualizada = sanitaryRepository.save(inspeccion);
         log.info("Inspección {} aprobada correctamente", id);
         return actualizada;
     }
 
-    // El inspector rechaza la inspección — resultado RECHAZADO
-    // Solo funciona si la inspección está PENDIENTE
-    // El vehículo NO puede cruzar la frontera
     public Sanitary rechazar(Long id, String observaciones) {
         log.info("Rechazando inspección con id: {}", id);
         Sanitary inspeccion = obtenerPorId(id);
@@ -127,15 +101,13 @@ public class SanitaryService {
         }
 
         inspeccion.setResultado("RECHAZADO");
-        inspeccion.setObservaciones(observaciones); // motivo del rechazo
+        inspeccion.setObservaciones(observaciones);
 
         Sanitary actualizada = sanitaryRepository.save(inspeccion);
         log.info("Inspección {} rechazada correctamente", id);
         return actualizada;
     }
 
-    // Elimina una inspección por su id
-    // existsById verifica si existe antes de intentar eliminar
     public void eliminar(Long id) {
         log.info("Eliminando inspección con id: {}", id);
         if (!sanitaryRepository.existsById(id)) {
@@ -147,40 +119,34 @@ public class SanitaryService {
         log.info("Inspección {} eliminada correctamente", id);
     }
 
-    // Devuelve todas las inspecciones de un vehículo específico
     public List<Sanitary> obtenerPorPatente(String patente) {
         log.info("Obteniendo inspecciones de la patente: {}", patente);
         return sanitaryRepository.findByPatente(patente);
     }
 
-    // Devuelve todas las inspecciones de un conductor específico
     public List<Sanitary> obtenerPorConductor(String rutConductor) {
         log.info("Obteniendo inspecciones del conductor: {}",
                 rutConductor);
         return sanitaryRepository.findByRutConductor(rutConductor);
     }
 
-    // Devuelve todas las inspecciones realizadas por un inspector específico
     public List<Sanitary> obtenerPorInspector(String rutInspector) {
         log.info("Obteniendo inspecciones del inspector: {}",
                 rutInspector);
         return sanitaryRepository.findByRutInspector(rutInspector);
     }
 
-    // Devuelve inspecciones por resultado (PENDIENTE, APROBADO, RECHAZADO)
     public List<Sanitary> obtenerPorResultado(String resultado) {
         log.info("Obteniendo inspecciones con resultado: {}", resultado);
         return sanitaryRepository.findByResultado(resultado);
     }
 
-    // Devuelve todas las inspecciones de un paso fronterizo específico
     public List<Sanitary> obtenerPorPasoFronterizo(
             String pasoFronterizo) {
         log.info("Obteniendo inspecciones del paso: {}", pasoFronterizo);
         return sanitaryRepository.findByPasoFronterizo(pasoFronterizo);
     }
 
-    // Devuelve inspecciones de un vehículo con un resultado específico
     public List<Sanitary> obtenerPorPatenteYResultado(
             String patente, String resultado) {
         log.info("Obteniendo inspecciones de {} con resultado {}",
@@ -189,7 +155,6 @@ public class SanitaryService {
                 patente, resultado);
     }
 
-    // Devuelve inspecciones en un rango de fechas
     public List<Sanitary> obtenerPorRangoFechas(
             LocalDateTime desde, LocalDateTime hasta) {
         log.info("Obteniendo inspecciones entre {} y {}", desde, hasta);
@@ -197,36 +162,28 @@ public class SanitaryService {
                 desde, hasta);
     }
 
-    // Devuelve inspecciones de un vehículo del más reciente al más antiguo
     public List<Sanitary> obtenerPorPatenteOrdenadas(String patente) {
         log.info("Obteniendo inspecciones de {} ordenadas", patente);
         return sanitaryRepository
                 .findByPatenteOrderByFechaInspeccionDesc(patente);
     }
 
-    // Devuelve inspecciones PENDIENTES del más antiguo al más reciente
-    // Útil para procesar inspecciones en orden de llegada
     public List<Sanitary> obtenerPendientesOrdenadas() {
         log.info("Obteniendo inspecciones pendientes ordenadas");
         return sanitaryRepository
                 .findByResultadoOrderByFechaInspeccionAsc("PENDIENTE");
     }
 
-    // Devuelve las últimas 10 inspecciones del sistema
     public List<Sanitary> obtenerUltimasInspecciones() {
         log.info("Obteniendo las últimas 10 inspecciones");
         return sanitaryRepository.findTop10ByOrderByIdDesc();
     }
 
-    // Cuenta cuántas inspecciones hay con un resultado específico
     public long contarPorResultado(String resultado) {
         log.info("Contando inspecciones con resultado: {}", resultado);
         return sanitaryRepository.countByResultado(resultado);
     }
 
-    // Verifica que el vehículo existe en Vehicle Service
-    // Solo verifica existencia — NO verifica el estado del vehículo
-    // A diferencia de Entry y Border Crossing que sí verifican el estado
     private void verificarVehiculoEnVehicleService(String patente) {
         try {
             log.info("Verificando vehículo {} en Vehicle Service",

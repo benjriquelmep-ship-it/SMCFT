@@ -1,5 +1,3 @@
-// Recibe peticiones HTTP para gestionar las líneas de detalle de los reportes
-// Delega la persistencia al ReportDetailService y retorna formato JSON
 package com.example.ReportService.controller;
 
 import com.example.ReportService.dto.ReportDetailDTO;
@@ -26,7 +24,6 @@ public class ReportDetailController {
 
     private final ReportDetailService detailService;
 
-    // GET /api/v1/report-details : Lista todos los detalles de reportes del sistema
     @Operation(summary = "Listar todas las líneas métricas registradas", description = "Expone el registro global consolidado de todas las variables e indicadores calculados en la base analítica.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Historial global métrico devuelto correctamente"),

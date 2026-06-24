@@ -4,6 +4,7 @@ import com.example.NotificationService.dto.NotificationDTO;
 import com.example.NotificationService.model.Notification;
 import com.example.NotificationService.repository.NotificationRepository;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,5 +76,39 @@ class NotificationServiceTest {
         // --- Verificar que el resultado sea el correcto ---
         assertNotNull(result);
         assertEquals(1L, result.getId());
+    }
+
+    @Test
+    void marcarComoEnviada_EstadoPendiente_CambiaEstado() {
+        Notification n = new Notification();
+        n.setId(1L);
+        n.setTitulo("Test");
+        n.setEstado("PENDIENTE");
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(n));
+        when(notificationRepository.save(any(Notification.class))).thenAnswer(i -> i.getArgument(0));
+
+        notificationService.marcarComoEnviada(1L);
+
+        assertEquals("ENVIADA", n.getEstado());
+        verify(notificationRepository).save(n);
+    }
+
+    @Test
+    void marcarComoEnviada_EstadoNoPendiente_LanzaExcepcion() {
+        Notification n = new Notification();
+        n.setId(1L);
+        n.setEstado("ENVIADA");
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(n));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> notificationService.marcarComoEnviada(1L));
+        assertTrue(ex.getMessage().contains("PENDIENTES"));
+    }
+
+    @Test
+    void obtenerPorId_NoExistente_LanzaExcepcion() {
+        when(notificationRepository.findById(1L)).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> notificationService.obtenerPorId(1L));
+        assertTrue(ex.getMessage().contains("no encontrada"));
     }
 }

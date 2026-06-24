@@ -1,5 +1,3 @@
-// Lógica de negocio para las auditorías
-// El Controller recibe la petición y este Service la procesa
 package com.example.AuditService.service;
 
 import com.example.AuditService.dto.AuditDTO;
@@ -20,15 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuditService {
 
-    // Para registrar mensajes en la consola de IntelliJ
     private static final Logger log =
             LoggerFactory.getLogger(AuditService.class);
 
-    // Accede a la tabla audits en la base de datos
     private final AuditRepository auditRepository;
-
-    // Cliente HTTP para comunicarse con otros microservicios
-    // En este caso se usa para llamar al User Service
     private final WebClient webClient;
 
     // Devuelve todas las auditorías de la BD
@@ -57,16 +50,12 @@ public class AuditService {
         // y está activo — si no existe o está inactivo → lanza error
         verificarAuditorEnUserService(dto.getRutAuditor());
 
-        // REGLA: la fecha de inicio no puede ser futura
-        // Ej: no puedes registrar una auditoría para mañana
         if (dto.getFechaInicio().isAfter(LocalDateTime.now())) {
             log.warn("Fecha de inicio futura: {}", dto.getFechaInicio());
             throw new RuntimeException(
                     "La fecha de inicio no puede ser futura");
         }
 
-        // Mapeo DTO → Entidad
-        // Convierte el formulario que llegó en un objeto para guardar en la BD
         Audit nueva = new Audit();
         nueva.setRutAuditor(dto.getRutAuditor());     // quién audita
         nueva.setTipoAuditoria(dto.getTipoAuditoria()); // USUARIO, SISTEMA, etc.
@@ -76,7 +65,6 @@ public class AuditService {
         nueva.setEstado("EN_PROCESO");                // estado inicial siempre EN_PROCESO
         nueva.setFechaInicio(dto.getFechaInicio());   // cuándo inició
 
-        // Guarda en la BD y retorna la auditoría con su id generado
         Audit guardada = auditRepository.save(nueva);
         log.info("Auditoría registrada con id: {}", guardada.getId());
         return guardada;
@@ -88,8 +76,6 @@ public class AuditService {
         log.info("Completando auditoría con id: {}", id);
         Audit auditoria = obtenerPorId(id);
 
-        // REGLA: solo se completan auditorías EN_PROCESO
-        // Si ya está COMPLETADA u OBSERVACION → lanza error
         if (!auditoria.getEstado().equals("EN_PROCESO")) {
             log.warn("Auditoría {} no está EN_PROCESO. Estado: {}",
                     id, auditoria.getEstado());
@@ -113,7 +99,6 @@ public class AuditService {
         log.info("Marcando auditoría {} con observación", id);
         Audit auditoria = obtenerPorId(id);
 
-        // REGLA: solo se marcan auditorías EN_PROCESO
         if (!auditoria.getEstado().equals("EN_PROCESO")) {
             log.warn("Auditoría {} no está EN_PROCESO. Estado: {}",
                     id, auditoria.getEstado());
@@ -230,9 +215,7 @@ public class AuditService {
                     .bodyToMono(UserResponseDTO.class)
                     .block();
 
-            // REGLA: el auditor debe estar activo en el sistema
-            // Si activo = false → no puede crear auditorías
-            if (!usuario.getActivo()) {
+        if (!usuario.getActivo()) {
                 log.warn("Auditor {} está inactivo", rut);
                 throw new RuntimeException(
                         "El auditor con RUT " + rut

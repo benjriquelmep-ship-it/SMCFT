@@ -1,7 +1,3 @@
-// Lógica de negocio completa del Auth Service
-// Se comunica con User Service para verificar credenciales
-// Maneja la blacklist de tokens y el registro de intentos
-
 package com.example.AuthService.service;
 
 import com.example.AuthService.dto.LoginDTO;
@@ -27,28 +23,14 @@ import java.util.List;
 @Slf4j
 public class AuthService {
 
-    // Para generar y validar tokens JWT
-    // Es el ÚNICO microservicio que genera tokens — los demás solo los verifican
     private final JwtUtil jwtUtil;
-
-    // Cliente HTTP para llamar a User Service
-    // Se usa para verificar si el usuario existe y su contraseña
     private final WebClient webClient;
-
-    // Accede a la tabla token_blacklist en la BD
-    // Guarda los tokens que fueron invalidados por logout
     private final TokenBlacklistRepository tokenBlacklistRepository;
-
-    // Accede a la tabla login_attempts en la BD
-    // Registra cada intento de login — exitoso o fallido
     private final LoginAttemptRepository loginAttemptRepository;
 
-    // Proceso completo de login en 4 pasos
     public TokenResponseDTO login(LoginDTO dto) {
         log.info("Intento de login para: {}", dto.getEmail());
 
-        // PASO 1 — Consulta al User Service si existe el usuario
-        // Si no existe → registra intento fallido y lanza error
         UserResponseDTO usuario =
                 obtenerUsuarioDesdeUserService(dto.getEmail());
 
@@ -105,7 +87,6 @@ public class AuthService {
         // Extrae el email del usuario desde el token
         String email = jwtUtil.obtenerEmail(token);
 
-        // Guardar el token en la blacklist
         TokenBlacklist tokenInvalidado = new TokenBlacklist();
         tokenInvalidado.setToken(token); // el token invalidado
         tokenInvalidado.setEmail(email); // a quién pertenecía
@@ -139,13 +120,11 @@ public class AuthService {
     public boolean validarToken(String token) {
         log.info("Validando token");
 
-        // Verificación 1 — firma y expiración
         if (!jwtUtil.esValido(token)) {
             log.warn("Token con firma inválida o expirado");
             return false;
         }
 
-        // Verificación 2 — blacklist
         if (tokenBlacklistRepository.existsByToken(token)) {
             log.warn("Token encontrado en blacklist");
             return false;

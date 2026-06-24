@@ -36,7 +36,7 @@ public class GatewayConfig {
                         .uri("lb://SANITARYSERVICE"))
 
                 // 7. Deadline Service (Puerto: 2024)
-                .route("deadline_service_route", r -> r.path("/api/v1/deadline-alerts/**")
+                .route("deadline_service_route", r -> r.path("/api/v1/deadlines/**", "/api/v1/deadline-alerts/**")
                         .uri("lb://DEADLINESERVICE"))
 
                 // 8. Item Category Service (Puerto: 2026)

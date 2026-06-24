@@ -1,4 +1,3 @@
-// Capa de servicio principal para procesar las reglas de negocio de los reportes
 package com.example.ReportService.service;
 
 import com.example.ReportService.dto.BorderCrossingResponseDTO;
@@ -26,17 +25,11 @@ public class ReportService {
     private final ReportDetailRepository detailRepository;
     private final WebClient webClient;
 
-    // -------------------------------------------------------
-    // CRUD BÁSICO
-    // -------------------------------------------------------
-
-    // Obtiene el listado completo de reportes
     public List<Report> obtenerTodos() {
         log.info("Obteniendo todos los reportes");
         return reportRepository.findAll();
     }
 
-    // Busca un reporte por ID o lanza excepción si no existe
     public Report obtenerPorId(Long id) {
         log.info("Buscando reporte con id: {}", id);
         return reportRepository.findById(id)
@@ -47,7 +40,6 @@ public class ReportService {
                 });
     }
 
-    // Crea un reporte en estado GENERANDO, consume WebClient si aplica y lo completa
     public Report generar(ReportDTO dto) {
         log.info("Generando reporte: {}", dto.getTitulo());
 
@@ -71,19 +63,16 @@ public class ReportService {
         Report guardado = reportRepository.save(nuevo);
         log.info("Reporte creado con id: {}", guardado.getId());
 
-        // Si es reporte de cruces obtener datos de Border Crossing
         if (dto.getTipoReporte().equals("CRUCE_FRONTERIZO")) {
             generarDetallesCruces(guardado);
         }
 
-        // Marcar como completado
         guardado.setEstado("COMPLETADO");
         reportRepository.save(guardado);
         log.info("Reporte {} completado", guardado.getId());
         return guardado;
     }
 
-    // Fuerza la finalización de un reporte que esté en proceso
     public Report completar(Long id) {
         log.info("Completando reporte con id: {}", id);
         Report reporte = obtenerPorId(id);
@@ -103,7 +92,6 @@ public class ReportService {
         return actualizado;
     }
 
-    // Registra una falla en el procesamiento del reporte
     public Report marcarError(Long id, String observaciones) {
         log.info("Marcando reporte {} como error", id);
         Report reporte = obtenerPorId(id);
@@ -114,7 +102,6 @@ public class ReportService {
         return actualizado;
     }
 
-    // Elimina físicamente el reporte de la base de datos
     public void eliminar(Long id) {
         log.info("Eliminando reporte con id: {}", id);
         if (!reportRepository.existsById(id)) {
@@ -127,25 +114,21 @@ public class ReportService {
     }
 
 
-    // Filtra reportes por su categoría
     public List<Report> obtenerPorTipo(String tipoReporte) {
         log.info("Obteniendo reportes de tipo: {}", tipoReporte);
         return reportRepository.findByTipoReporte(tipoReporte);
     }
 
-    // Busca reportes creados por el RUT de un usuario específico
     public List<Report> obtenerPorGenerador(String generadoPor) {
         log.info("Obteniendo reportes generados por: {}", generadoPor);
         return reportRepository.findByGeneradoPor(generadoPor);
     }
 
-    // Filtra el listado según el estado actual
     public List<Report> obtenerPorEstado(String estado) {
         log.info("Obteniendo reportes con estado: {}", estado);
         return reportRepository.findByEstado(estado);
     }
 
-    // Lista únicamente los reportes finalizados de un tipo específico
     public List<Report> obtenerCompletadosPorTipo(String tipoReporte) {
         log.info("Obteniendo reportes completados de tipo: {}",
                 tipoReporte);
@@ -153,36 +136,27 @@ public class ReportService {
                 tipoReporte, "COMPLETADO");
     }
 
-    // Busca reportes mediante una coincidencia de texto en el título
     public List<Report> buscarPorTitulo(String texto) {
         log.info("Buscando reportes con título: {}", texto);
         return reportRepository
                 .findByTituloContainingIgnoreCase(texto);
     }
 
-    // Devuelve los 10 reportes agregados más recientemente
     public List<Report> obtenerUltimosReportes() {
         log.info("Obteniendo los últimos 10 reportes");
         return reportRepository.findTop10ByOrderByIdDesc();
     }
 
-    // Cuenta cuántos reportes tienen un estado específico
     public long contarPorEstado(String estado) {
         log.info("Contando reportes con estado: {}", estado);
         return reportRepository.countByEstado(estado);
     }
 
-    // Cuenta cuántos reportes pertenecen a una categoría
     public long contarPorTipo(String tipoReporte) {
         log.info("Contando reportes de tipo: {}", tipoReporte);
         return reportRepository.countByTipoReporte(tipoReporte);
     }
 
-    // -------------------------------------------------------
-    // COMUNICACIÓN CON BORDER CROSSING SERVICE — WebClient
-    // -------------------------------------------------------
-
-    // Realiza peticiones HTTP remotas, suma las cantidades y guarda las líneas de detalle
     private void generarDetallesCruces(Report reporte) {
         try {
             log.info("Consultando Border Crossing Service para reporte {}",

@@ -17,7 +17,6 @@ public class WebClientConfig {
     // Report Service obtiene datos de cruces
     // para generar reportes de actividad fronteriza
     @Bean
-    @LoadBalanced
     public WebClient webClient() {
         // Inicializa el constructor de WebClient y le asigna la URL base del microservicio remoto
         return WebClient.builder()

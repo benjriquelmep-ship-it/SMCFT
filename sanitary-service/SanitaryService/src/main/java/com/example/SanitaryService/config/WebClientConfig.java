@@ -17,7 +17,6 @@ public class WebClientConfig {
     // Transaction Service verifica que el usuario existe
     // antes de registrar una transacción
     @Bean
-    @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
                 .baseUrl(vehicleServiceUrl)

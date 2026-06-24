@@ -22,17 +22,13 @@ public class WebClientConfig {
     // WebClient para Vehicle Service
     // Usado para verificar el vehículo y actualizar su estado
     @Bean(name = "vehicleWebClient")
-    @LoadBalanced
     public WebClient vehicleWebClient() {
         return WebClient.builder()
                 .baseUrl(vehicleServiceUrl)
                 .build();
     }
 
-    // WebClient para Item Category Service
-    // Usado para validar las categorías del equipaje declarado
     @Bean(name = "itemCategoryWebClient")
-    @LoadBalanced
     public WebClient itemCategoryWebClient() {
         return WebClient.builder()
                 .baseUrl(itemCategoryServiceUrl)

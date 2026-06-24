@@ -1,6 +1,3 @@
-// Recibe las peticiones HTTP para los items de inspecciones sanitarias
-// Llama al Service y retorna ResponseEntity con JSON
-// Nunca tiene lógica de negocio directamente
 package com.example.SanitaryService.controller;
 
 import com.example.SanitaryService.dto.SanitaryItemDTO;
@@ -28,7 +25,6 @@ public class SanitaryItemController {
 
     private final SanitaryItemService itemService;
 
-    // GET /api/v1/sanitary/items
     @Operation(summary = "Listar todas las líneas de mercancía fiscalizadas", description = "Muestra un listado global de todos los ítems e insumos individuales cargados en el sistema sanitario.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Historial de líneas obtenido de forma correcta"),

@@ -1,4 +1,3 @@
-// Recibe las peticiones HTTP de Transaction Service y retorna ResponseEntity con JSON
 package com.example.TransactionService.controller;
 
 import com.example.TransactionService.dto.TransactionDTO;
@@ -28,7 +27,6 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    // GET /api/v1/transactions : Lista todas las transacciones
     @Operation(summary = "Listar transacciones", description = "Recupera el libro histórico consolidado con todos los movimientos financieros registrados en la frontera.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Colección de transacciones obtenida con éxito"),
