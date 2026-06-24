@@ -110,6 +110,12 @@ assertEquals("PENDIENTE", result.getEstado());
         dto.setPatente("ABC123");
         dto.setFechaIngreso(LocalDateTime.now().plusDays(1));
         dto.setTipoIngreso("RETORNO");
+        VehicleResponseDTO vehicleResponse = new VehicleResponseDTO();
+        vehicleResponse.setEstado("FUERA_DEL_PAIS");
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri("/api/v1/vehicles/patente/{patente}", "ABC123")).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(VehicleResponseDTO.class)).thenReturn(Mono.just(vehicleResponse));
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> entryService.registrar(dto));
         assertTrue(ex.getMessage().contains("futura"));
@@ -168,6 +174,10 @@ assertEquals("PENDIENTE", result.getEstado());
         entry.setTipoIngreso("RETORNO");
         when(entryRepository.findById(1L)).thenReturn(Optional.of(entry));
         when(entryRepository.save(any(Entry.class))).thenAnswer(i -> i.getArgument(0));
+        when(webClient.patch()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString(), anyString(), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Void.class)).thenReturn(Mono.empty());
 
         entryService.rechazar(1L, "11111111-1", "motivo");
 

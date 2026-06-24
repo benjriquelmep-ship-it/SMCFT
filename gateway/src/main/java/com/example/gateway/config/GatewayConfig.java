@@ -40,15 +40,15 @@ public class GatewayConfig {
                         .uri("lb://DEADLINESERVICE"))
 
                 // 8. Item Category Service (Puerto: 2026)
-                .route("item_category_route", r -> r.path("/api/v1/item-categories/**")
+                .route("item_category_route", r -> r.path("/api/v1/item-categories/**", "/api/v1/items/**")
                         .uri("lb://ITEMCATEGORYSERVICE"))
 
                 // 9. Transaction Service (Puerto: 2040)
-                .route("transaction_service_route", r -> r.path("/api/v1/transactions/**")
+                .route("transaction_service_route", r -> r.path("/api/v1/transactions/**", "/api/v1/transaction-details/**")
                         .uri("lb://TRANSACTIONSERVICE"))
 
                 // 10. Report Service (Puerto: 2028)
-                .route("report_service_route", r -> r.path("/api/v1/reports/**")
+                .route("report_service_route", r -> r.path("/api/v1/reports/**", "/api/v1/report-details/**")
                         .uri("lb://REPORTSERVICE"))
 
                 // 11. Notification Service (Puerto: 2027)
@@ -56,7 +56,7 @@ public class GatewayConfig {
                         .uri("lb://NOTIFICATIONSERVICE"))
 
                 // 12. Audit Service (Puerto: 2021)
-                .route("audit_service_route", r -> r.path("/api/v1/audits/**")
+                .route("audit_service_route", r -> r.path("/api/v1/audits/**", "/api/v1/audit-details/**")
                         .uri("lb://AUDITSERVICE"))
 
                 .build();
