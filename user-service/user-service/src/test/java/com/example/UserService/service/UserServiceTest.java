@@ -3,9 +3,6 @@ package com.example.UserService.service;
 import com.example.UserService.dto.UserDTO;
 import com.example.UserService.model.User;
 import com.example.UserService.repository.UserRepository;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -130,6 +127,34 @@ class UserServiceTest {
     }
     @Test
 
+    void actualizar_DatosValidos_ActualizaCampos() {
+        // PASO 1 - GIVEN: preparar datos y configurar mocks
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setNombre("Viejo Nombre");
+        existingUser.setEmail("viejo@test.com");
+        existingUser.setRol("VIAJERO");
+
+        UserDTO dto = new UserDTO();
+        dto.setNombre("Nuevo Nombre");
+        dto.setEmail("nuevo@test.com");
+        dto.setRol("FISCALIZADOR");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        // PASO 2 - WHEN: ejecutar el método del servicio
+        User result = userService.actualizar(1L, dto);
+
+        // PASO 3 - THEN: verificar resultados
+        assertEquals("Nuevo Nombre", result.getNombre());
+        assertEquals("nuevo@test.com", result.getEmail());
+        assertEquals("FISCALIZADOR", result.getRol());
+        verify(userRepository, times(1)).save(existingUser);
+    }
+
+    @Test
+
     void eliminar_SoftDelete_DesactivaUsuario() {
         // Probar que cuando soft delete → desactiva usuario
 
@@ -147,6 +172,65 @@ class UserServiceTest {
         assertFalse(user.getActivo());
 
         // Verificar que el repositorio haya sido invocado la cantidad esperada de veces
-        verify(userRepository, times(1)).save(user);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+
+    void obtenerPorEmail_Existente_RetornaUsuario() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("juan@test.com");
+        when(userRepository.findByEmail("juan@test.com")).thenReturn(Optional.of(user));
+
+        User result = userService.obtenerPorEmail("juan@test.com");
+
+        assertNotNull(result);
+        assertEquals("juan@test.com", result.getEmail());
+    }
+
+    @Test
+
+    void obtenerPorEmail_NoExistente_LanzaExcepcion() {
+        when(userRepository.findByEmail("no@existe.com")).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userService.obtenerPorEmail("no@existe.com"));
+        assertTrue(ex.getMessage().contains("no encontrado"));
+    }
+
+    @Test
+
+    void actualizar_UsuarioNoExistente_LanzaExcepcion() {
+        UserDTO dto = new UserDTO();
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> userService.actualizar(99L, dto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+
+    void obtenerActivos_RetornaSoloActivos() {
+        List<User> activos = List.of(new User(), new User());
+        when(userRepository.findByActivoTrue()).thenReturn(activos);
+
+        List<User> result = userService.obtenerActivos();
+
+        assertEquals(2, result.size());
+        verify(userRepository).findByActivoTrue();
+    }
+
+    @Test
+
+    void buscarPorNombre_TextoCoincide_RetornaUsuarios() {
+        User user = new User();
+        user.setNombre("Juan Perez");
+        when(userRepository.findByNombreContaining("Juan")).thenReturn(List.of(user));
+
+        List<User> result = userService.buscarPorNombre("Juan");
+
+        assertEquals(1, result.size());
+        assertEquals("Juan Perez", result.get(0).getNombre());
     }
 }
